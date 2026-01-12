@@ -1,0 +1,20 @@
+# Editors specific
+.fleet
+.vscode
+.idea
+
+# Dependencies
+node_modules
+
+# Secrets
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Frontend assets compiled code & Uploads
+public/assets
+public/uploads
+
+# Build tools specific
+npm-debug.log
