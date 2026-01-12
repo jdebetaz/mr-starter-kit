@@ -1,18 +1,13 @@
 {
-	"name": "mr-starter-kit",
-	"version": "1.0.0",
-	"description": "",
-	"main": "index.js",
+	"type": "module",
+	"private": true,
+	"license": "UNLICENSED",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1",
-		"prepare": "husky"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
-	"volta": {
-		"node": "24.12.0",
-		"pnpm": "10.28.0"
+		"lint": "eslint .",
+		"format": "prettier .",
+		"prepare": "husky",
+		"taze": "yarn dlx taze -r -I",
+		"typecheck": "yarn workspaces foreach -p -A run typecheck"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.3.1",
@@ -20,13 +15,18 @@
 		"@julr/tooling-configs": "^5.0.0",
 		"husky": "^9.1.7"
 	},
+	"dependencies": {
+		"eslint": "^9.39.2",
+		"prettier": "^3.7.4"
+	},
 	"commitlint": {
 		"extends": [
 			"@commitlint/config-conventional"
 		]
 	},
-	"dependencies": {
-		"eslint": "^9.39.2",
-		"prettier": "^3.7.4"
-	}
+	"volta": {
+		"node": "24.12.0",
+		"pnpm": "10.28.0"
+	},
+	"packageManager": "pnpm@10.28.0"
 }
