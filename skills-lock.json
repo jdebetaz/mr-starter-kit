@@ -1,0 +1,10 @@
+{
+	"version": 1,
+	"skills": {
+		"conventional-commit": {
+			"source": "marcelorodrigo/agent-skills",
+			"sourceType": "github",
+			"computedHash": "c09073f3bb5141fcefa8347051035c23ac2a87774ac3b1dec2a2afa583820dcf"
+		}
+	}
+}
