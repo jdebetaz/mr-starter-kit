@@ -6,8 +6,8 @@
 		"lint": "eslint .",
 		"format": "prettier .",
 		"prepare": "husky",
-		"taze": "yarn dlx taze -r -I",
-		"typecheck": "yarn workspaces foreach -p -A run typecheck"
+		"taze": "pnpm dlx taze -r -I",
+		"typecheck": "pnpm -r --parallel run typecheck"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.3.1",
