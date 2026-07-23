@@ -1,7 +1,7 @@
 {
-	"type": "module",
 	"private": true,
 	"license": "UNLICENSED",
+	"type": "module",
 	"scripts": {
 		"lint": "eslint .",
 		"format": "prettier .",
@@ -12,21 +12,14 @@
 	"devDependencies": {
 		"@commitlint/cli": "^20.3.1",
 		"@commitlint/config-conventional": "^20.3.1",
-		"@julr/tooling-configs": "^5.0.0",
-		"husky": "^9.1.7"
-	},
-	"dependencies": {
-		"eslint": "^9.39.2",
-		"prettier": "^3.7.4"
+		"husky": "^9.1.7",
+		"oxfmt": "^0.60.0",
+		"oxlint": "^1.75.0"
 	},
 	"commitlint": {
 		"extends": [
 			"@commitlint/config-conventional"
 		]
-	},
-	"volta": {
-		"node": "24.12.0",
-		"pnpm": "10.28.0"
 	},
 	"packageManager": "pnpm@10.28.0"
 }

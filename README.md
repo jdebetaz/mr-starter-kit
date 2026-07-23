@@ -5,17 +5,16 @@ A modern monorepo starter kit configured with best practices for JavaScript/Type
 ## Features
 
 - 📦 **pnpm Workspaces** - Efficient package management with pnpm monorepo support
-- 🔧 **ESLint** - Code linting with [@julr/tooling-configs](https://github.com/Julien-R44/tooling-configs)
-- 💅 **Prettier** - Consistent code formatting
+- 🔧 **OXLint** - Code linting
+- 💅 **OXFmt** - Consistent code formatting
 - 🐶 **Husky** - Git hooks for automated quality checks
 - 📝 **Commitlint** - Enforce [Conventional Commits](https://www.conventionalcommits.org/) specification
 - 🚀 **lint-staged** - Run linters on staged files only
-- ⚡ **Volta** - Consistent Node.js and pnpm versions across the team
 
 ## Requirements
 
-- Node.js 24.12.0 (managed via [Volta](https://volta.sh/))
-- pnpm 10.28.0 (managed via Volta)
+- Node.js 24.12.0 (managed via [Mise](https://mise.jdx.dev/))
+- pnpm 10.28.0 (managed via [Mise](https://mise.jdx.dev/))
 
 ## Getting Started
 
@@ -34,13 +33,14 @@ pnpm install
 
 ```
 mr-starter-kit/
-├── apps/              # Application packages
-├── packages/          # Shared packages/libraries
-├── docs/              # Documentation
-├── .husky/            # Git hooks configuration
-├── eslint.config.js   # ESLint configuration
-├── .prettierrc.js     # Prettier configuration
-├── .lintstagedrc.json # lint-staged configuration
+├── apps/               # Application packages
+├── packages/           # Shared packages/libraries
+├── docs/               # Documentation
+├── .husky/             # Git hooks configuration
+├── oxfmt.config.ts     # OXFmt configuration
+├── oxlint.config.ts    # OXLint configuration
+├── .prettierrc.js      # Prettier configuration
+├── .lintstagedrc.json  # lint-staged configuration
 └── pnpm-workspace.yaml # pnpm workspace configuration
 ```
 
@@ -90,23 +90,3 @@ Common types:
 - `refactor`: Code refactoring
 - `test`: Adding or updating tests
 - `chore`: Maintenance tasks
-
-## Configuration
-
-### ESLint
-
-ESLint is configured using `@julr/tooling-configs` with TypeScript support. The configuration includes:
-
-- TypeScript with decorator support
-- Perfectionist plugin for import sorting
-- Custom rules for AdonisJS patterns
-
-### Prettier
-
-Prettier is configured with the following settings:
-
-- Tab indentation
-- Single quotes
-- Semicolons
-- 120 character print width
-- ES5 trailing commas
