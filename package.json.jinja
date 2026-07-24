@@ -1,0 +1,30 @@
+{
+	"name": {{ project_slug | tojson }},
+	"description": {{ project_description | tojson }},
+	"author": {{ author_name | tojson }},
+	"private": true,
+	"license": {{ license | tojson }},
+	"type": "module",
+	"scripts": {
+	"lint": "oxlint",
+	"format": "oxfmt --write .",
+	"format:check": "oxfmt --check .",
+	"lint:fix": "oxlint --fix",
+		"prepare": "husky",
+		"taze": "pnpm dlx taze -r -I",
+		"typecheck": "pnpm -r --parallel run typecheck"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.1",
+		"@commitlint/config-conventional": "^21.2.0",
+		"husky": "^9.1.7",
+		"oxfmt": "^0.60.0",
+		"oxlint": "^1.75.0"
+	},
+	"commitlint": {
+		"extends": [
+			"@commitlint/config-conventional"
+		]
+	},
+	"packageManager": "pnpm@11.16.0"
+}
