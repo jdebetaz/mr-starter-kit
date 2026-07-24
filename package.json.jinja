@@ -1,10 +1,15 @@
 {
+	"name": {{ project_slug | tojson }},
+	"description": {{ project_description | tojson }},
+	"author": {{ author_name | tojson }},
 	"private": true,
-	"license": "UNLICENSED",
+	"license": {{ license | tojson }},
 	"type": "module",
 	"scripts": {
-		"lint": "eslint .",
-		"format": "prettier .",
+	"lint": "oxlint",
+	"format": "oxfmt --write .",
+	"format:check": "oxfmt --check .",
+	"lint:fix": "oxlint --fix",
 		"prepare": "husky",
 		"taze": "pnpm dlx taze -r -I",
 		"typecheck": "pnpm -r --parallel run typecheck"

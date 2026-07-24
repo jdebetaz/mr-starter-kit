@@ -1,6 +1,6 @@
-# MR Starter Kit
+# {{ project_name }}
 
-A modern monorepo starter kit configured with best practices for JavaScript/TypeScript development.
+{{ project_description }}
 
 ## Features
 
@@ -13,8 +13,8 @@ A modern monorepo starter kit configured with best practices for JavaScript/Type
 
 ## Requirements
 
-- Node.js 24.12.0 (managed via [Mise](https://mise.jdx.dev/))
-- pnpm 10.28.0 (managed via [Mise](https://mise.jdx.dev/))
+- Node.js (managed via [Mise](https://mise.jdx.dev/), see `mise.toml`)
+- pnpm (managed via [Mise](https://mise.jdx.dev/), see `mise.toml`)
 
 ## Getting Started
 
@@ -23,7 +23,7 @@ A modern monorepo starter kit configured with best practices for JavaScript/Type
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd mr-starter-kit
+cd {{ project_slug }}
 
 # Install dependencies
 pnpm install
@@ -32,14 +32,13 @@ pnpm install
 ### Project Structure
 
 ```
-mr-starter-kit/
+{{ project_slug }}/
 ├── apps/               # Application packages
 ├── packages/           # Shared packages/libraries
 ├── docs/               # Documentation
 ├── .husky/             # Git hooks configuration
 ├── oxfmt.config.ts     # OXFmt configuration
 ├── oxlint.config.ts    # OXLint configuration
-├── .prettierrc.js      # Prettier configuration
 ├── .lintstagedrc.json  # lint-staged configuration
 └── pnpm-workspace.yaml # pnpm workspace configuration
 ```
@@ -66,7 +65,7 @@ pnpm init
 
 This project enforces code quality through automated git hooks:
 
-- **Pre-commit**: Runs ESLint and Prettier on staged files
+- **Pre-commit**: Runs OXLint and OXFmt on staged files
 - **Commit-msg**: Validates commit messages against Conventional Commits
 
 ### Commit Convention
@@ -90,3 +89,9 @@ Common types:
 - `refactor`: Code refactoring
 - `test`: Adding or updating tests
 - `chore`: Maintenance tasks
+
+{% if license != "UNLICENSED" %}
+## License
+
+{{ license }} © {{ author_name }}. See [LICENSE](LICENSE) for details.
+{% endif %}

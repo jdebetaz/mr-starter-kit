@@ -1,0 +1,49 @@
+_min_copier_version: "9.0.0"
+_envops:
+  trim_blocks: true
+  lstrip_blocks: true
+  keep_trailing_newline: true
+
+_exclude:
+  - copier.yml
+  - copier.yaml
+  - "~*"
+  - "*.py[co]"
+  - __pycache__
+  - .git
+  - .DS_Store
+  - .svn
+
+project_name:
+  type: str
+  help: Human-readable project name
+  default: My Starter Kit
+
+project_slug:
+  type: str
+  help: Package/repo slug (kebab-case)
+  default: "{{ project_name | lower | replace(' ', '-') }}"
+
+project_description:
+  type: str
+  help: Short description of the project
+  default: A modern monorepo starter kit configured with best practices for JavaScript/TypeScript development.
+
+author_name:
+  type: str
+  help: Author or organization name (used in LICENSE / package.json)
+  default: Jonathan Debétaz
+
+license:
+  type: str
+  help: Project license
+  choices:
+    MIT: MIT
+    Apache-2.0: Apache-2.0
+    UNLICENSED (proprietary/private): UNLICENSED
+  default: UNLICENSED
+
+_tasks:
+  - "mise install"
+  - "git init"
+  - "pnpm install"
