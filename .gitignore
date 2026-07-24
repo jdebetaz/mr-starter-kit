@@ -18,3 +18,5 @@ public/uploads
 
 # Build tools specific
 npm-debug.log
+
+.DS_Store
