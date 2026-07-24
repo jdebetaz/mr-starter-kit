@@ -46,4 +46,4 @@ license:
 _tasks:
   - "mise install"
   - "git init"
-  - "pnpm install"
+  - "mise exec -- pnpm install -w"
