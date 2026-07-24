@@ -18,12 +18,5 @@ export default {
 	experimentalTailwindcss: {
 		functions: ['tv'],
 	},
-	ignorePatterns: [
-		'**/.adonisjs/**',
-		'apps/romainlanz.com/types/db.ts',
-		'node_modules/**',
-		'dist/**',
-		'build/**',
-		'*.yml',
-	],
+	ignorePatterns: ['**/.adonisjs/**', 'apps/**/types/db.ts', 'node_modules/**', 'dist/**', 'build/**', '*.yml'],
 };
