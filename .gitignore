@@ -1,10 +1,11 @@
-# Editors specific
-.fleet
-.vscode
-.idea
-
-# Dependencies
+# Dependencies and AdonisJS build
 node_modules
+build
+apps/*/build
+tmp/*
+!tmp/.gitkeep
+apps/*/tmp/*
+!apps/*/tmp/.gitkeep
 
 # Secrets
 .env
@@ -12,11 +13,18 @@ node_modules
 .env.production.local
 .env.development.local
 
-# Frontend assets compiled code & Uploads
+# Frontend assets compiled code
 public/assets
-public/uploads
+apps/*/public/assets
+packages/*/storybook-static
 
 # Build tools specific
 npm-debug.log
 
+# Editors specific
+.fleet
+.idea
+.vscode
+
+# Platform specific
 .DS_Store
