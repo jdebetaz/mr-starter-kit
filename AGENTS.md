@@ -1,7 +1,7 @@
 <critical>
 - Use PNPM workspaces and keep `yarn.lock` synchronized with dependency changes.
 - Use Oxlint and Oxfmt as the only linting and formatting tools; their root config files own code style.
-- Treat `apps/web/.adonisjs/` and `apps/web/types/db.ts` as generated code. Regenerate them through Adonis or `yarn workspace @boilerplate/web db:codegen`.
+- Treat `apps/web/.adonisjs/` and `apps/web/types/db.ts` as generated code.
 - Keep delivery dependencies pointing from `apps/web/app` to `apps/web/src`; application modules never import from `app`.
 </critical>
 
