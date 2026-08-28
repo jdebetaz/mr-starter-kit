@@ -10,7 +10,7 @@ export default class extends BaseSchema {
 			table.string('email', 254).notNullable().unique();
 			table.string('password').notNullable();
 
-			table.json('roles').defaultTo('["ROLE_USER"]').comment('Array of roles');
+			table.json('roles').notNullable().defaultTo('["ROLE_USER"]').comment('Array of roles');
 
 			table.timestamp('created_at').notNullable();
 			table.timestamp('updated_at').nullable();
