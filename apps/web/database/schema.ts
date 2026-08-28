@@ -4,22 +4,24 @@
  * Run "node ace migration:run" command to re-generate this file
  */
 
-import { BaseModel, column } from '@adonisjs/lucid/orm';
-import { DateTime } from 'luxon';
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+import { DateTime } from 'luxon'
 
 export class UserSchema extends BaseModel {
-	static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const;
-	$columns = UserSchema.$columns;
-	@column.dateTime({ autoCreate: true })
-	declare createdAt: DateTime;
-	@column()
-	declare email: string;
-	@column()
-	declare fullName: string | null;
-	@column({ isPrimary: true })
-	declare id: number;
-	@column({ serializeAs: null })
-	declare password: string;
-	@column.dateTime({ autoCreate: true, autoUpdate: true })
-	declare updatedAt: DateTime | null;
+  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'roles', 'updatedAt'] as const
+  $columns = UserSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare email: string
+  @column()
+  declare fullName: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column({ serializeAs: null })
+  declare password: string
+  @column()
+  declare roles: any | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
 }

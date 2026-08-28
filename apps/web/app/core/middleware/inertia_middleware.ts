@@ -1,5 +1,5 @@
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware';
-import UserTransformer from '#transformers/user_transformer';
+import UserTransformer from '#identity/transformers/user_transformer';
 import type { HttpContext } from '@adonisjs/core/http';
 import type { NextFn } from '@adonisjs/core/types/http';
 

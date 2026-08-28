@@ -1,7 +1,7 @@
 import { Form, Link } from '@adonisjs/inertia/react';
+import { Button } from '@boilerplate/design-system/button';
 import { type Data } from '@generated/data';
 import { usePage } from '@inertiajs/react';
-import { Button } from '@boilerplate/design-system/button';
 import { type ReactElement, useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 
