@@ -1,0 +1,35 @@
+FROM node:lts-bookworm-slim AS base
+WORKDIR /app
+RUN apt update
+RUN apt install -y curl wget fontconfig
+RUN rm -rf /var/lib/apt/lists/*
+
+# Base installer
+FROM base AS installer
+RUN corepack enable
+COPY . .
+
+# All deps stage
+FROM installer AS deps
+RUN pnpm i --filter @boilerplate/web
+# Production only deps stage
+FROM installer AS production-deps
+RUN pnpm i --filter @boilerplate/web --production
+
+# Build stage
+FROM installer AS build
+COPY --from=deps /app/node_modules /app/node_modules
+WORKDIR /app/apps/web
+RUN node ace build --ignore-ts-errors
+
+# Production stage
+FROM base
+ARG APP_VERSION=dev
+ENV NODE_ENV=production
+ENV APP_VERSION=${APP_VERSION}
+ENV FONTCONFIG_PATH=/etc/fonts
+COPY --from=production-deps /app/node_modules /app/node_modules
+COPY --from=installer /app/packages/design-system/package.json /app/packages/design-system/package.json
+COPY --from=build /app/apps/web/build /app
+EXPOSE 8080
+CMD ["node", "./bin/server.js"]

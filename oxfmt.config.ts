@@ -16,7 +16,7 @@ export default {
 		'.agents/**',
 		'.claude/**',
 		'.codex/**',
-		'apps/**/types/db.ts',
+		'apps/**/database/schema.ts',
 	],
 	printWidth: 120,
 	quoteProps: 'consistent',
