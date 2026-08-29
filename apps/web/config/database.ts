@@ -24,7 +24,6 @@ const dbConfig = defineConfig({
 			},
 			schemaGeneration: {
 				enabled: true,
-				outputPath: 'database/schema.ts',
 				rulesPaths: ['#database/schema_rules'],
 			},
 			debug: app.inDev,

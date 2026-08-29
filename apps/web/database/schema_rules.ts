@@ -4,8 +4,27 @@ export default {
 	tables: {
 		users: {
 			columns: {
-				roles: { tsType: 'string[]' },
+				roles: {
+					tsType: 'Role[]',
+					imports: [{ source: '#identity/types/role', typeImports: ['Role'] }],
+					decorators: [{ name: '@column' }],
+				},
 			},
+		},
+	},
+	columns: {
+		id: {
+			tsType: 'UUID',
+			decorator: '@column({ isPrimary: true })',
+			imports: [{ source: '#core/types', typeImports: ['UUID'] }],
+		},
+	},
+
+	types: {
+		uuid: {
+			tsType: 'UUID',
+			decorator: '@column()',
+			imports: [{ source: '#core/types', typeImports: ['UUID'] }],
 		},
 	},
 } satisfies SchemaRules;

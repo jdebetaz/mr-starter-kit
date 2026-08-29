@@ -4,6 +4,7 @@ import hash from '@adonisjs/core/services/hash';
 import { WithPrimaryUuid } from '#app/core/mixins/with_primary_uuid';
 import { WithTimestamps } from '#app/core/mixins/with_timestamps';
 import { UserSchema } from '#database/schema';
+import { Role } from '#identity/types/role';
 
 export default class User extends compose(UserSchema, withAuthFinder(hash), WithPrimaryUuid, WithTimestamps) {
 	get initials() {
@@ -15,7 +16,7 @@ export default class User extends compose(UserSchema, withAuthFinder(hash), With
 		return `${first.slice(0, 2)}`.toUpperCase();
 	}
 
-	hasRole(rolesToCheck: string[]) {
-		return rolesToCheck.some((role) => this.roles.includes(`ROLE_${role.toUpperCase()}`));
+	hasRole(rolesToCheck: Role[]) {
+		return rolesToCheck.some((role) => this.roles.includes(role));
 	}
 }
