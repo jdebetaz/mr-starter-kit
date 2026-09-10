@@ -55,6 +55,7 @@
     "youch": "^4.1.1"
   },
   "dependencies": {
+    "@adonisjs/ace": "^14.1.1",
     "@adonisjs/auth": "^10.1.0",
     "@adonisjs/core": "^7.5.0",
     "@adonisjs/cors": "^3.0.0",
