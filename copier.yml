@@ -47,6 +47,6 @@ license:
 _tasks:
   - "mise install"
   - "git init"
-  - "mise exec -- pnpm install -w"
+  - "mise exec -- pnpm install"
   - "git add ."
   - "git commit -m 'chore: init monorepo'"
