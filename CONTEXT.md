@@ -1,4 +1,4 @@
-# {{ project_name }} domain
+# MR Starter Kit domain
 
 This glossary defines the domain language demonstrated by the boilerplate's example capabilities.
 

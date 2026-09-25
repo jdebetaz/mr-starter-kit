@@ -9,7 +9,7 @@ export default function Login() {
 			</div>
 
 			<div>
-				<Form route="session.store">
+				<Form route="login.execute">
 					{({ errors }) => (
 						<>
 							<div>

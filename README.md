@@ -1,6 +1,6 @@
-# {{ project_name }}
+# MR Starter Kit
 
-{{ project_description }}
+A modern monorepo starter kit configured with best practices for JavaScript/TypeScript development.
 
 ## Features
 
@@ -23,16 +23,21 @@
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd {{ project_slug }}
+cd mr-starter-kit
+
+# Personalize the project
+pnpm scaffold
 
 # Install dependencies
 pnpm install
 ```
 
+`pnpm scaffold` asks for the project name, slug, description, author, repository URL, and license, then rewrites `package.json`, `README.md`, and `CONTEXT.md` in place, personalizes the release commands, and enables the release workflow, which stays disabled while the starter kit itself is in use. Every answer is optional: press Enter to keep the current value.
+
 ### Project Structure
 
 ```
-{{ project_slug }}/
+mr-starter-kit/
 ├── apps/               # Application packages
 ├── packages/           # Shared packages/libraries
 ├── docs/               # Documentation
@@ -89,9 +94,3 @@ Common types:
 - `refactor`: Code refactoring
 - `test`: Adding or updating tests
 - `chore`: Maintenance tasks
-
-{% if license != "UNLICENSED" %}
-## License
-
-{{ license }} © {{ author_name }}. See [LICENSE](LICENSE) for details.
-{% endif %}

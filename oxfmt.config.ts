@@ -28,6 +28,7 @@ export default {
 		newlinesBetween: false,
 		order: 'asc',
 	},
+	sortPackageJson: true,
 	trailingComma: 'all',
 	useTabs: true,
 };

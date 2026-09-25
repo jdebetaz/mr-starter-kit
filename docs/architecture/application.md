@@ -6,14 +6,14 @@ This boilerplate is a pragmatic modular monolith. It uses business capability sl
 
 - `app/**` owns HTTP and Inertia delivery: routes, controllers, request validators, middleware, policies, response mapping, models, repositories, and transformers.
 - `inertia/**` owns pages, layouts, browser state, and page-specific composition.
-- `app/shared` contains shared delivery concerns. `src/shared` contains application foundations needed by multiple capabilities.
+- `app/core` contains the exception handler, shared middleware, model mixins, and the base repository used by every capability.
 - `providers`, `config`, `start`, `commands`, and `database` retain their AdonisJS roles.
 
 Organize by business capability before technical layer:
 
 ```text
 app/
-  identity/
+  <capability>/
     controllers/
     models/
     transformers/
@@ -120,7 +120,7 @@ type RegisterUserError = { type: 'email_already_taken' };
 
 Expected errors contain stable application facts, not HTTP statuses, form field names, redirects, or translated messages. The controller maps every variant to its delivery behavior.
 
-Throw for unexpected infrastructure failures, invalid persisted data, broken configuration, and impossible states. Code in `src/**` does not throw Adonis or HTTP-aware exceptions.
+Throw for unexpected infrastructure failures, invalid persisted data, broken configuration, and impossible states. Actions, Queries, repositories, and domain objects do not throw Adonis or HTTP-aware exceptions; only delivery adapters translate them.
 
 ## Transactions and persistence
 
@@ -138,7 +138,7 @@ Identity demonstrates both sides:
 
 ```text
 POST /signup
-  -> RegisterUserController.execute
+  -> RegisterController.execute
   -> RegisterUser.execute
   -> UserRepository.createUser
   -> User

@@ -4,16 +4,16 @@ import { middleware } from '#start/kernel';
 
 router
 	.group(() => {
-		router.get('signup', [controllers.identity.NewAccount, 'create']);
-		router.post('signup', [controllers.identity.NewAccount, 'store']);
+		router.get('signup', [controllers.identity.Register, 'render']);
+		router.post('signup', [controllers.identity.Register, 'execute']);
 
-		router.get('login', [controllers.identity.Session, 'create']);
-		router.post('login', [controllers.identity.Session, 'store']);
+		router.get('login', [controllers.identity.Login, 'render']);
+		router.post('login', [controllers.identity.Login, 'execute']);
 	})
 	.use(middleware.guest());
 
 router
 	.group(() => {
-		router.post('logout', [controllers.identity.Session, 'destroy']);
+		router.post('logout', [controllers.identity.Session, 'execute']);
 	})
 	.use(middleware.auth());
