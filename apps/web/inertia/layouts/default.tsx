@@ -32,12 +32,14 @@ export default function Layout({ children }: { children: ReactElement<Data.Share
 					<nav className="flex items-center gap-2" aria-label="Main navigation">
 						{props.user ? (
 							<>
+								{/* TODO: restore once the account page and its `account.show` route exist.
 								<Link
 									route="account.show"
 									className="text-muted hover:text-ink rounded-control hidden px-3 py-2 text-sm font-medium transition-colors sm:block"
 								>
 									Account
 								</Link>
+								*/}
 								<span
 									className="bg-accent-soft text-accent flex size-9 items-center justify-center rounded-full text-xs font-bold"
 									aria-label="Current user"
