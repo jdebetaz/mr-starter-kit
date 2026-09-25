@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync } from 'node:fs';
-import { readFile, rename, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
@@ -12,7 +12,6 @@ const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = join(projectRoot, 'package.json');
 const documents = ['README.md', 'CONTEXT.md'];
 const sources = ['bin/release.mjs', 'bin/rewrite-release.mjs', 'bin/lib/release-content.mjs'];
-const directories = ['.github'];
 const workflows = [
 	{
 		file: '.github/workflows/release.yml',
@@ -61,20 +60,6 @@ function withLicenseSection(document, answers) {
 	}
 
 	return `${document.trimEnd()}\n\n## License\n\n${answers.license} © ${answers.authorName}. See [LICENSE](LICENSE) for details.\n`;
-}
-
-async function restoreDirectories() {
-	for (const directory of directories) {
-		const mangled = `-${directory.slice(1)}`;
-		const mangledPath = join(projectRoot, mangled);
-
-		if (existsSync(join(projectRoot, directory)) || !existsSync(mangledPath)) {
-			continue;
-		}
-
-		await rename(mangledPath, join(projectRoot, directory));
-		console.log(`  renamed ${mangled}/ to ${directory}/`);
-	}
 }
 
 async function enableWorkflows() {
@@ -193,7 +178,6 @@ await writeFile(
 );
 console.log('  updated package.json');
 
-await restoreDirectories();
 await enableWorkflows();
 
 console.log(`\n${answers.projectName} is ready.\n`);
