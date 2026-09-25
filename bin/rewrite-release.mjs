@@ -21,7 +21,7 @@ const { ci: isCI, dryRun: isDryRun } = program.opts();
 const [tag] = program.args;
 
 async function main() {
-	log.info(`\n${colors.bold('Risk Manager release rewrite')}\n`);
+	log.info(`\n${colors.bold('MR Starter Kit release rewrite')}\n`);
 
 	await runStep('Fetch release tags', () => {
 		return runInherited('git', ['fetch', 'origin', '--tags']);
@@ -105,7 +105,7 @@ async function main() {
 	let notesDirectory;
 	try {
 		notesDirectory = await runStep('Prepare temporary release notes', async () => {
-			const directory = await mkdtemp(join(tmpdir(), 'risk-manager-release-'));
+			const directory = await mkdtemp(join(tmpdir(), 'mr-starter-kit-release-'));
 			await writeFile(join(directory, 'notes.md'), `${releaseContent.notes}\n`);
 			return directory;
 		});

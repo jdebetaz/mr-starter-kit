@@ -34,7 +34,7 @@ async function resolveReleaseContent(tag, commits) {
 }
 
 async function main() {
-	log.info(`\n${colors.bold('Risk Manager release')}\n`);
+	log.info(`\n${colors.bold('MR Starter Kit release')}\n`);
 
 	await runStep('Validate release branch', async () => {
 		const currentBranch = await run('git', ['branch', '--show-current']);
@@ -122,7 +122,7 @@ async function main() {
 
 	if (releaseContent) {
 		notesDirectory = await runStep('Prepare temporary release notes', async () => {
-			const directory = await mkdtemp(join(tmpdir(), 'risk-manager-release-'));
+			const directory = await mkdtemp(join(tmpdir(), 'mr-starter-kit-release-'));
 			await writeFile(join(directory, 'notes.md'), `${releaseContent.notes}\n`);
 			return directory;
 		});

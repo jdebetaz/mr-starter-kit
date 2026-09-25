@@ -130,8 +130,8 @@ export async function generateReleaseContent({ tag, commits }) {
 	const model = process.env.OPENROUTER_MODEL?.trim() || defaultModel;
 	const openRouter = new OpenRouter({
 		apiKey,
-		httpReferer: 'https://github.com/tradewithageek/risk-manager',
-		appTitle: 'Risk Manager Release',
+		httpReferer: 'https://github.com/jdebetaz/mr-starter-kit',
+		appTitle: 'MR Starter Kit Release',
 	});
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -146,7 +146,7 @@ export async function generateReleaseContent({ tag, commits }) {
 					},
 					{
 						role: 'user',
-						content: `Write a user-facing release title and release notes for Risk Manager release ${tag} from the commits below.
+						content: `Write a user-facing release title and release notes for MR Starter Kit release ${tag} from the commits below.
 
 The title must be 3 to 70 characters, start with a letter, summarize the most important change, and must not include the release tag. For example: Add OpenRouter release content. The notes must be Markdown without a top-level title or a fenced code block. Group changes under only the relevant headings from "## Features", "## Fixes", and "## Maintenance". Omit a heading entirely when it has no entries, and never write None or N/A under a heading. Use real Markdown line breaks, never HTML tags such as <br>. Use short bullet points, preserve important technical names, and do not claim anything not supported by the commit subjects.
 

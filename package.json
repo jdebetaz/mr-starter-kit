@@ -4,6 +4,7 @@
 	"author": "Jonathan Debétaz",
 	"private": true,
 	"license": "UNLICENSED",
+	"repository": "https://github.com/jdebetaz/mr-starter-kit",
 	"type": "module",
 	"scripts": {
 		"docker:up": "docker compose up -d",

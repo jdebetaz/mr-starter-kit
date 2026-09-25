@@ -11,6 +11,7 @@ import { Command, Option } from 'commander';
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = join(projectRoot, 'package.json');
 const documents = ['README.md', 'CONTEXT.md'];
+const sources = ['bin/release.mjs', 'bin/rewrite-release.mjs', 'bin/lib/release-content.mjs'];
 const directories = ['.github'];
 const unlicensed = 'UNLICENSED';
 
@@ -22,6 +23,7 @@ const current = {
 	projectSlug: manifest.name,
 	projectDescription: manifest.description,
 	authorName: manifest.author,
+	repository: manifest.repository,
 	license: manifest.license,
 };
 
@@ -34,6 +36,7 @@ const questions = [
 	},
 	{ option: 'projectDescription', message: 'Short description of the project', fallback: current.projectDescription },
 	{ option: 'authorName', message: 'Author or organization name', fallback: current.authorName },
+	{ option: 'repository', message: 'Repository URL', fallback: current.repository },
 	{
 		option: 'license',
 		message: 'Project license',
@@ -114,20 +117,34 @@ readline.close();
 const replacements = [
 	[current.projectDescription, answers.projectDescription],
 	[current.authorName, answers.authorName],
+	[`${current.projectName} Release`, `${answers.projectName} Release`],
+	[`${current.projectName} release`, `${answers.projectName} release`],
+	[current.repository, answers.repository],
 	[current.projectSlug, answers.projectSlug],
 	[current.projectName, answers.projectName],
 ].filter(([search, replacement]) => search && replacement);
 
+function personalize(source) {
+	return replacements.reduce((rendered, [search, replacement]) => rendered.replaceAll(search, replacement), source);
+}
+
 for (const document of documents) {
 	const path = join(projectRoot, document);
-	let rendered = await readFile(path, 'utf8');
+	const rendered = withLicenseSection(personalize(await readFile(path, 'utf8')), answers);
 
-	for (const [search, replacement] of replacements) {
-		rendered = rendered.replaceAll(search, replacement);
+	await writeFile(path, rendered);
+	console.log(`  updated ${document}`);
+}
+
+for (const source of sources) {
+	const path = join(projectRoot, source);
+
+	if (!existsSync(path)) {
+		continue;
 	}
 
-	await writeFile(path, withLicenseSection(rendered, answers));
-	console.log(`  updated ${document}`);
+	await writeFile(path, personalize(await readFile(path, 'utf8')));
+	console.log(`  updated ${source}`);
 }
 
 await writeFile(
@@ -138,6 +155,7 @@ await writeFile(
 			name: answers.projectSlug,
 			description: answers.projectDescription,
 			author: answers.authorName,
+			repository: answers.repository,
 			license: answers.license,
 		},
 		null,
