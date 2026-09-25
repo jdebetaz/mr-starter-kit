@@ -46,7 +46,7 @@ export default function Layout({ children }: { children: ReactElement<Data.Share
 								>
 									{props.user.initials}
 								</span>
-								<Form route="session.destroy">
+								<Form route="session.execute">
 									<Button type="submit" intent="secondary" size="small">
 										Log out
 									</Button>
@@ -55,13 +55,13 @@ export default function Layout({ children }: { children: ReactElement<Data.Share
 						) : (
 							<>
 								<Link
-									route="session.create"
+									route="login.render"
 									className="text-muted hover:text-ink rounded-control hidden px-3 py-2 text-sm font-medium transition-colors sm:block"
 								>
 									Log in
 								</Link>
 								<Button asChild size="small">
-									<Link route="new_account.create">Get started</Link>
+									<Link route="register.render">Get started</Link>
 								</Button>
 							</>
 						)}

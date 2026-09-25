@@ -138,7 +138,7 @@ Identity demonstrates both sides:
 
 ```text
 POST /signup
-  -> RegisterUserController.execute
+  -> RegisterController.execute
   -> RegisterUser.execute
   -> UserRepository.createUser
   -> User
