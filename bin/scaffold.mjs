@@ -13,6 +13,16 @@ const manifestPath = join(projectRoot, 'package.json');
 const documents = ['README.md', 'CONTEXT.md'];
 const sources = ['bin/release.mjs', 'bin/rewrite-release.mjs', 'bin/lib/release-content.mjs'];
 const directories = ['.github'];
+const workflows = [
+	{
+		file: '.github/workflows/release.yml',
+		disabled:
+			'# Disabled in the starter kit so cloning it cannot publish a release.\n' +
+			'# `pnpm scaffold` restores the automatic push trigger.\n' +
+			'on:\n  workflow_dispatch:\n',
+		enabled: 'on:\n  push:\n    branches:\n      - main\n  workflow_dispatch:\n',
+	},
+];
 const unlicensed = 'UNLICENSED';
 
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
@@ -67,9 +77,28 @@ async function restoreDirectories() {
 	}
 }
 
+async function enableWorkflows() {
+	for (const { file, disabled, enabled } of workflows) {
+		const path = join(projectRoot, file);
+
+		if (!existsSync(path)) {
+			continue;
+		}
+
+		const source = await readFile(path, 'utf8');
+
+		if (!source.includes(disabled)) {
+			continue;
+		}
+
+		await writeFile(path, source.replace(disabled, enabled));
+		console.log(`  enabled ${file}`);
+	}
+}
+
 const program = new Command()
 	.name('scaffold')
-	.description('Rewrite the project identity in package.json, README.md, and CONTEXT.md')
+	.description('Rewrite the project identity and enable the release workflow')
 	.showHelpAfterError();
 
 for (const question of questions) {
@@ -165,6 +194,7 @@ await writeFile(
 console.log('  updated package.json');
 
 await restoreDirectories();
+await enableWorkflows();
 
 console.log(`\n${answers.projectName} is ready.\n`);
 console.log('Next steps:\n');

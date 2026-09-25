@@ -32,7 +32,7 @@ pnpm scaffold
 pnpm install
 ```
 
-`pnpm scaffold` asks for the project name, slug, description, author, and license, then rewrites `package.json`, `README.md`, and `CONTEXT.md` in place. Every answer is optional: press Enter to keep the current value.
+`pnpm scaffold` asks for the project name, slug, description, author, repository URL, and license, then rewrites `package.json`, `README.md`, and `CONTEXT.md` in place, personalizes the release commands, and enables the release workflow, which stays disabled while the starter kit itself is in use. Every answer is optional: press Enter to keep the current value.
 
 ### Project Structure
 

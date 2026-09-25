@@ -1,9 +1,9 @@
 name: Release
 
+# Disabled in the starter kit so cloning it cannot publish a release.
+# `pnpm scaffold` restores the automatic push trigger.
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   test:
