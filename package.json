@@ -1,0 +1,36 @@
+{
+	"name": "mr-starter-kit",
+	"description": "A modern monorepo starter kit configured with best practices for JavaScript/TypeScript development.",
+	"author": "Jonathan Debétaz",
+	"private": true,
+	"license": "UNLICENSED",
+	"type": "module",
+	"scripts": {
+		"docker:up": "docker compose up -d",
+		"docker:down": "docker compose down",
+		"scaffold": "node bin/scaffold.mjs",
+		"lint": "oxlint",
+		"lint:fix": "oxlint --fix",
+		"format": "oxfmt --check .",
+		"format:fix": "oxfmt --write .",
+		"prepare": "husky",
+		"taze": "pnpm dlx taze -r -I --maturity-period 3",
+		"typecheck": "pnpm -r --parallel run typecheck",
+		"test": "pnpm -r --parallel run test"
+	},
+	"devDependencies": {
+		"@commitlint/cli": "^21.2.1",
+		"@commitlint/config-conventional": "^21.2.0",
+		"@oxlint/plugins": "1.78.0",
+		"commander": "^15.0.0",
+		"husky": "^9.1.7",
+		"oxfmt": "^0.63.0",
+		"oxlint": "1.78.0"
+	},
+	"commitlint": {
+		"extends": [
+			"@commitlint/config-conventional"
+		]
+	},
+	"packageManager": "pnpm@11.16.0"
+}
