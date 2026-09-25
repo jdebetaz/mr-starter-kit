@@ -1,8 +1,8 @@
 <critical>
-- Use PNPM workspaces and keep `yarn.lock` synchronized with dependency changes.
+- Use PNPM workspaces and keep `pnpm-lock.yaml` synchronized with dependency changes.
 - Use Oxlint and Oxfmt as the only linting and formatting tools; their root config files own code style.
 - Treat `apps/web/.adonisjs/` and `apps/web/types/db.ts` as generated code.
-- Keep delivery dependencies pointing from `apps/web/app` to `apps/web/src`; application modules never import from `app`.
+- Organize `apps/web/app` by business capability, not technical layer. Point delivery dependencies from controllers and routes to actions, queries, repositories, and domain objects, never the reverse.
 </critical>
 
 ## Architecture
