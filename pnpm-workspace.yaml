@@ -7,6 +7,7 @@ allowBuilds:
   '@swc/core': true
   better-sqlite3: true
   esbuild: true
+  protobufjs: false
 
 onlyBuiltDependencies:
   - better-sqlite3

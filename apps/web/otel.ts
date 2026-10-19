@@ -1,0 +1,11 @@
+/**
+ * OpenTelemetry initialization file.
+ *
+ * IMPORTANT: This file must be imported FIRST in bin/server.ts
+ * for auto-instrumentation to work correctly.
+ * Set OTEL_SDK_DISABLED=true in the process environment before startup
+ * to skip initialization, including the ESM loader hook.
+ */
+import { init } from '@adonisjs/otel/init';
+
+await init(import.meta.dirname);
