@@ -1,143 +1,72 @@
 ---
 name: conventional-commit
-description: Create conventional commit messages following best conventions. Use when committing code changes, writing commit messages, or formatting git history. Follows conventional commits specification.
-license: MIT
-metadata:
-  version: '1.0.0'
+description: 'Prompt and workflow for generating conventional commit messages using a structured XML format. Guides users to create standardized, descriptive commit messages in line with the Conventional Commits specification, including instructions, examples, and validation.'
 ---
 
-# Conventional Commit Messages
+### Instructions
 
-Follow these conventions when creating commits.
+```xml
+	<description>This file contains a prompt template for generating conventional commit messages. It provides instructions, examples, and formatting guidelines to help users write standardized, descriptive commit messages in accordance with the Conventional Commits specification.</description>
+```
 
-## Prerequisites
+### Workflow
 
-Before committing, ensure you're working on a feature branch, not the main branch.
+**Follow these steps:**
+
+1. Run `git status` to review changed files.
+2. Run `git diff` or `git diff --cached` to inspect changes.
+3. Stage your changes with `git add <file>`.
+4. Construct your commit message using the following XML structure.
+5. After generating your commit message, Copilot will automatically run the following command in your integrated terminal (no confirmation needed):
 
 ```bash
-# Check current branch
-git branch --show-current
+git commit -m "type(scope): description"
 ```
 
-If you're on `main` or `master`, create a new branch first:
+6. Just execute this prompt and Copilot will handle the commit for you in the terminal.
 
-```bash
-# Create and switch to a new branch
-git checkout -b <type>/<short-description>
+### Commit Message Structure
+
+```xml
+<commit-message>
+	<type>feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert</type>
+	<scope>()</scope>
+	<description>A short, imperative summary of the change</description>
+	<body>(optional: more detailed explanation)</body>
+	<footer>(optional: e.g. BREAKING CHANGE: details, or issue references)</footer>
+</commit-message>
 ```
 
-Branch naming should follow the pattern: `<type>/<short-description>` where type matches the commit type (e.g., `feat/add-user-auth`, `fix/null-pointer-error`, `refactor/extract-validation`).
+### Examples
 
-## Format
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-The header is required. Scope is optional. All lines must stay under 100 characters.
-
-## Commit Types
-
-| Type       | Purpose                               |
-| ---------- | ------------------------------------- |
-| `build`    | Build system or CI changes            |
-| `chore`    | Routine maintenance tasks             |
-| `ci`       | Continuous integration configuration  |
-| `deps`     | Dependency updates                    |
-| `docs`     | Documentation changes                 |
-| `feat`     | New feature                           |
-| `fix`      | Bug fix                               |
-| `perf`     | Performance improvement               |
-| `refactor` | Code refactoring (no behavior change) |
-| `revert`   | Revert a previous commit              |
-| `style`    | Code style and formatting             |
-| `test`     | Tests added, updated or improved      |
-
-## Subject Line Rules
-
-- Use imperative, present tense: "Add feature" not "Added feature"
-- Capitalize the first letter
-- No period at the end
-- Maximum 70 characters
-
-## Body Guidelines
-
-- Explain **what** and **why**, not how
-- Use imperative mood and present tense
-- Include motivation for the change
-- Contrast with previous behavior when relevant
-
-## Conventional Commits
-
-The commit contains the following structural elements, to communicate intent to the consumers of your library:
-
-- fix: a commit of the type fix patches a bug in your codebase (this correlates with PATCH in Semantic Versioning).
-- feat: a commit of the type feat introduces a new feature to the codebase (this correlates with MINOR in Semantic Versioning).
-- BREAKING CHANGE: a commit that has a footer BREAKING CHANGE:, or appends a ! after the type/scope, introduces a breaking API change (correlating with MAJOR in Semantic Versioning). A BREAKING CHANGE can be part of commits of any type.
-- types other than fix: and feat: are allowed, for example @commitlint/config-conventional (based on the Angular convention) recommends build:, chore:, ci:, docs:, style:, refactor:, perf:, test:, and others.
-- footers other than BREAKING CHANGE: <description> may be provided and follow a convention similar to git trailer format.
-
-## Examples
-
-### Simple fix
-
-```
-fix(api): Handle null response in user endpoint
-
-The user API could return null for deleted accounts, causing a crash
-in the dashboard. Add null check before accessing user properties.
+```xml
+<examples>
+	<example>feat(parser): add ability to parse arrays</example>
+	<example>fix(ui): correct button alignment</example>
+	<example>docs: update README with usage instructions</example>
+	<example>refactor: improve performance of data processing</example>
+	<example>chore: update dependencies</example>
+	<example>feat!: send email on registration (BREAKING CHANGE: email service required)</example>
+</examples>
 ```
 
-### Feature with scope
+### Validation
 
-```
-feat(alerts): Add Slack thread replies for alert updates
-
-When an alert is updated or resolved, post a reply to the original
-Slack thread instead of creating a new message. This keeps related
-notifications grouped together.
-```
-
-### Refactor
-
-```
-refactor: Extract common validation logic to shared module
-
-Move duplicate validation code from three endpoints into a shared
-validator class. No behavior change.
+```xml
+<validation>
+	<type>Must be one of the allowed types. See <reference>https://www.conventionalcommits.org/en/v1.0.0/#specification</reference></type>
+	<scope>Optional, but recommended for clarity.</scope>
+	<description>Required. Use the imperative mood (e.g., "add", not "added").</description>
+	<body>Optional. Use for additional context.</body>
+	<footer>Use for breaking changes or issue references.</footer>
+</validation>
 ```
 
-### Breaking change
+### Final Step
 
+```xml
+<final-step>
+	<cmd>git commit -m "type(scope): description"</cmd>
+	<note>Replace with your constructed message. Include body and footer if needed.</note>
+</final-step>
 ```
-feat(api)!: Remove deprecated v1 endpoints
-
-Remove all v1 API endpoints that were deprecated in version 23.1.
-Clients should migrate to v2 endpoints.
-
-BREAKING CHANGE: v1 endpoints no longer available
-```
-
-## Revert Format
-
-```
-revert: feat(api): Add new endpoint
-
-This reverts commit abc123def456.
-
-Reason: Caused performance regression in production.
-```
-
-## Principles
-
-- Each commit should be a single, stable change
-- Commits should be independently reviewable
-- The repository should be in a working state after each commit
-
-## References
-
-- [Conventional Commits Specification](https://www.conventionalcommits.org/en/v1.0.0/#specification)
