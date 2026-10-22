@@ -1,29 +1,35 @@
 import { inject } from '@adonisjs/core';
 import { assertNever } from '#core/assert_never';
-import GenerateRecoveryCodes from '#identity/actions/generate_recovery_codes';
+import RegenerateRecoveryCodes from '#identity/actions/regenerate_recovery_codes';
+import { disableTotpValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
 export default class RegenerateRecoveryCodesController {
-	constructor(private readonly generateRecoveryCodes: GenerateRecoveryCodes) {}
+	constructor(private readonly regenerateRecoveryCodes: RegenerateRecoveryCodes) {}
 
 	/**
-	 * Replaces the user's codes. The new plaintext is returned as the direct
-	 * response, never flashed: the session driver may be cookie-backed, which
-	 * would write the codes into a client cookie.
+	 * Replaces the user's codes after password confirmation. The new plaintext
+	 * is returned as the direct response, never flashed: the session driver may
+	 * be cookie-backed, which would write the codes into a client cookie.
 	 */
-	async execute({ auth, inertia, response }: HttpContext) {
-		const generated = await this.generateRecoveryCodes.execute(auth.getUserOrFail());
+	async execute({ auth, inertia, request, response, session }: HttpContext) {
+		const { password } = await request.validateUsing(disableTotpValidator);
 
-		if (!generated.ok) {
-			switch (generated.error.type) {
+		const regenerated = await this.regenerateRecoveryCodes.execute({ user: auth.getUserOrFail(), password });
+
+		if (!regenerated.ok) {
+			switch (regenerated.error.type) {
 				case 'two_factor_not_enabled':
 					return response.redirect().toRoute('two_factor.start.render');
+				case 'invalid_password':
+					session.flash('error', 'That password is not correct.');
+					return response.redirect().toRoute('two_factor.recovery.render');
 				default:
-					return assertNever(generated.error.type);
+					return assertNever(regenerated.error);
 			}
 		}
 
-		return inertia.render('settings/two-factor/recovery', { codes: generated.value });
+		return inertia.render('settings/two-factor/recovery', { codes: regenerated.value });
 	}
 }

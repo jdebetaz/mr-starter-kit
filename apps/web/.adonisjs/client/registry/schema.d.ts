@@ -155,12 +155,12 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/recovery/regenerate'
     types: {
-      body: {}
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
       paramsTuple: []
       params: {}
-      query: {}
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>>
-      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'two_factor.disable.execute': {

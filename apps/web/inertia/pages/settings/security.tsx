@@ -73,7 +73,9 @@ export default function Security({ status }: SecurityProps) {
 								: `${status.remainingRecoveryCodes} recovery codes remaining.`}
 						</p>
 					</div>
-					<Button intent="secondary">Regenerate recovery codes</Button>
+					<Button asChild intent="secondary">
+						<Link route="two_factor.recovery.render">Manage recovery codes</Link>
+					</Button>
 				</Card>
 			)}
 		</div>

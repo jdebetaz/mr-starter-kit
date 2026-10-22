@@ -152,7 +152,8 @@ test.group('TOTP enrollment', (group) => {
 			.post('/settings/security/two-factor/recovery/regenerate')
 			.withInertia()
 			.loginAs(user)
-			.withCsrfToken();
+			.withCsrfToken()
+			.form({ password: 'password' });
 
 		response.assertStatus(200);
 		assert.lengthOf(response.inertiaProps.codes, 10);
@@ -160,6 +161,25 @@ test.group('TOTP enrollment', (group) => {
 		await user.refresh();
 		assert.isFalse(await user.verifyRecoveryCode(saved[0]));
 		assert.isTrue(await user.verifyRecoveryCode(response.inertiaProps.codes[0]));
+	});
+
+	test('a wrong password does not regenerate and leaves existing codes valid', async ({ client, assert }) => {
+		const user = await enabledUser();
+		const saved = await user.generateRecoveryCodes();
+
+		const response = await client
+			.post('/settings/security/two-factor/recovery/regenerate')
+			.withInertia()
+			.loginAs(user)
+			.withCsrfToken()
+			.form({ password: 'not-the-password' });
+
+		response.assertRedirectsTo('/settings/security/two-factor/recovery');
+		assert.equal(response.body().flash.error, 'That password is not correct.');
+		assert.isNull(response.inertiaProps.codes);
+		await user.refresh();
+		assert.equal(user.remainingRecoveryCodesCount, 10);
+		assert.isTrue(await user.verifyRecoveryCode(saved[0]));
 	});
 
 	test('a repeated confirm after 2FA is on goes to the recovery step, not step one', async ({ client }) => {

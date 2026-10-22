@@ -1,7 +1,8 @@
-import { Form } from '@adonisjs/inertia/react';
+import { Form, Link } from '@adonisjs/inertia/react';
 import { Button } from '@boilerplate/design-system/button';
 import { Callout } from '@boilerplate/design-system/callout';
 import { Card } from '@boilerplate/design-system/card';
+import { Field } from '@boilerplate/design-system/field';
 import { RecoveryCodes } from '@boilerplate/design-system/recovery-codes';
 
 interface RecoveryProps {
@@ -32,16 +33,27 @@ export default function Recovery({ codes }: RecoveryProps) {
 						Your recovery codes were already issued and cannot be shown again. If you did not save them, generate new
 						ones. This replaces the old codes, which stop working.
 					</p>
-					<div className="flex items-center gap-3">
-						<Form route="two_factor.recovery.regenerate.execute">
-							<Button type="submit" intent="secondary">
-								Generate new recovery codes
-							</Button>
-						</Form>
-						<Form route="two_factor.recovery.execute">
-							<Button type="submit">Done</Button>
-						</Form>
-					</div>
+					<Form route="two_factor.recovery.regenerate.execute" className="space-y-3">
+						{({ errors }) => (
+							<>
+								<Field
+									label="Confirm your password"
+									type="password"
+									name="password"
+									autoComplete="current-password"
+									error={errors.password}
+								/>
+								<div className="flex items-center gap-3">
+									<Button type="submit" intent="secondary">
+										Generate new recovery codes
+									</Button>
+									<Button asChild>
+										<Link route="settings.security.render">Back to security</Link>
+									</Button>
+								</div>
+							</>
+						)}
+					</Form>
 				</Card>
 			)}
 		</div>
