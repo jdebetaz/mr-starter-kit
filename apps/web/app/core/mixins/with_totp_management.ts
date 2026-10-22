@@ -6,11 +6,15 @@ import QRCode from 'qrcode';
 import twoFactorConfig from '#config/two_factor';
 import { TotpEnrollmentNotStarted, TotpNotEnabled } from '#identity/exceptions/totp';
 import type { TwoFactorConfig } from '#config/two_factor';
+import type { UUID } from '#core/types';
 import type { HashService } from '@adonisjs/core/types';
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers';
 import type { BaseModel } from '@adonisjs/lucid/orm';
 
 export const TOTP_PERIOD_SECONDS = 30;
+
+/** Lost compare-and-set races tolerated before a consume attempt gives up. */
+const MAX_CONSUME_ATTEMPTS = 3;
 
 const RECOVERY_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
 const RECOVERY_HALF_LENGTH = 5;
@@ -221,7 +225,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 					return false;
 				}
 
-				for (;;) {
+				for (let attempt = 0; attempt < MAX_CONSUME_ATTEMPTS; attempt++) {
 					const snapshot = this.recoveryCodes?.release() ?? null;
 					const hashes = this.#storedRecoveryHashes();
 
@@ -253,6 +257,8 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 					}
 					await this.#reloadRecoveryCodes();
 				}
+
+				return false;
 			}
 
 			// ---- Recovery internals ------------------------------------------
@@ -287,12 +293,19 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 			/**
 			 * Writes `next` only if the stored column still equals `expected`.
 			 * Keeps the in-memory model in step without marking it dirty.
+			 *
+			 * The raw `update` bypasses Lucid's `prepare`, which is correct only
+			 * because `recovery_codes` is `@secret`, not `@encrypted`: promoting the
+			 * column to `@encrypted` would make this write plaintext.
+			 *
+			 * Runs on the default client and ignores `this.$trx`, so it (and the
+			 * reload below) must not be called inside a transaction.
 			 */
 			async #compareAndSetRecoveryCodes(expected: string | null, next: string): Promise<boolean> {
 				const model = this.constructor as typeof BaseModel;
 				const [affected] = await model
 					.query()
-					.where('id', (this as unknown as { id: number }).id)
+					.where('id', (this as unknown as { id: UUID }).id)
 					.where('recovery_codes', expected as string)
 					.update({ recovery_codes: next });
 
@@ -308,7 +321,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 				const model = this.constructor as typeof BaseModel;
 				const row = await model
 					.query()
-					.where('id', (this as unknown as { id: number }).id)
+					.where('id', (this as unknown as { id: UUID }).id)
 					.select('recovery_codes')
 					.first();
 				const fresh = (row as unknown as { recoveryCodes: Secret<string> | null } | null)?.recoveryCodes ?? null;

@@ -12,6 +12,8 @@ export interface TwoFactorConfig {
 	requiredForRoles: Role[];
 	/** How long a password-verified login may wait for its second factor, in seconds. */
 	pendingLoginTtl: number;
+	/** How long a freshly confirmed enrollment may collect its recovery codes, in seconds. */
+	recoveryGrantTtl: number;
 }
 
 const twoFactorConfig: Readonly<TwoFactorConfig> = Object.freeze<TwoFactorConfig>({
@@ -20,6 +22,7 @@ const twoFactorConfig: Readonly<TwoFactorConfig> = Object.freeze<TwoFactorConfig
 	recoveryCodesCount: 10,
 	requiredForRoles: ['ROLE_ADMIN'],
 	pendingLoginTtl: 600,
+	recoveryGrantTtl: 300,
 });
 
 export default twoFactorConfig;

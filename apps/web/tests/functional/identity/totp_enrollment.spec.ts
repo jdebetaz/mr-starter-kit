@@ -120,16 +120,79 @@ test.group('TOTP enrollment', (group) => {
 		assert.isFalse(user.isTwoFactorEnabled);
 	});
 
-	test('the recovery page mints ten codes the first time', async ({ client, assert }) => {
-		const user = await enabledUser();
+	test('confirming enrollment hands off to the recovery page, which mints ten codes', async ({ client, assert }) => {
+		const user = await pendingUser();
+		const code = user.createTotp(user.getEnrollmentSecret()).generate();
 
-		const response = await client.get('/settings/security/two-factor/recovery').withInertia().loginAs(user);
+		const confirm = await client
+			.post('/settings/security/two-factor/verify')
+			.loginAs(user)
+			.withCsrfToken()
+			.form({ code })
+			.redirects(0);
+		confirm.assertSession('recovery_codes_grant');
+
+		const response = await client
+			.get('/settings/security/two-factor/recovery')
+			.withInertia()
+			.loginAs(user)
+			.withSession(confirm.session());
 
 		response.assertStatus(200);
 		response.assertInertiaComponent('settings/two-factor/recovery');
 		assert.lengthOf(response.inertiaProps.codes, 10);
 		await user.refresh();
 		assert.equal(user.remainingRecoveryCodesCount, 10);
+	});
+
+	test('the enrollment grant is single-use', async ({ client, assert }) => {
+		const user = await enabledUser();
+		const grant = { recovery_codes_grant: { expiresAt: Date.now() + 60_000 } };
+
+		const first = await client
+			.get('/settings/security/two-factor/recovery')
+			.withInertia()
+			.loginAs(user)
+			.withSession(grant);
+		assert.lengthOf(first.inertiaProps.codes, 10);
+		await user.refresh();
+		const minted = user.recoveryCodes?.release();
+
+		const second = await client
+			.get('/settings/security/two-factor/recovery')
+			.withInertia()
+			.loginAs(user)
+			.withSession(first.session());
+		assert.isNull(second.inertiaProps.codes);
+		assert.equal(second.inertiaProps.remaining, 10);
+		await user.refresh();
+		assert.equal(user.recoveryCodes?.release(), minted);
+	});
+
+	test('an expired grant does not mint', async ({ client, assert }) => {
+		const user = await enabledUser();
+
+		const response = await client
+			.get('/settings/security/two-factor/recovery')
+			.withInertia()
+			.loginAs(user)
+			.withSession({ recovery_codes_grant: { expiresAt: Date.now() - 1 } });
+
+		assert.isNull(response.inertiaProps.codes);
+		await user.refresh();
+		assert.equal(user.remainingRecoveryCodesCount, 0);
+	});
+
+	test('the recovery page without a grant does not mint for a user with no codes', async ({ client, assert }) => {
+		const user = await enabledUser();
+
+		const response = await client.get('/settings/security/two-factor/recovery').withInertia().loginAs(user);
+
+		response.assertStatus(200);
+		assert.isNull(response.inertiaProps.codes);
+		assert.equal(response.inertiaProps.remaining, 0);
+		await user.refresh();
+		assert.equal(user.remainingRecoveryCodesCount, 0);
 	});
 
 	test('visiting the recovery page again does not revoke existing codes', async ({ client, assert }) => {
@@ -140,8 +203,18 @@ test.group('TOTP enrollment', (group) => {
 
 		response.assertStatus(200);
 		assert.isNull(response.inertiaProps.codes);
+		assert.equal(response.inertiaProps.remaining, 10);
 		await user.refresh();
 		assert.isTrue(await user.verifyRecoveryCode(saved[0]));
+	});
+
+	test('a GET on the regenerate path redirects to the recovery page', async ({ client, assert }) => {
+		const user = await enabledUser();
+
+		const response = await client.get('/settings/security/two-factor/recovery/regenerate').loginAs(user).redirects(0);
+
+		response.assertStatus(302);
+		assert.equal(response.header('location'), '/settings/security/two-factor/recovery');
 	});
 
 	test('regenerating replaces the codes and returns the new ones directly', async ({ client, assert }) => {

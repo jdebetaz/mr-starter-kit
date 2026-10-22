@@ -53,6 +53,10 @@ router
 			.post('settings/security/two-factor/recovery', [controllers.identity.RecoveryCodes, 'execute'])
 			.as('two_factor.recovery.execute');
 
+		router.get('settings/security/two-factor/recovery/regenerate', [
+			controllers.identity.RegenerateRecoveryCodes,
+			'render',
+		]);
 		router
 			.post('settings/security/two-factor/recovery/regenerate', [
 				controllers.identity.RegenerateRecoveryCodes,

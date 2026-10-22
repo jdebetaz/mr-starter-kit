@@ -1,6 +1,7 @@
 import { inject } from '@adonisjs/core';
 import { assertNever } from '#core/assert_never';
 import GenerateRecoveryCodes from '#identity/actions/generate_recovery_codes';
+import { RecoveryCodesGrant } from '#identity/services/recovery_codes_grant';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -8,20 +9,24 @@ export default class RecoveryCodesController {
 	constructor(private readonly generateRecoveryCodes: GenerateRecoveryCodes) {}
 
 	/**
-	 * Idempotent: codes are minted only the first time, when the user has none.
-	 * Any later visit (refresh, Back, bookmark) shows the "already issued" state,
-	 * so a GET can never revoke codes the user has saved. Replacing them is the
-	 * explicit regenerate action.
+	 * Codes are minted only as the hand-off from a just-confirmed enrollment,
+	 * which leaves a single-use grant in the session. Without it (refresh, Back,
+	 * bookmark, or a stolen session) the page shows the "already issued" state:
+	 * a GET can neither revoke codes the user has saved nor mint new ones with
+	 * no password. Replacing them is the password-confirmed regenerate action.
 	 */
-	async render({ auth, inertia, response }: HttpContext) {
+	async render({ auth, inertia, response, session }: HttpContext) {
 		const user = auth.getUserOrFail();
 
 		if (!user.isTwoFactorEnabled) {
 			return response.redirect().toRoute('two_factor.start.render');
 		}
 
-		if (user.remainingRecoveryCodesCount > 0) {
-			return inertia.render('settings/two-factor/recovery', { codes: null });
+		if (!RecoveryCodesGrant.take(session)) {
+			return inertia.render('settings/two-factor/recovery', {
+				codes: null,
+				remaining: user.remainingRecoveryCodesCount,
+			});
 		}
 
 		const generated = await this.generateRecoveryCodes.execute(user);
@@ -35,13 +40,19 @@ export default class RecoveryCodesController {
 			}
 		}
 
-		return inertia.render('settings/two-factor/recovery', { codes: generated.value });
+		/** The plaintext lives in the page props; keep it out of readable history state. */
+		inertia.encryptHistory();
+		return inertia.render('settings/two-factor/recovery', {
+			codes: generated.value,
+			remaining: generated.value.length,
+		});
 	}
 
 	/**
 	 * The acknowledgement: the user confirms they saved the codes shown by `render`.
 	 */
-	async execute({ response, session }: HttpContext) {
+	async execute({ inertia, response, session }: HttpContext) {
+		inertia.clearHistory();
 		session.flash('success', 'Two-factor authentication is on.');
 		return response.redirect().toRoute('settings.security.render');
 	}

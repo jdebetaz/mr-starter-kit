@@ -7,9 +7,10 @@ import { RecoveryCodes } from '@boilerplate/design-system/recovery-codes';
 
 interface RecoveryProps {
 	codes: string[] | null;
+	remaining: number;
 }
 
-export default function Recovery({ codes }: RecoveryProps) {
+export default function Recovery({ codes, remaining }: RecoveryProps) {
 	return (
 		<div className="mx-auto max-w-2xl space-y-6 px-4 py-10 sm:px-6">
 			<h1 className="text-ink text-2xl font-bold tracking-tight">Save your recovery codes</h1>
@@ -30,8 +31,9 @@ export default function Recovery({ codes }: RecoveryProps) {
 			) : (
 				<Card className="space-y-4">
 					<p className="text-ink-muted text-sm">
-						Your recovery codes were already issued and cannot be shown again. If you did not save them, generate new
-						ones. This replaces the old codes, which stop working.
+						{remaining > 0
+							? `Your recovery codes were already issued and cannot be shown again. You have ${remaining} left. If you did not save them, generate new ones. This replaces the old codes, which stop working.`
+							: 'You have no recovery codes left. Generate new ones to keep a way in if you lose your authenticator app.'}
 					</p>
 					<Form route="two_factor.recovery.regenerate.execute" className="space-y-3">
 						{({ errors }) => (

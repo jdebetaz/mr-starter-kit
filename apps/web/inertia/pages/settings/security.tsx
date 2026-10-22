@@ -3,15 +3,11 @@ import { Button } from '@boilerplate/design-system/button';
 import { Callout } from '@boilerplate/design-system/callout';
 import { Card } from '@boilerplate/design-system/card';
 import { Field } from '@boilerplate/design-system/field';
+import type { TwoFactorStatus } from '#identity/queries/two_factor_status';
 
 interface SecurityProps {
-	status: {
-		enabled: boolean;
-		enabledAt: string | null;
-		remainingRecoveryCodes: number;
-		required: boolean;
-		canDisable: boolean;
-	};
+	/** Mapped so the interface becomes a plain object type, which Inertia props require. */
+	status: { [K in keyof TwoFactorStatus]: TwoFactorStatus[K] };
 }
 
 const enabledOnFormatter = new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' });

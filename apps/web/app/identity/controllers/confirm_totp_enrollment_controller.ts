@@ -2,6 +2,7 @@ import { inject } from '@adonisjs/core';
 import { assertNever } from '#core/assert_never';
 import ConfirmTotpEnrollment from '#identity/actions/confirm_totp_enrollment';
 import PendingTotpEnrollmentQuery from '#identity/queries/pending_totp_enrollment';
+import { RecoveryCodesGrant } from '#identity/services/recovery_codes_grant';
 import { totpCodeValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
@@ -19,6 +20,8 @@ export default class ConfirmTotpEnrollmentController {
 			return response.redirect().toRoute('two_factor.start.render');
 		}
 
+		/** The manual secret is in the props; keep it out of readable history state. */
+		inertia.encryptHistory();
 		return inertia.render('settings/two-factor/verify', enrollment);
 	}
 
@@ -47,6 +50,8 @@ export default class ConfirmTotpEnrollmentController {
 			}
 		}
 
+		/** The first set of codes is minted by the recovery page, once, on this grant. */
+		RecoveryCodesGrant.put(session);
 		return response.redirect().toRoute('two_factor.recovery.render');
 	}
 }

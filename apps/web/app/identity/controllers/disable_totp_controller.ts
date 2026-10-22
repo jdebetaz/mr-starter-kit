@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
 import { assertNever } from '#core/assert_never';
 import DisableTotp from '#identity/actions/disable_totp';
-import { disableTotpValidator } from '#identity/validators/two_factor';
+import { passwordConfirmationValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -9,7 +9,7 @@ export default class DisableTotpController {
 	constructor(private readonly disableTotp: DisableTotp) {}
 
 	async execute({ auth, request, response, session }: HttpContext) {
-		const { password } = await request.validateUsing(disableTotpValidator);
+		const { password } = await request.validateUsing(passwordConfirmationValidator);
 
 		const disabled = await this.disableTotp.execute({ user: auth.getUserOrFail(), password });
 

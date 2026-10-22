@@ -12,7 +12,7 @@ test.group('StartTotpEnrollment', (group) => {
 	truncateBetweenTests(group);
 	const action = new StartTotpEnrollment();
 
-	test('starting enrollment returns a QR code and a manual secret', async ({ assert }) => {
+	test('starting enrollment stores a pending secret', async ({ assert }) => {
 		const user = await createUser();
 		const result = await action.execute(user);
 		assert.isTrue(result.ok);
@@ -20,9 +20,7 @@ test.group('StartTotpEnrollment', (group) => {
 		if (!result.ok) {
 			return;
 		}
-		assert.match(result.value.qrCode, /^data:image\/png;base64,/);
-		assert.match(result.value.manualSecret, /^[A-Z2-7]+$/);
-		assert.equal(result.value.manualSecret, user.getEnrollmentSecret());
+		assert.match(user.getEnrollmentSecret(), /^[A-Z2-7]+$/);
 		assert.isTrue(user.hasPendingTwoFactor);
 		assert.isFalse(user.isTwoFactorEnabled);
 	});

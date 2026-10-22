@@ -12,9 +12,10 @@ export const totpCodeValidator = vine.create({
 });
 
 /**
- * The current password, re-entered to confirm turning 2FA off.
+ * The current password, re-entered to confirm a sensitive 2FA change (turning it
+ * off, replacing the recovery codes).
  */
-export const disableTotpValidator = vine.create({
+export const passwordConfirmationValidator = vine.create({
 	password: vine.string(),
 });
 
