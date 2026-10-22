@@ -1,4 +1,5 @@
 import { inject } from '@adonisjs/core';
+import { assertNever } from '#core/assert_never';
 import ConfirmTotpEnrollment from '#identity/actions/confirm_totp_enrollment';
 import PendingTotpEnrollmentQuery from '#identity/queries/pending_totp_enrollment';
 import { totpCodeValidator } from '#identity/validators/two_factor';
@@ -24,15 +25,25 @@ export default class ConfirmTotpEnrollmentController {
 	async execute({ auth, request, response, session }: HttpContext) {
 		const { code } = await request.validateUsing(totpCodeValidator);
 
-		const confirmed = await this.confirmTotpEnrollment.execute({ user: auth.getUserOrFail(), code });
+		const user = auth.getUserOrFail();
+		const confirmed = await this.confirmTotpEnrollment.execute({ user, code });
 
 		if (!confirmed.ok) {
 			switch (confirmed.error.type) {
 				case 'enrollment_not_started':
-					return response.redirect().toRoute('two_factor.start.render');
+					/**
+					 * A repeat submit (double click, Back then resubmit) arrives after the
+					 * first one enabled 2FA and consumed the pending secret. That user has
+					 * finished enrolling, so send them on rather than back to step one.
+					 */
+					return response
+						.redirect()
+						.toRoute(user.isTwoFactorEnabled ? 'two_factor.recovery.render' : 'two_factor.start.render');
 				case 'invalid_code':
 					session.flash('error', 'That code is not valid. Check your authenticator app and try again.');
 					return response.redirect().toRoute('two_factor.verify.render');
+				default:
+					return assertNever(confirmed.error);
 			}
 		}
 

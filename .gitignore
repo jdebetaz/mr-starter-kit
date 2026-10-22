@@ -32,3 +32,6 @@ npm-debug.log
 # Brainstorming companion and SDD scratch (docs/superpowers/ stays tracked)
 .superpowers/
 docs/superpowers/
+
+# Generated route manifest, recreated by `node ace serve`
+apps/*/.adonisjs/server/routes.json

@@ -1,4 +1,5 @@
 import { inject } from '@adonisjs/core';
+import { assertNever } from '#core/assert_never';
 import DisableTotp from '#identity/actions/disable_totp';
 import { disableTotpValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
@@ -20,6 +21,8 @@ export default class DisableTotpController {
 				case 'invalid_password':
 					session.flash('error', 'That password is not correct.');
 					break;
+				default:
+					return assertNever(disabled.error);
 			}
 			return response.redirect().toRoute('settings.security.render');
 		}

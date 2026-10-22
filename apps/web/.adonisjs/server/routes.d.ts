@@ -16,6 +16,7 @@ export type ScannedRoutes = {
     'two_factor.verify.execute': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.execute': { paramsTuple?: []; params?: {} }
+    'two_factor.recovery.regenerate.execute': { paramsTuple?: []; params?: {} }
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
   }
@@ -44,6 +45,7 @@ export type ScannedRoutes = {
     'two_factor.start.execute': { paramsTuple?: []; params?: {} }
     'two_factor.verify.execute': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.execute': { paramsTuple?: []; params?: {} }
+    'two_factor.recovery.regenerate.execute': { paramsTuple?: []; params?: {} }
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
   }
 }

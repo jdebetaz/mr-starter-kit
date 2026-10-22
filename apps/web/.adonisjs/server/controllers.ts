@@ -9,6 +9,7 @@ export const controllers = {
     DisableTotp: () => import('#app/identity/controllers/disable_totp_controller'),
     Login: () => import('#app/identity/controllers/login_controller'),
     RecoveryCodes: () => import('#app/identity/controllers/recovery_codes_controller'),
+    RegenerateRecoveryCodes: () => import('#app/identity/controllers/regenerate_recovery_codes_controller'),
     Register: () => import('#app/identity/controllers/register_controller'),
     SecuritySettings: () => import('#app/identity/controllers/security_settings_controller'),
     Session: () => import('#app/identity/controllers/session_controller'),

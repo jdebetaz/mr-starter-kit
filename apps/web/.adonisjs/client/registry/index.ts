@@ -78,6 +78,12 @@ const routes = {
     tokens: [{"old":"/settings/security/two-factor/recovery","type":0,"val":"settings","end":""},{"old":"/settings/security/two-factor/recovery","type":0,"val":"security","end":""},{"old":"/settings/security/two-factor/recovery","type":0,"val":"two-factor","end":""},{"old":"/settings/security/two-factor/recovery","type":0,"val":"recovery","end":""}],
     types: placeholder as Registry['two_factor.recovery.execute']['types'],
   },
+  'two_factor.recovery.regenerate.execute': {
+    methods: ["POST"],
+    pattern: '/settings/security/two-factor/recovery/regenerate',
+    tokens: [{"old":"/settings/security/two-factor/recovery/regenerate","type":0,"val":"settings","end":""},{"old":"/settings/security/two-factor/recovery/regenerate","type":0,"val":"security","end":""},{"old":"/settings/security/two-factor/recovery/regenerate","type":0,"val":"two-factor","end":""},{"old":"/settings/security/two-factor/recovery/regenerate","type":0,"val":"recovery","end":""},{"old":"/settings/security/two-factor/recovery/regenerate","type":0,"val":"regenerate","end":""}],
+    types: placeholder as Registry['two_factor.recovery.regenerate.execute']['types'],
+  },
   'two_factor.disable.execute': {
     methods: ["POST"],
     pattern: '/settings/security/two-factor/disable',

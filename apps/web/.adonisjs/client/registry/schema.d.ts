@@ -151,6 +151,18 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
     }
   }
+  'two_factor.recovery.regenerate.execute': {
+    methods: ["POST"]
+    pattern: '/settings/security/two-factor/recovery/regenerate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>>
+    }
+  }
   'two_factor.disable.execute': {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/disable'

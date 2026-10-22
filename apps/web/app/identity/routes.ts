@@ -44,6 +44,13 @@ router
 			.as('two_factor.recovery.execute');
 
 		router
+			.post('settings/security/two-factor/recovery/regenerate', [
+				controllers.identity.RegenerateRecoveryCodes,
+				'execute',
+			])
+			.as('two_factor.recovery.regenerate.execute');
+
+		router
 			.post('settings/security/two-factor/disable', [controllers.identity.DisableTotp, 'execute'])
 			.as('two_factor.disable.execute');
 	})

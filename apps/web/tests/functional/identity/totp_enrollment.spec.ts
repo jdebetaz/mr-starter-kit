@@ -120,7 +120,7 @@ test.group('TOTP enrollment', (group) => {
 		assert.isFalse(user.isTwoFactorEnabled);
 	});
 
-	test('the recovery page shows ten codes', async ({ client, assert }) => {
+	test('the recovery page mints ten codes the first time', async ({ client, assert }) => {
 		const user = await enabledUser();
 
 		const response = await client.get('/settings/security/two-factor/recovery').withInertia().loginAs(user);
@@ -128,6 +128,65 @@ test.group('TOTP enrollment', (group) => {
 		response.assertStatus(200);
 		response.assertInertiaComponent('settings/two-factor/recovery');
 		assert.lengthOf(response.inertiaProps.codes, 10);
+		await user.refresh();
+		assert.equal(user.remainingRecoveryCodesCount, 10);
+	});
+
+	test('visiting the recovery page again does not revoke existing codes', async ({ client, assert }) => {
+		const user = await enabledUser();
+		const saved = await user.generateRecoveryCodes();
+
+		const response = await client.get('/settings/security/two-factor/recovery').withInertia().loginAs(user);
+
+		response.assertStatus(200);
+		assert.isNull(response.inertiaProps.codes);
+		await user.refresh();
+		assert.isTrue(await user.verifyRecoveryCode(saved[0]));
+	});
+
+	test('regenerating replaces the codes and returns the new ones directly', async ({ client, assert }) => {
+		const user = await enabledUser();
+		const saved = await user.generateRecoveryCodes();
+
+		const response = await client
+			.post('/settings/security/two-factor/recovery/regenerate')
+			.withInertia()
+			.loginAs(user)
+			.withCsrfToken();
+
+		response.assertStatus(200);
+		assert.lengthOf(response.inertiaProps.codes, 10);
+		assert.notIncludeMembers(response.inertiaProps.codes, saved);
+		await user.refresh();
+		assert.isFalse(await user.verifyRecoveryCode(saved[0]));
+		assert.isTrue(await user.verifyRecoveryCode(response.inertiaProps.codes[0]));
+	});
+
+	test('a repeated confirm after 2FA is on goes to the recovery step, not step one', async ({ client }) => {
+		const user = await enabledUser();
+
+		const response = await client
+			.post('/settings/security/two-factor/verify')
+			.loginAs(user)
+			.withCsrfToken()
+			.form({ code: '123456' });
+
+		response.assertRedirectsTo('/settings/security/two-factor/recovery');
+	});
+
+	test('a code with a space or dash separator is accepted', async ({ client, assert }) => {
+		const user = await pendingUser();
+		const code = user.createTotp(user.getEnrollmentSecret()).generate();
+
+		const response = await client
+			.post('/settings/security/two-factor/verify')
+			.loginAs(user)
+			.withCsrfToken()
+			.form({ code: `${code.slice(0, 3)} ${code.slice(3)}` });
+
+		response.assertRedirectsTo('/settings/security/two-factor/recovery');
+		await user.refresh();
+		assert.isTrue(user.isTwoFactorEnabled);
 	});
 
 	test('the recovery page sends a user without 2FA back to the start', async ({ client }) => {

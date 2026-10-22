@@ -30,6 +30,9 @@ export interface ApiDefinition {
     recovery: {
       render: typeof routes['two_factor.recovery.render']
       execute: typeof routes['two_factor.recovery.execute']
+      regenerate: {
+        execute: typeof routes['two_factor.recovery.regenerate.execute']
+      }
     }
     disable: {
       execute: typeof routes['two_factor.disable.execute']
