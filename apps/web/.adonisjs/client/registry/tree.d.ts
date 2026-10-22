@@ -46,5 +46,8 @@ export interface ApiDefinition {
       execute: typeof routes['two_factor.disable.execute']
     }
   }
+  regenerateRecoveryCodes: {
+    render: typeof routes['regenerate_recovery_codes.render']
+  }
   home: typeof routes['home']
 }

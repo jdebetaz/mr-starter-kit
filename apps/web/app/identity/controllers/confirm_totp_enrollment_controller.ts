@@ -51,7 +51,7 @@ export default class ConfirmTotpEnrollmentController {
 		}
 
 		/** The first set of codes is minted by the recovery page, once, on this grant. */
-		RecoveryCodesGrant.put(session);
+		RecoveryCodesGrant.put(session, user.id);
 		return response.redirect().toRoute('two_factor.recovery.render');
 	}
 }

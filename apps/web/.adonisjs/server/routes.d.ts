@@ -20,6 +20,7 @@ export type ScannedRoutes = {
     'two_factor.verify.execute': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.execute': { paramsTuple?: []; params?: {} }
+    'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.regenerate.execute': { paramsTuple?: []; params?: {} }
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
@@ -33,6 +34,7 @@ export type ScannedRoutes = {
     'two_factor.start.render': { paramsTuple?: []; params?: {} }
     'two_factor.verify.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
+    'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -44,6 +46,7 @@ export type ScannedRoutes = {
     'two_factor.start.render': { paramsTuple?: []; params?: {} }
     'two_factor.verify.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
+    'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
   }
   POST: {

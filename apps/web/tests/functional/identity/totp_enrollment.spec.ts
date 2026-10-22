@@ -147,7 +147,7 @@ test.group('TOTP enrollment', (group) => {
 
 	test('the enrollment grant is single-use', async ({ client, assert }) => {
 		const user = await enabledUser();
-		const grant = { recovery_codes_grant: { expiresAt: Date.now() + 60_000 } };
+		const grant = { recovery_codes_grant: { expiresAt: Date.now() + 60_000, userId: user.id } };
 
 		const first = await client
 			.get('/settings/security/two-factor/recovery')
@@ -167,6 +167,29 @@ test.group('TOTP enrollment', (group) => {
 		assert.equal(second.inertiaProps.remaining, 10);
 		await user.refresh();
 		assert.equal(user.recoveryCodes?.release(), minted);
+	});
+
+	test('a grant minted for another user does not let this user mint, and leaves their codes unchanged', async ({
+		client,
+		assert,
+	}) => {
+		const userA = await enabledUser();
+		const userB = await enabledUser();
+		const saved = await userB.generateRecoveryCodes();
+		await userB.refresh();
+		const before = userB.recoveryCodes?.release();
+
+		const response = await client
+			.get('/settings/security/two-factor/recovery')
+			.withInertia()
+			.loginAs(userB)
+			.withSession({ recovery_codes_grant: { expiresAt: Date.now() + 60_000, userId: userA.id } });
+
+		assert.isNull(response.inertiaProps.codes);
+		await userB.refresh();
+		assert.equal(userB.recoveryCodes?.release(), before);
+		assert.equal(userB.remainingRecoveryCodesCount, 10);
+		assert.isTrue(await userB.verifyRecoveryCode(saved[0]));
 	});
 
 	test('an expired grant does not mint', async ({ client, assert }) => {

@@ -199,14 +199,26 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
     }
   }
+  'regenerate_recovery_codes.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/security/two-factor/recovery/regenerate'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['render']>>>
+    }
+  }
   'two_factor.recovery.regenerate.execute': {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/recovery/regenerate'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
@@ -215,10 +227,10 @@ export interface Registry {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/disable'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }

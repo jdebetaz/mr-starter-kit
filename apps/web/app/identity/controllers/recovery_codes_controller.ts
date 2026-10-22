@@ -22,7 +22,7 @@ export default class RecoveryCodesController {
 			return response.redirect().toRoute('two_factor.start.render');
 		}
 
-		if (!RecoveryCodesGrant.take(session)) {
+		if (!RecoveryCodesGrant.take(session, user.id)) {
 			return inertia.render('settings/two-factor/recovery', {
 				codes: null,
 				remaining: user.remainingRecoveryCodesCount,
