@@ -8,14 +8,18 @@ import type User from '#identity/models/user';
 export async function enabledUser(attributes?: Parameters<typeof createUser>[0]): Promise<User> {
 	const user = await createUser(attributes);
 	await user.generateSecret();
-	// Enrol with the previous step's code: enabling consumes its timestep, and
-	// specs then log in with the current step's code, which must still be fresh.
-	const enablingCode = user.createTotp(user.getEnrollmentSecret()).generate({ timestamp: Date.now() - 30_000 });
-	const confirmed = await user.enableTwoFactor(enablingCode);
+	const confirmed = await user.enableTwoFactor(user.createTotp(user.getEnrollmentSecret()).generate());
 
 	if (!confirmed) {
 		throw new Error('enabledUser could not confirm the freshly generated secret');
 	}
+
+	// The fixture is a user who enabled 2FA some time ago, not this instant, so
+	// no timestep is consumed yet. Without this reset the enabling code would
+	// make the current step's login code read as a replay. Test-only: production
+	// code never clears this marker.
+	user.totpLastConsumedTimestep = null;
+	await user.save();
 
 	return user;
 }
