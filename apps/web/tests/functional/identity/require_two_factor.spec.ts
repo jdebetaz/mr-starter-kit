@@ -12,6 +12,11 @@ import type { HttpContext } from '@adonisjs/core/http';
  * Nothing in the kit applies `requireTwoFactor`, so these specs register a
  * throwaway route that does. It exists only in this test process.
  */
+/**
+ * Constraint: these throwaway routes are registered at import, before the
+ * router commits, so they live in the shared route table for every spec in
+ * the run. A spec that enumerates routes must ignore the `/__` ones.
+ */
 router
 	.get('/__enforced', ({ response }) => response.ok({ reached: true }))
 	.use([middleware.auth(), middleware.requireTwoFactor()]);
@@ -101,7 +106,7 @@ test.group('Two-factor enforcement middleware', (group) => {
 		response.assertBodyContains({ reached: true });
 	});
 
-	test('the enrollment flow itself is not redirected', async ({ client }) => {
+	test('the enrollment page loads (smoke check only; the probe route is the real loop test)', async ({ client }) => {
 		const response = await client
 			.get('/settings/security/two-factor')
 			.withInertia()
@@ -116,6 +121,13 @@ test.group('Two-factor enforcement middleware', (group) => {
 
 		response.assertStatus(200);
 		response.assertBodyContains({ reached: true });
+	});
+
+	test('the real logout route is still POST /logout, which the middleware exempts', async ({ assert }) => {
+		const routes = router.toJSON().root ?? [];
+		const logout = routes.filter((route) => route.pattern === '/logout' && route.methods.includes('POST'));
+
+		assert.lengthOf(logout, 1);
 	});
 
 	test('logout is not redirected', async ({ assert }) => {
