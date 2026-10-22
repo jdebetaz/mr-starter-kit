@@ -13,5 +13,27 @@ export interface ApiDefinition {
   session: {
     execute: typeof routes['session.execute']
   }
+  settings: {
+    security: {
+      render: typeof routes['settings.security.render']
+    }
+  }
+  twoFactor: {
+    start: {
+      render: typeof routes['two_factor.start.render']
+      execute: typeof routes['two_factor.start.execute']
+    }
+    verify: {
+      render: typeof routes['two_factor.verify.render']
+      execute: typeof routes['two_factor.verify.execute']
+    }
+    recovery: {
+      render: typeof routes['two_factor.recovery.render']
+      execute: typeof routes['two_factor.recovery.execute']
+    }
+    disable: {
+      execute: typeof routes['two_factor.disable.execute']
+    }
+  }
   home: typeof routes['home']
 }

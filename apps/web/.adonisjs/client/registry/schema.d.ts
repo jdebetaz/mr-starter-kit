@@ -67,6 +67,102 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/session_controller').default['execute']>>>
     }
   }
+  'settings.security.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/security'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/security_settings_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/security_settings_controller').default['render']>>>
+    }
+  }
+  'two_factor.start.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/security/two-factor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['render']>>>
+    }
+  }
+  'two_factor.start.execute': {
+    methods: ["POST"]
+    pattern: '/settings/security/two-factor'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['execute']>>>
+    }
+  }
+  'two_factor.verify.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/security/two-factor/verify'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['render']>>>
+    }
+  }
+  'two_factor.verify.execute': {
+    methods: ["POST"]
+    pattern: '/settings/security/two-factor/verify'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'two_factor.recovery.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/security/two-factor/recovery'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['render']>>>
+    }
+  }
+  'two_factor.recovery.execute': {
+    methods: ["POST"]
+    pattern: '/settings/security/two-factor/recovery'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
+    }
+  }
+  'two_factor.disable.execute': {
+    methods: ["POST"]
+    pattern: '/settings/security/two-factor/disable'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').disableTotpValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'home': {
     methods: ["GET","HEAD"]
     pattern: '/'

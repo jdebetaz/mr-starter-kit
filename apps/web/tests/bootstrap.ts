@@ -6,6 +6,7 @@ import { inertiaApiClient } from '@adonisjs/inertia/plugins/api_client';
 import { dbAssertions } from '@adonisjs/lucid/plugins/db';
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client';
 import { sessionBrowserClient } from '@adonisjs/session/plugins/browser_client';
+import { shieldApiClient } from '@adonisjs/shield/plugins/api_client';
 import { apiClient } from '@japa/api-client';
 import { assert } from '@japa/assert';
 import { browserClient } from '@japa/browser-client';
@@ -26,6 +27,7 @@ export const plugins: Config['plugins'] = [
 	dbAssertions(app),
 	apiClient(),
 	sessionApiClient(app),
+	shieldApiClient(),
 	authApiClient(app),
 	inertiaApiClient(app),
 	browserClient({ runInSuites: ['browser'] }),

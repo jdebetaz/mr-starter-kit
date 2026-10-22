@@ -37,6 +37,30 @@ test.group('Security settings page', (group) => {
 		assert.isString(response.inertiaProps.status.enabledAt);
 	});
 
+	test('an enabled admin cannot disable 2FA', async ({ client, assert }) => {
+		const admin = await enabledUser({ roles: ['ROLE_ADMIN'] });
+
+		const response = await client.get('/settings/security').withInertia().loginAs(admin);
+
+		assert.isTrue(response.inertiaProps.status.enabled);
+		assert.isTrue(response.inertiaProps.status.required);
+		assert.isFalse(response.inertiaProps.status.canDisable);
+	});
+
+	test('the status props expose exactly the expected keys and no secret material', async ({ client, assert }) => {
+		const user = await enabledUser();
+
+		const response = await client.get('/settings/security').withInertia().loginAs(user);
+
+		assert.sameMembers(Object.keys(response.inertiaProps.status), [
+			'enabled',
+			'enabledAt',
+			'remainingRecoveryCodes',
+			'required',
+			'canDisable',
+		]);
+	});
+
 	test('an enabled user sees the remaining recovery code count', async ({ client, assert }) => {
 		const user = await enabledUser();
 		const codes = await user.generateRecoveryCodes();

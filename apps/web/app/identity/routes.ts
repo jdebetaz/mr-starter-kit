@@ -21,5 +21,30 @@ router
 router
 	.group(() => {
 		router.get('settings/security', [controllers.identity.SecuritySettings, 'render']).as('settings.security.render');
+
+		router
+			.get('settings/security/two-factor', [controllers.identity.StartTotpEnrollment, 'render'])
+			.as('two_factor.start.render');
+		router
+			.post('settings/security/two-factor', [controllers.identity.StartTotpEnrollment, 'execute'])
+			.as('two_factor.start.execute');
+
+		router
+			.get('settings/security/two-factor/verify', [controllers.identity.ConfirmTotpEnrollment, 'render'])
+			.as('two_factor.verify.render');
+		router
+			.post('settings/security/two-factor/verify', [controllers.identity.ConfirmTotpEnrollment, 'execute'])
+			.as('two_factor.verify.execute');
+
+		router
+			.get('settings/security/two-factor/recovery', [controllers.identity.RecoveryCodes, 'render'])
+			.as('two_factor.recovery.render');
+		router
+			.post('settings/security/two-factor/recovery', [controllers.identity.RecoveryCodes, 'execute'])
+			.as('two_factor.recovery.execute');
+
+		router
+			.post('settings/security/two-factor/disable', [controllers.identity.DisableTotp, 'execute'])
+			.as('two_factor.disable.execute');
 	})
 	.use(middleware.auth());

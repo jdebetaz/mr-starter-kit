@@ -18,5 +18,8 @@ declare module '@adonisjs/inertia/types' {
     'errors/server_error': ExtractProps<(typeof import('../../inertia/pages/errors/server_error.tsx'))['default']>
     'home': ExtractProps<(typeof import('../../inertia/pages/home.tsx'))['default']>
     'settings/security': ExtractProps<(typeof import('../../inertia/pages/settings/security.tsx'))['default']>
+    'settings/two-factor/recovery': ExtractProps<(typeof import('../../inertia/pages/settings/two-factor/recovery.tsx'))['default']>
+    'settings/two-factor/start': ExtractProps<(typeof import('../../inertia/pages/settings/two-factor/start.tsx'))['default']>
+    'settings/two-factor/verify': ExtractProps<(typeof import('../../inertia/pages/settings/two-factor/verify.tsx'))['default']>
   }
 }
