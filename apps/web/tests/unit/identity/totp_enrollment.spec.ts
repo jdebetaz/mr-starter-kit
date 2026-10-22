@@ -109,6 +109,7 @@ test.group('TOTP enrollment', (group) => {
 	test('disableTwoFactor clears every TOTP column', async ({ assert }) => {
 		const user = await enabledUser();
 		user.recoveryCodes = 'stored-hashes';
+		user.totpLastConsumedTimestep = 12345;
 		await user.save();
 
 		await user.disableTwoFactor();

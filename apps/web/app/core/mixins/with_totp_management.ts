@@ -9,7 +9,7 @@ import type { HashService } from '@adonisjs/core/types';
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers';
 import type { BaseModel } from '@adonisjs/lucid/orm';
 
-const PERIOD_SECONDS = 30;
+export const TOTP_PERIOD_SECONDS = 30;
 
 /**
  * Adds TOTP two-factor management to a model that carries the generated
@@ -60,7 +60,7 @@ export const withTotpManagement = (
 					label: this.getTotpLabel(),
 					algorithm: 'SHA1',
 					digits: 6,
-					period: PERIOD_SECONDS,
+					period: TOTP_PERIOD_SECONDS,
 					secret,
 				});
 			}
@@ -109,14 +109,19 @@ export const withTotpManagement = (
 			 */
 			async enableTwoFactor(code: string): Promise<boolean> {
 				const pending = this.getEnrollmentSecret();
-				const delta = this.createTotp(pending).validate({ token: code, window: config.window });
+				const timestamp = Date.now();
+				const delta = this.createTotp(pending).validate({
+					token: this.normalizeTotpCode(code),
+					timestamp,
+					window: config.window,
+				});
 
 				if (delta === null) {
 					return false;
 				}
 
 				// The enabling code counts as consumed, so it cannot be replayed at login.
-				this.totpLastConsumedTimestep = this.#timestepOf(delta);
+				this.totpLastConsumedTimestep = this.#timestepOf(delta, timestamp);
 				this.totpSecret = this.totpPendingSecret;
 				this.totpEnabledAt = DateTime.now();
 				this.totpPendingSecret = null;
@@ -153,13 +158,14 @@ export const withTotpManagement = (
 				}
 
 				const totp = this.createTotp(this.getConfirmedSecret());
-				const delta = totp.validate({ token: this.normalizeTotpCode(code), window: config.window });
+				const timestamp = Date.now();
+				const delta = totp.validate({ token: this.normalizeTotpCode(code), timestamp, window: config.window });
 
 				if (delta === null) {
 					return false;
 				}
 
-				const timestep = this.#timestepOf(delta);
+				const timestep = this.#timestepOf(delta, timestamp);
 
 				if (this.totpLastConsumedTimestep !== null && timestep <= this.totpLastConsumedTimestep) {
 					return false;
@@ -172,9 +178,12 @@ export const withTotpManagement = (
 
 			// ---- Internals ---------------------------------------------------
 
-			/** Absolute timestep of a code that validated at `delta` steps from now. */
-			#timestepOf(delta: number): number {
-				return Math.floor(Date.now() / 1000 / PERIOD_SECONDS) + delta;
+			/**
+			 * Absolute timestep of a code that validated at `delta` steps from
+			 * `timestamp`. It must be the same instant `validate` used.
+			 */
+			#timestepOf(delta: number, timestamp: number): number {
+				return Math.floor(timestamp / 1000 / TOTP_PERIOD_SECONDS) + delta;
 			}
 
 			/**

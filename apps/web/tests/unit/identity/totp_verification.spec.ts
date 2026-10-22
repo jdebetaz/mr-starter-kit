@@ -1,10 +1,23 @@
 import { test } from '@japa/runner';
+import { TOTP_PERIOD_SECONDS } from '#core/mixins/with_totp_management';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { currentCodeFor, enabledUser } from '#tests/helpers/two_factor';
 import { createUser } from '#tests/helpers/user_factory';
 import type User from '#identity/models/user';
 
-const PERIOD_MS = 30_000;
+const PERIOD_MS = TOTP_PERIOD_SECONDS * 1000;
+
+/** Runs `fn` with the clock pinned, so a step boundary cannot fall inside it. */
+async function atFixedTime<T>(fn: () => Promise<T>): Promise<T> {
+	const realNow = Date.now;
+	const pinned = realNow();
+	Date.now = () => pinned;
+	try {
+		return await fn();
+	} finally {
+		Date.now = realNow;
+	}
+}
 
 function codeOfThrown(fn: () => unknown): string | undefined {
 	try {
@@ -37,23 +50,28 @@ test.group('TOTP login verification', (group) => {
 
 	test('consuming a code records its timestep and persists it', async ({ assert }) => {
 		const user = await enabledUser();
+		const stepBefore = Math.floor(Date.now() / PERIOD_MS);
 		assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
 		await user.refresh();
-		assert.equal(user.totpLastConsumedTimestep, Math.floor(Date.now() / PERIOD_MS));
+		assert.oneOf(user.totpLastConsumedTimestep, [stepBefore, stepBefore + 1]);
 	});
 
 	test('a code from a consumed timestep is rejected after a later one', async ({ assert }) => {
 		const user = await enabledUser();
-		const earlier = codeFromStepsAgo(user, 1);
-		assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
-		assert.isFalse(await user.verifyTotpForLogin(earlier));
+		await atFixedTime(async () => {
+			const earlier = codeFromStepsAgo(user, 1);
+			assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
+			assert.isFalse(await user.verifyTotpForLogin(earlier));
+		});
 	});
 
 	test('an earlier code still verifies when nothing later was consumed', async ({ assert }) => {
 		const user = await enabledUser();
-		user.totpLastConsumedTimestep = Math.floor(Date.now() / PERIOD_MS) - 2;
-		await user.save();
-		assert.isTrue(await user.verifyTotpForLogin(codeFromStepsAgo(user, 1)));
+		await atFixedTime(async () => {
+			user.totpLastConsumedTimestep = Math.floor(Date.now() / PERIOD_MS) - 2;
+			await user.save();
+			assert.isTrue(await user.verifyTotpForLogin(codeFromStepsAgo(user, 1)));
+		});
 	});
 
 	test('a wrong code is rejected and consumes nothing', async ({ assert }) => {
@@ -71,6 +89,17 @@ test.group('TOTP login verification', (group) => {
 		const dashedUser = await enabledUser();
 		const dashed = currentCodeFor(dashedUser);
 		assert.isTrue(await dashedUser.verifyTotpForLogin(`${dashed.slice(0, 3)}-${dashed.slice(3)}`));
+	});
+
+	test('a code with spaces or a dash confirms enrollment', async ({ assert }) => {
+		for (const separator of [' ', '-']) {
+			const user = await createUser();
+			await user.generateSecret();
+			const code = user.createTotp(user.getEnrollmentSecret()).generate();
+
+			assert.isTrue(await user.enableTwoFactor(`${code.slice(0, 3)}${separator}${code.slice(3)}`));
+			assert.isTrue(user.isTwoFactorEnabled);
+		}
 	});
 
 	test('normalizeTotpCode strips whitespace and dashes', async ({ assert }) => {
