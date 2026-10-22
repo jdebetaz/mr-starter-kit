@@ -17,3 +17,9 @@ router
 		router.post('logout', [controllers.identity.Session, 'execute']);
 	})
 	.use(middleware.auth());
+
+router
+	.group(() => {
+		router.get('settings/security', [controllers.identity.SecuritySettings, 'render']).as('settings.security.render');
+	})
+	.use(middleware.auth());

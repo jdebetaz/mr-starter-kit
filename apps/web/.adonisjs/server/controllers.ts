@@ -7,6 +7,7 @@ export const controllers = {
   identity: {
     Login: () => import('#app/identity/controllers/login_controller'),
     Register: () => import('#app/identity/controllers/register_controller'),
+    SecuritySettings: () => import('#app/identity/controllers/security_settings_controller'),
     Session: () => import('#app/identity/controllers/session_controller'),
   },
 }
