@@ -1,4 +1,5 @@
 import { PinInput } from '@ark-ui/react/pin-input';
+import { type ComponentPropsWithRef } from 'react';
 import { tv } from 'tailwind-variants';
 
 const codeInputControl = tv({ base: 'm-0 flex min-w-0 gap-2 border-0 p-0' });
@@ -6,36 +7,36 @@ const codeInputCell = tv({
 	base: 'border-border bg-surface text-ink focus:border-accent focus:ring-accent/20 data-[invalid]:border-rose data-[invalid]:focus:ring-rose/20 rounded-control size-12 border text-center text-lg font-semibold transition-shadow outline-none focus:ring-4 disabled:cursor-not-allowed disabled:opacity-50',
 });
 
-export interface CodeInputProps {
+export interface CodeInputProps extends Omit<
+	ComponentPropsWithRef<typeof PinInput.Root>,
+	'count' | 'onValueComplete' | 'children' | 'aria-label' | 'aria-labelledby'
+> {
 	'name': string;
+	/** Number of cells. */
 	'length'?: number;
-	'autoFocus'?: boolean;
-	'invalid'?: boolean;
+	/** Called with the joined code once every cell is filled. */
 	'onComplete'?: (code: string) => void;
+	/** Accessible name of the group; defaults to "Verification code". Ignored when `aria-labelledby` is set. */
 	'aria-label'?: string;
+	/** Id of an element (e.g. a `<label>`) naming the group. */
+	'aria-labelledby'?: string;
 }
 
 export function CodeInput({
-	name,
 	length = 6,
-	autoFocus,
-	invalid,
 	onComplete,
-	'aria-label': ariaLabel = 'Verification code',
+	'aria-label': ariaLabel,
+	'aria-labelledby': ariaLabelledBy,
+	...props
 }: CodeInputProps) {
 	return (
-		<PinInput.Root
-			name={name}
-			count={length}
-			// Consumers opt in explicitly, e.g. the single-purpose 2FA challenge page.
-			// oxlint-disable-next-line jsx-a11y/no-autofocus
-			autoFocus={autoFocus}
-			invalid={invalid}
-			otp
-			onValueComplete={(details) => onComplete?.(details.valueAsString)}
-		>
+		<PinInput.Root otp {...props} count={length} onValueComplete={(details) => onComplete?.(details.valueAsString)}>
 			<PinInput.Control asChild>
-				<fieldset aria-label={ariaLabel} className={codeInputControl()}>
+				<fieldset
+					aria-label={ariaLabelledBy ? undefined : (ariaLabel ?? 'Verification code')}
+					aria-labelledby={ariaLabelledBy}
+					className={codeInputControl()}
+				>
 					{Array.from({ length }, (_, index) => (
 						<PinInput.Input key={index} index={index} inputMode="numeric" className={codeInputCell()} />
 					))}

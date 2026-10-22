@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { tv } from 'tailwind-variants';
 import { Button } from '../../atoms/button/button';
 
@@ -12,14 +12,29 @@ export interface RecoveryCodesProps {
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
-const copyLabel: Record<CopyState, string> = {
-	idle: 'Copy all',
-	copied: 'Copied',
+const buttonLabel: Record<CopyState, string> = { idle: 'Copy all', copied: 'Copied', failed: 'Copy failed' };
+const announcement: Record<CopyState, string> = {
+	idle: '',
+	copied: 'Recovery codes copied to the clipboard.',
 	failed: 'Copy failed. Select the codes manually.',
 };
+const resetDelayMs = 2500;
 
 export function RecoveryCodes({ codes }: RecoveryCodesProps) {
 	const [state, setState] = useState<CopyState>('idle');
+
+	// A new set of codes or an elapsed delay returns the control to its idle state.
+	useEffect(() => {
+		setState('idle');
+	}, [codes]);
+
+	useEffect(() => {
+		if (state === 'idle') {
+			return;
+		}
+		const timer = setTimeout(() => setState('idle'), resetDelayMs);
+		return () => clearTimeout(timer);
+	}, [state]);
 
 	async function copyAll() {
 		try {
@@ -39,9 +54,9 @@ export function RecoveryCodes({ codes }: RecoveryCodesProps) {
 				))}
 			</ul>
 			<Button intent="secondary" size="small" onClick={copyAll}>
-				{copyLabel[state]}
+				{buttonLabel[state]}
 			</Button>
-			<output className="sr-only">{state === 'idle' ? '' : copyLabel[state]}</output>
+			<output className="sr-only">{announcement[state]}</output>
 		</div>
 	);
 }

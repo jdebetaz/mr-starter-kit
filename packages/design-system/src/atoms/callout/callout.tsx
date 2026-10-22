@@ -20,12 +20,15 @@ const toneLabel = { info: 'Information', warning: 'Warning', danger: 'Error' } a
 type CalloutVariants = VariantProps<typeof callout>;
 
 export interface CalloutProps extends Omit<ComponentPropsWithRef<'div'>, 'title'>, CalloutVariants {
-	tone: NonNullable<CalloutVariants['tone']>;
 	title?: string;
 	children: ReactNode;
 }
 
-export function Callout({ tone, title, children, className, ...props }: CalloutProps) {
+/**
+ * Info uses role="status"; warning and danger use role="alert". Pass `role` to override per use
+ * (e.g. role="status" for a static warning that should not interrupt screen readers).
+ */
+export function Callout({ tone = 'info', title, children, className, ...props }: CalloutProps) {
 	return (
 		<div role={tone === 'info' ? 'status' : 'alert'} className={callout({ tone, className })} {...props}>
 			<span className="sr-only">{toneLabel[tone]}: </span>
