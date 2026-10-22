@@ -17,3 +17,11 @@ export const totpCodeValidator = vine.create({
 export const disableTotpValidator = vine.create({
 	password: vine.string(),
 });
+
+/**
+ * A recovery code as the user typed it. Case, spaces and the dash are
+ * normalized by the user model, which owns the format.
+ */
+export const recoveryCodeValidator = vine.create({
+	code: vine.string().trim().minLength(1).maxLength(32),
+});

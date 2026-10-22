@@ -55,6 +55,54 @@ export interface Registry {
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'login.challenge.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/login/challenge'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['render']>>>
+    }
+  }
+  'login.challenge.execute': {
+    methods: ["POST"]
+    pattern: '/login/challenge'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'login.challenge.recovery.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/login/challenge/recovery'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['render']>>>
+    }
+  }
+  'login.challenge.recovery.execute': {
+    methods: ["POST"]
+    pattern: '/login/challenge/recovery'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').recoveryCodeValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').recoveryCodeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'session.execute': {
     methods: ["POST"]
     pattern: '/logout'

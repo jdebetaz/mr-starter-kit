@@ -8,6 +8,10 @@ export type ScannedRoutes = {
     'register.execute': { paramsTuple?: []; params?: {} }
     'login.render': { paramsTuple?: []; params?: {} }
     'login.execute': { paramsTuple?: []; params?: {} }
+    'login.challenge.render': { paramsTuple?: []; params?: {} }
+    'login.challenge.execute': { paramsTuple?: []; params?: {} }
+    'login.challenge.recovery.render': { paramsTuple?: []; params?: {} }
+    'login.challenge.recovery.execute': { paramsTuple?: []; params?: {} }
     'session.execute': { paramsTuple?: []; params?: {} }
     'settings.security.render': { paramsTuple?: []; params?: {} }
     'two_factor.start.render': { paramsTuple?: []; params?: {} }
@@ -23,6 +27,8 @@ export type ScannedRoutes = {
   GET: {
     'register.render': { paramsTuple?: []; params?: {} }
     'login.render': { paramsTuple?: []; params?: {} }
+    'login.challenge.render': { paramsTuple?: []; params?: {} }
+    'login.challenge.recovery.render': { paramsTuple?: []; params?: {} }
     'settings.security.render': { paramsTuple?: []; params?: {} }
     'two_factor.start.render': { paramsTuple?: []; params?: {} }
     'two_factor.verify.render': { paramsTuple?: []; params?: {} }
@@ -32,6 +38,8 @@ export type ScannedRoutes = {
   HEAD: {
     'register.render': { paramsTuple?: []; params?: {} }
     'login.render': { paramsTuple?: []; params?: {} }
+    'login.challenge.render': { paramsTuple?: []; params?: {} }
+    'login.challenge.recovery.render': { paramsTuple?: []; params?: {} }
     'settings.security.render': { paramsTuple?: []; params?: {} }
     'two_factor.start.render': { paramsTuple?: []; params?: {} }
     'two_factor.verify.render': { paramsTuple?: []; params?: {} }
@@ -41,6 +49,8 @@ export type ScannedRoutes = {
   POST: {
     'register.execute': { paramsTuple?: []; params?: {} }
     'login.execute': { paramsTuple?: []; params?: {} }
+    'login.challenge.execute': { paramsTuple?: []; params?: {} }
+    'login.challenge.recovery.execute': { paramsTuple?: []; params?: {} }
     'session.execute': { paramsTuple?: []; params?: {} }
     'two_factor.start.execute': { paramsTuple?: []; params?: {} }
     'two_factor.verify.execute': { paramsTuple?: []; params?: {} }

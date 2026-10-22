@@ -9,6 +9,14 @@ export interface ApiDefinition {
   login: {
     render: typeof routes['login.render']
     execute: typeof routes['login.execute']
+    challenge: {
+      render: typeof routes['login.challenge.render']
+      execute: typeof routes['login.challenge.execute']
+      recovery: {
+        render: typeof routes['login.challenge.recovery.render']
+        execute: typeof routes['login.challenge.recovery.execute']
+      }
+    }
   }
   session: {
     execute: typeof routes['session.execute']

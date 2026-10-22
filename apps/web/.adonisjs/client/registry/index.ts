@@ -30,6 +30,30 @@ const routes = {
     tokens: [{"old":"/login","type":0,"val":"login","end":""}],
     types: placeholder as Registry['login.execute']['types'],
   },
+  'login.challenge.render': {
+    methods: ["GET","HEAD"],
+    pattern: '/login/challenge',
+    tokens: [{"old":"/login/challenge","type":0,"val":"login","end":""},{"old":"/login/challenge","type":0,"val":"challenge","end":""}],
+    types: placeholder as Registry['login.challenge.render']['types'],
+  },
+  'login.challenge.execute': {
+    methods: ["POST"],
+    pattern: '/login/challenge',
+    tokens: [{"old":"/login/challenge","type":0,"val":"login","end":""},{"old":"/login/challenge","type":0,"val":"challenge","end":""}],
+    types: placeholder as Registry['login.challenge.execute']['types'],
+  },
+  'login.challenge.recovery.render': {
+    methods: ["GET","HEAD"],
+    pattern: '/login/challenge/recovery',
+    tokens: [{"old":"/login/challenge/recovery","type":0,"val":"login","end":""},{"old":"/login/challenge/recovery","type":0,"val":"challenge","end":""},{"old":"/login/challenge/recovery","type":0,"val":"recovery","end":""}],
+    types: placeholder as Registry['login.challenge.recovery.render']['types'],
+  },
+  'login.challenge.recovery.execute': {
+    methods: ["POST"],
+    pattern: '/login/challenge/recovery',
+    tokens: [{"old":"/login/challenge/recovery","type":0,"val":"login","end":""},{"old":"/login/challenge/recovery","type":0,"val":"challenge","end":""},{"old":"/login/challenge/recovery","type":0,"val":"recovery","end":""}],
+    types: placeholder as Registry['login.challenge.recovery.execute']['types'],
+  },
   'session.execute': {
     methods: ["POST"],
     pattern: '/logout',

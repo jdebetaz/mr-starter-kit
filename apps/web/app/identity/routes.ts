@@ -9,6 +9,16 @@ router
 
 		router.get('login', [controllers.identity.Login, 'render']);
 		router.post('login', [controllers.identity.Login, 'execute']);
+
+		router.get('login/challenge', [controllers.identity.TotpChallenge, 'render']).as('login.challenge.render');
+		router.post('login/challenge', [controllers.identity.TotpChallenge, 'execute']).as('login.challenge.execute');
+
+		router
+			.get('login/challenge/recovery', [controllers.identity.RecoveryChallenge, 'render'])
+			.as('login.challenge.recovery.render');
+		router
+			.post('login/challenge/recovery', [controllers.identity.RecoveryChallenge, 'execute'])
+			.as('login.challenge.recovery.execute');
 	})
 	.use(middleware.guest());
 
