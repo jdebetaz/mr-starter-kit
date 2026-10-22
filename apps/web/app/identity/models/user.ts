@@ -1,12 +1,20 @@
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid';
 import { compose } from '@adonisjs/core/helpers';
+import encryption from '@adonisjs/core/services/encryption';
 import hash from '@adonisjs/core/services/hash';
 import { WithPrimaryUuid } from '#app/core/mixins/with_primary_uuid';
 import { WithTimestamps } from '#app/core/mixins/with_timestamps';
+import { withTotpManagement } from '#app/core/mixins/with_totp_management';
 import { UserSchema } from '#database/schema';
 import { Role } from '#identity/types/role';
 
-export default class User extends compose(UserSchema, withAuthFinder(hash), WithPrimaryUuid, WithTimestamps) {
+export default class User extends compose(
+	UserSchema,
+	withAuthFinder(hash),
+	withTotpManagement(encryption, hash),
+	WithPrimaryUuid,
+	WithTimestamps,
+) {
 	get initials() {
 		const [first, last] = this.fullName ? this.fullName.split(' ') : this.email.split('@');
 
