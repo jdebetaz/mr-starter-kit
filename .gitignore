@@ -28,3 +28,7 @@ npm-debug.log
 
 # Platform specific
 .DS_Store
+
+# Brainstorming companion and SDD scratch (docs/superpowers/ stays tracked)
+.superpowers/
+docs/superpowers/
