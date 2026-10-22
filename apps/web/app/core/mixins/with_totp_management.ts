@@ -217,24 +217,47 @@ export const withTotpManagement = (
 			 * for that reason. No lookup key is stored: it would leak part of a code.
 			 */
 			async verifyRecoveryCode(code: string): Promise<boolean> {
-				const hashes = this.#storedRecoveryHashes();
 				const canonical = this.#canonicalRecoveryCode(code);
 
-				if (hashes.length === 0 || canonical === null) {
+				if (canonical === null) {
 					return false;
 				}
 
-				for (const [index, stored] of hashes.entries()) {
-					if (await hash.verify(stored, canonical)) {
-						this.recoveryCodes = JSON.stringify(hashes.filter((_, i) => i !== index));
-						await this.save();
+				for (;;) {
+					const snapshot = this.recoveryCodes;
+					const hashes = this.#storedRecoveryHashes();
+
+					if (hashes.length === 0) {
+						return false;
+					}
+
+					let matched = -1;
+					for (const [index, stored] of hashes.entries()) {
+						if (await hash.verify(stored, canonical)) {
+							matched = index;
+							break;
+						}
+					}
+
+					if (matched === -1) {
+						return false;
+					}
+
+					// The column is a JSON array packed into one value, so the write is
+					// conditional on it being unchanged since it was read. Otherwise a
+					// concurrent consume or regenerate would be overwritten, resurrecting
+					// spent or revoked codes. On a lost race, reload and walk again.
+					const next = JSON.stringify(hashes.filter((_, i) => i !== matched));
+					const updated = await this.#compareAndSetRecoveryCodes(snapshot, next);
+
+					if (updated) {
 						return true;
 					}
+					await this.#reloadRecoveryCodes();
 				}
-				return false;
 			}
 
-			// ---- Internals ---------------------------------------------------
+			// ---- Recovery internals ------------------------------------------
 
 			/**
 			 * Lowercase, strip whitespace and dashes, then re-insert the dash at its
@@ -243,14 +266,56 @@ export const withTotpManagement = (
 			#canonicalRecoveryCode(code: string): string | null {
 				const bare = code.toLowerCase().replace(/[\s-]/g, '');
 
-				if (bare.length !== RECOVERY_HALF_LENGTH * 2) {
+				// Rejected before any scrypt work; the alphabet is public, so this leaks nothing.
+				if (!/^[a-z0-9]{10}$/.test(bare)) {
 					return null;
 				}
 				return `${bare.slice(0, RECOVERY_HALF_LENGTH)}-${bare.slice(RECOVERY_HALF_LENGTH)}`;
 			}
 
 			#storedRecoveryHashes(): string[] {
-				return this.recoveryCodes ? (JSON.parse(this.recoveryCodes) as string[]) : [];
+				if (!this.recoveryCodes) {
+					return [];
+				}
+
+				try {
+					const parsed: unknown = JSON.parse(this.recoveryCodes);
+					return Array.isArray(parsed) ? (parsed as string[]) : [];
+				} catch {
+					return [];
+				}
+			}
+
+			/**
+			 * Writes `next` only if the stored column still equals `expected`.
+			 * Keeps the in-memory model in step without marking it dirty.
+			 */
+			async #compareAndSetRecoveryCodes(expected: string | null, next: string): Promise<boolean> {
+				const model = this.constructor as typeof BaseModel;
+				const [affected] = await model
+					.query()
+					.where('id', (this as unknown as { id: number }).id)
+					.where('recovery_codes', expected as string)
+					.update({ recovery_codes: next });
+
+				if (!affected) {
+					return false;
+				}
+				this.recoveryCodes = next;
+				this.$original.recoveryCodes = next;
+				return true;
+			}
+
+			async #reloadRecoveryCodes(): Promise<void> {
+				const model = this.constructor as typeof BaseModel;
+				const row = await model
+					.query()
+					.where('id', (this as unknown as { id: number }).id)
+					.select('recovery_codes')
+					.first();
+				const fresh = (row as unknown as { recoveryCodes: string | null } | null)?.recoveryCodes ?? null;
+				this.recoveryCodes = fresh;
+				this.$original.recoveryCodes = fresh;
 			}
 
 			/**
@@ -268,6 +333,8 @@ export const withTotpManagement = (
 				}
 				return chars;
 			}
+
+			// ---- Internals ---------------------------------------------------
 
 			/**
 			 * Absolute timestep of a code that validated at `delta` steps from

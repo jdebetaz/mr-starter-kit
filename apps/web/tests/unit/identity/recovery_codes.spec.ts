@@ -1,5 +1,6 @@
 import { test } from '@japa/runner';
 import twoFactorConfig from '#config/two_factor';
+import User from '#identity/models/user';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { enabledUser } from '#tests/helpers/two_factor';
 import { createUser } from '#tests/helpers/user_factory';
@@ -101,5 +102,69 @@ test.group('Recovery codes', (group) => {
 		await user.disableTwoFactor();
 		assert.equal(user.remainingRecoveryCodesCount, 0);
 		assert.isFalse(await user.verifyRecoveryCode(code));
+	});
+
+	test('a stale instance cannot resurrect codes revoked by a regeneration', async ({ assert }) => {
+		const user = await createUser();
+		const [old] = await user.generateRecoveryCodes();
+
+		const stale = await User.findOrFail(user.id);
+		const other = await User.findOrFail(user.id);
+		const fresh = await other.generateRecoveryCodes();
+
+		assert.isFalse(await stale.verifyRecoveryCode(old));
+
+		await user.refresh();
+		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount);
+		assert.isTrue(await user.verifyRecoveryCode(fresh[0]));
+	});
+
+	test('a stale instance cannot resurrect a code consumed elsewhere', async ({ assert }) => {
+		const user = await createUser();
+		const [first, second] = await user.generateRecoveryCodes();
+
+		const stale = await User.findOrFail(user.id);
+		const other = await User.findOrFail(user.id);
+		assert.isTrue(await other.verifyRecoveryCode(first));
+
+		// The stale snapshot still holds `first`; consuming `second` must not bring it back.
+		assert.isTrue(await stale.verifyRecoveryCode(second));
+		assert.isFalse(await stale.verifyRecoveryCode(first));
+		await user.refresh();
+		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount - 2);
+		assert.isFalse(await user.verifyRecoveryCode(first));
+	});
+
+	test('input that cannot be a code is rejected', async ({ assert }) => {
+		const user = await createUser();
+		await user.generateRecoveryCodes();
+		assert.isFalse(await user.verifyRecoveryCode('!!!!!!!!!!'));
+		assert.isFalse(await user.verifyRecoveryCode('abcd!fghij'));
+		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount);
+	});
+
+	test('the dash position is not significant', async ({ assert }) => {
+		const user = await createUser();
+		const [first] = await user.generateRecoveryCodes();
+		const bare = first.replace('-', '');
+		assert.isTrue(await user.verifyRecoveryCode(`${bare.slice(0, 3)}-${bare.slice(3)}`));
+	});
+
+	test('a malformed stored value reads as no codes', async ({ assert }) => {
+		const user = await createUser();
+		user.recoveryCodes = 'not json';
+		assert.equal(user.remainingRecoveryCodesCount, 0);
+		user.recoveryCodes = '{"a":1}';
+		assert.equal(user.remainingRecoveryCodesCount, 0);
+		assert.isFalse(await user.verifyRecoveryCode('abcde-fghij'));
+	});
+
+	test('seedRecoveryCode is overridable', async ({ assert }) => {
+		const user = await createUser();
+		let n = 0;
+		user.seedRecoveryCode = () => `code${n++}-aaaaa`.slice(0, 11);
+		const codes = await user.generateRecoveryCodes();
+		assert.equal(codes[0], 'code0-aaaaa');
+		assert.isTrue(await user.verifyRecoveryCode('code3-aaaaa'));
 	});
 });
