@@ -266,30 +266,63 @@ test.group('Login challenge', (group) => {
 		assert.equal(user.remainingRecoveryCodesCount, before);
 	});
 
-	test('the TOTP and recovery forms share one attempt budget', async ({ client, assert }) => {
+	test('exhausting the TOTP budget leaves the recovery form usable', async ({ client, assert }) => {
 		const user = await enabledUser();
-		await user.generateRecoveryCodes();
+		const [code] = await user.generateRecoveryCodes();
 		await user.save();
 
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 5; i++) {
 			await client.post('/login/challenge').withCsrfToken().withSession(pendingFor(user)).form({ code: '000000' });
 		}
-		for (let i = 0; i < 2; i++) {
-			await client
-				.post('/login/challenge/recovery')
-				.withCsrfToken()
-				.withSession(pendingFor(user))
-				.form({ code: 'aaaaa-bbbbb' });
+
+		const recovery = await client
+			.post('/login/challenge/recovery')
+			.withCsrfToken()
+			.withSession(pendingFor(user))
+			.form({ code })
+			.redirects(0);
+
+		assert.equal(recovery.header('location'), '/');
+		recovery.assertSession('auth_web');
+	});
+
+	test('a throttled response carries Retry-After', async ({ client, assert }) => {
+		const user = await enabledUser();
+		for (let i = 0; i < 5; i++) {
+			await client.post('/login/challenge').withCsrfToken().withSession(pendingFor(user)).form({ code: '000000' });
 		}
 
 		const sixth = await client
 			.post('/login/challenge')
-			.withInertia()
 			.withCsrfToken()
 			.withSession(pendingFor(user))
-			.form({ code: currentCodeFor(user) });
+			.form({ code: '000000' })
+			.redirects(0);
 
-		assert.match(sixth.body().flash.error, /^Too many attempts/);
+		assert.isAbove(Number(sixth.header('retry-after')), 0);
+	});
+
+	test('a second IP cannot exhaust the first IP budget', async ({ assert }) => {
+		const user = await enabledUser();
+
+		for (let i = 0; i < 5; i++) {
+			assert.isTrue((await challengeLimiter.attempt('totp', user.id, '203.0.113.9')).allowed);
+		}
+		assert.isFalse((await challengeLimiter.attempt('totp', user.id, '203.0.113.9')).allowed);
+
+		/** The attacker's IP is spent; the victim's own IP still has its full budget. */
+		assert.isTrue((await challengeLimiter.attempt('totp', user.id, '198.51.100.7')).allowed);
+	});
+
+	test('the per-user cap bounds guesses spread across many IPs', async ({ assert }) => {
+		const user = await enabledUser();
+
+		for (let ip = 0; ip < 20; ip++) {
+			const attempt = await challengeLimiter.attempt('totp', user.id, `192.0.2.${ip}`);
+			assert.isTrue(attempt.allowed);
+		}
+
+		assert.isFalse((await challengeLimiter.attempt('totp', user.id, '192.0.2.250')).allowed);
 	});
 
 	test('a successful login clears the attempt budget', async ({ client, assert }) => {
@@ -304,6 +337,6 @@ test.group('Login challenge', (group) => {
 			.withSession(pendingFor(user))
 			.form({ code: currentCodeFor(user) });
 
-		assert.deepEqual(await challengeLimiter.attempt(user.id), { allowed: true });
+		assert.deepEqual(await challengeLimiter.attempt('totp', user.id, '127.0.0.1'), { allowed: true });
 	});
 });

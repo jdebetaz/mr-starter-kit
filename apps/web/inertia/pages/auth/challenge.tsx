@@ -16,7 +16,9 @@ export default function Challenge() {
 								<p id="code-label" className="text-ink block text-sm font-semibold">
 									Enter the six-digit code from your authenticator app
 								</p>
-								<CodeInput name="code" aria-labelledby="code-label" />
+								{/* The page exists only to type six digits, so focusing the input saves keyboard and screen-reader users a hunt. */}
+								{/* oxlint-disable-next-line jsx-a11y/no-autofocus */}
+								<CodeInput name="code" aria-labelledby="code-label" autoFocus />
 								{errors.code && <p className="text-rose text-sm">{errors.code}</p>}
 							</div>
 							<Button type="submit">Verify</Button>
@@ -27,6 +29,11 @@ export default function Challenge() {
 					Lost your device?{' '}
 					<Link route="login.challenge.recovery.render" className="text-ink font-semibold underline">
 						Use a recovery code
+					</Link>
+				</p>
+				<p className="text-ink-muted text-sm">
+					<Link route="login.render" className="text-ink font-semibold underline">
+						Sign in as a different user
 					</Link>
 				</p>
 			</Card>

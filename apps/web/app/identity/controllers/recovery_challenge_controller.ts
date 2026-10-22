@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
 import { assertNever } from '#core/assert_never';
 import VerifyRecoveryChallenge from '#identity/actions/verify_recovery_challenge';
-import { challengeLimiter } from '#identity/limiters/challenge_limiter';
+import { challengeLimiter, throttledMessage } from '#identity/limiters/challenge_limiter';
 import { PendingLogin } from '#identity/services/pending_login';
 import { recoveryCodeValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
@@ -29,12 +29,14 @@ export default class RecoveryChallengeController {
 		/**
 		 * Throttle before verifying: a recovery check walks up to ten scrypt
 		 * hashes on the shared libuv threadpool, so it must never run for a
-		 * request that is over the limit.
+		 * request that is over the limit. Without a pending id the Action returns
+		 * before any lookup, so the unthrottled branch does no verification work.
 		 */
 		if (userId) {
-			const attempt = await challengeLimiter.attempt(userId);
+			const attempt = await challengeLimiter.attempt('recovery', userId, request.ip());
 
 			if (!attempt.allowed) {
+				response.header('Retry-After', String(attempt.retryAfterSeconds));
 				session.flash('error', throttledMessage(attempt.retryAfterSeconds));
 				return response.redirect().toRoute('login.challenge.recovery.render');
 			}
@@ -59,7 +61,7 @@ export default class RecoveryChallengeController {
 		const { user, remainingCodes } = verified.value;
 
 		PendingLogin.take(session);
-		await challengeLimiter.reset(user.id);
+		await challengeLimiter.reset('recovery', user.id, request.ip());
 		await auth.use('web').login(user);
 
 		if (remainingCodes <= LOW_CODES_THRESHOLD) {
@@ -71,9 +73,4 @@ export default class RecoveryChallengeController {
 
 		return response.redirect().toRoute('home');
 	}
-}
-
-function throttledMessage(retryAfterSeconds: number): string {
-	const minutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
-	return `Too many attempts. Try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
 }
