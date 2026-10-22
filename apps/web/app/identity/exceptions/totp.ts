@@ -21,3 +21,10 @@ export const TotpSecretUnreadable = createError(
 	'E_TOTP_SECRET_UNREADABLE',
 	500,
 );
+
+/**
+ * Raised when the confirmed secret is read for a user who has not completed
+ * enrolment. Login verification checks `isTwoFactorEnabled` first, so this
+ * guards a caller that skipped that check.
+ */
+export const TotpNotEnabled = createError('Two-factor authentication is not enabled', 'E_TOTP_NOT_ENABLED', 409);

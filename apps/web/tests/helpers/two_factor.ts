@@ -1,5 +1,3 @@
-import encryption from '@adonisjs/core/services/encryption';
-import { TOTP } from 'otpauth';
 import { createUser } from '#tests/helpers/user_factory';
 import type User from '#identity/models/user';
 
@@ -10,7 +8,10 @@ import type User from '#identity/models/user';
 export async function enabledUser(attributes?: Parameters<typeof createUser>[0]): Promise<User> {
 	const user = await createUser(attributes);
 	await user.generateSecret();
-	const confirmed = await user.enableTwoFactor(user.createTotp(user.getEnrollmentSecret()).generate());
+	// Enrol with the previous step's code: enabling consumes its timestep, and
+	// specs then log in with the current step's code, which must still be fresh.
+	const enablingCode = user.createTotp(user.getEnrollmentSecret()).generate({ timestamp: Date.now() - 30_000 });
+	const confirmed = await user.enableTwoFactor(enablingCode);
 
 	if (!confirmed) {
 		throw new Error('enabledUser could not confirm the freshly generated secret');
@@ -23,12 +24,5 @@ export async function enabledUser(attributes?: Parameters<typeof createUser>[0])
  * The valid code for this instant, from the user's confirmed secret.
  */
 export function currentCodeFor(user: User): string {
-	const encrypted = user.totpSecret;
-	const secret = encrypted ? encryption.decrypt<string>(encrypted) : null;
-
-	if (!secret) {
-		throw new Error('currentCodeFor needs a user with a readable confirmed TOTP secret');
-	}
-
-	return new TOTP({ secret }).generate();
+	return user.createTotp(user.getConfirmedSecret()).generate();
 }

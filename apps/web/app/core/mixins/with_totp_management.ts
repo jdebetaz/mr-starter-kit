@@ -2,12 +2,14 @@ import { DateTime } from 'luxon';
 import { Secret, TOTP } from 'otpauth';
 import QRCode from 'qrcode';
 import twoFactorConfig from '#config/two_factor';
-import { TotpEnrollmentNotStarted, TotpSecretUnreadable } from '#identity/exceptions/totp';
+import { TotpEnrollmentNotStarted, TotpNotEnabled, TotpSecretUnreadable } from '#identity/exceptions/totp';
 import type { TwoFactorConfig } from '#config/two_factor';
 import type { Encryption } from '@adonisjs/core/encryption';
 import type { HashService } from '@adonisjs/core/types';
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers';
 import type { BaseModel } from '@adonisjs/lucid/orm';
+
+const PERIOD_SECONDS = 30;
 
 /**
  * Adds TOTP two-factor management to a model that carries the generated
@@ -48,14 +50,18 @@ export const withTotpManagement = (
 				return this.email;
 			}
 
-			createTotp(secret?: string): TOTP {
+			/**
+			 * The secret is required so a caller always says which one it means:
+			 * `getEnrollmentSecret()` while enrolling, `getConfirmedSecret()` at login.
+			 */
+			createTotp(secret: string): TOTP {
 				return new TOTP({
 					issuer: config.issuer,
 					label: this.getTotpLabel(),
 					algorithm: 'SHA1',
 					digits: 6,
-					period: 30,
-					secret: secret ?? this.getEnrollmentSecret(),
+					period: PERIOD_SECONDS,
+					secret,
 				});
 			}
 
@@ -77,8 +83,19 @@ export const withTotpManagement = (
 				return this.#decrypt(this.totpPendingSecret);
 			}
 
+			/**
+			 * The decrypted confirmed secret used at login.
+			 * Throws `E_TOTP_NOT_ENABLED` when enrolment was never completed.
+			 */
+			getConfirmedSecret(): string {
+				if (!this.totpSecret) {
+					throw new TotpNotEnabled();
+				}
+				return this.#decrypt(this.totpSecret);
+			}
+
 			getSecretUri(): string {
-				return this.createTotp().toString();
+				return this.createTotp(this.getEnrollmentSecret()).toString();
 			}
 
 			async generateQRCode(): Promise<string> {
@@ -98,6 +115,8 @@ export const withTotpManagement = (
 					return false;
 				}
 
+				// The enabling code counts as consumed, so it cannot be replayed at login.
+				this.totpLastConsumedTimestep = this.#timestepOf(delta);
 				this.totpSecret = this.totpPendingSecret;
 				this.totpEnabledAt = DateTime.now();
 				this.totpPendingSecret = null;
@@ -114,7 +133,49 @@ export const withTotpManagement = (
 				await this.save();
 			}
 
+			// ---- Login verification -----------------------------------------
+
+			/**
+			 * Codes pasted from authenticator apps arrive as "123 456" or "123-456".
+			 */
+			normalizeTotpCode(code: string): string {
+				return code.replace(/[\s-]/g, '');
+			}
+
+			/**
+			 * Verifies a login code against the confirmed secret. A code from a
+			 * timestep at or below the last consumed one is a replay and is rejected.
+			 * Returns `false` for a wrong code, a replay, or when 2FA is not enabled.
+			 */
+			async verifyTotpForLogin(code: string): Promise<boolean> {
+				if (!this.isTwoFactorEnabled) {
+					return false;
+				}
+
+				const totp = this.createTotp(this.getConfirmedSecret());
+				const delta = totp.validate({ token: this.normalizeTotpCode(code), window: config.window });
+
+				if (delta === null) {
+					return false;
+				}
+
+				const timestep = this.#timestepOf(delta);
+
+				if (this.totpLastConsumedTimestep !== null && timestep <= this.totpLastConsumedTimestep) {
+					return false;
+				}
+
+				this.totpLastConsumedTimestep = timestep;
+				await this.save();
+				return true;
+			}
+
 			// ---- Internals ---------------------------------------------------
+
+			/** Absolute timestep of a code that validated at `delta` steps from now. */
+			#timestepOf(delta: number): number {
+				return Math.floor(Date.now() / 1000 / PERIOD_SECONDS) + delta;
+			}
 
 			/**
 			 * A null from `decrypt` means the ciphertext is unreadable. That must
