@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto';
 import { DateTime } from 'luxon';
 import { Secret, TOTP } from 'otpauth';
 import QRCode from 'qrcode';
@@ -11,15 +12,20 @@ import type { BaseModel } from '@adonisjs/lucid/orm';
 
 export const TOTP_PERIOD_SECONDS = 30;
 
+const RECOVERY_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const RECOVERY_HALF_LENGTH = 5;
+// Largest multiple of the alphabet size that fits in a byte; bytes at or above
+// it are discarded so every character is equally likely (no modulo bias).
+const RECOVERY_BYTE_LIMIT = 256 - (256 % RECOVERY_ALPHABET.length);
+
 /**
  * Adds TOTP two-factor management to a model that carries the generated
- * TOTP columns. It declares no columns itself: the schema owns them.
- *
- * `hash` is accepted for the recovery codes that are added later.
+ * TOTP and recovery-code columns. It declares no columns itself: the schema
+ * owns them.
  */
 export const withTotpManagement = (
 	encryption: Pick<Encryption, 'encrypt' | 'decrypt'>,
-	_hash: HashService,
+	hash: HashService,
 	override: Partial<TwoFactorConfig> = {},
 ) => {
 	const config: TwoFactorConfig = { ...twoFactorConfig, ...override };
@@ -176,7 +182,92 @@ export const withTotpManagement = (
 				return true;
 			}
 
+			// ---- Recovery codes ---------------------------------------------
+
+			/**
+			 * Issues a fresh set of single-use codes, replacing any existing ones.
+			 * Only hashes are stored: the returned plaintext is the one chance to
+			 * show them. Independent of the TOTP secret lifecycle.
+			 */
+			async generateRecoveryCodes(): Promise<string[]> {
+				const codes = Array.from({ length: config.recoveryCodesCount }, () => this.seedRecoveryCode());
+				const hashes = await Promise.all(codes.map((code) => hash.make(code)));
+				this.recoveryCodes = JSON.stringify(hashes);
+				await this.save();
+				return codes;
+			}
+
+			/**
+			 * One code, `xxxxx-xxxxx`, from a CSPRNG. Overridable.
+			 */
+			seedRecoveryCode(): string {
+				const chars = this.#randomRecoveryChars(RECOVERY_HALF_LENGTH * 2);
+				return `${chars.slice(0, RECOVERY_HALF_LENGTH)}-${chars.slice(RECOVERY_HALF_LENGTH)}`;
+			}
+
+			get remainingRecoveryCodesCount(): number {
+				return this.#storedRecoveryHashes().length;
+			}
+
+			/**
+			 * Consumes a recovery code. Returns `false` (never throws) for an unknown
+			 * or already-used code, or when there are none. Each attempt walks the
+			 * stored hashes with `hash.verify`, so it costs up to
+			 * `recoveryCodesCount` scrypt verifications; the endpoint is throttled
+			 * for that reason. No lookup key is stored: it would leak part of a code.
+			 */
+			async verifyRecoveryCode(code: string): Promise<boolean> {
+				const hashes = this.#storedRecoveryHashes();
+				const canonical = this.#canonicalRecoveryCode(code);
+
+				if (hashes.length === 0 || canonical === null) {
+					return false;
+				}
+
+				for (const [index, stored] of hashes.entries()) {
+					if (await hash.verify(stored, canonical)) {
+						this.recoveryCodes = JSON.stringify(hashes.filter((_, i) => i !== index));
+						await this.save();
+						return true;
+					}
+				}
+				return false;
+			}
+
 			// ---- Internals ---------------------------------------------------
+
+			/**
+			 * Lowercase, strip whitespace and dashes, then re-insert the dash at its
+			 * canonical position. `null` when the result cannot be a recovery code.
+			 */
+			#canonicalRecoveryCode(code: string): string | null {
+				const bare = code.toLowerCase().replace(/[\s-]/g, '');
+
+				if (bare.length !== RECOVERY_HALF_LENGTH * 2) {
+					return null;
+				}
+				return `${bare.slice(0, RECOVERY_HALF_LENGTH)}-${bare.slice(RECOVERY_HALF_LENGTH)}`;
+			}
+
+			#storedRecoveryHashes(): string[] {
+				return this.recoveryCodes ? (JSON.parse(this.recoveryCodes) as string[]) : [];
+			}
+
+			/**
+			 * Uniform characters from `crypto.randomBytes` by rejection sampling.
+			 */
+			#randomRecoveryChars(length: number): string {
+				let chars = '';
+
+				while (chars.length < length) {
+					for (const byte of randomBytes(length * 2)) {
+						if (byte < RECOVERY_BYTE_LIMIT && chars.length < length) {
+							chars += RECOVERY_ALPHABET[byte % RECOVERY_ALPHABET.length];
+						}
+					}
+				}
+				return chars;
+			}
 
 			/**
 			 * Absolute timestep of a code that validated at `delta` steps from
