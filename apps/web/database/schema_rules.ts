@@ -4,6 +4,20 @@ export default {
 	tables: {
 		users: {
 			columns: {
+				// Second-factor material never leaves the server through serialize().
+				// Keys are database column names.
+				totp_secret: {
+					tsType: 'string',
+					decorators: [{ name: '@column', args: { serializeAs: null } }],
+				},
+				totp_pending_secret: {
+					tsType: 'string',
+					decorators: [{ name: '@column', args: { serializeAs: null } }],
+				},
+				recovery_codes: {
+					tsType: 'string',
+					decorators: [{ name: '@column', args: { serializeAs: null } }],
+				},
 				roles: {
 					tsType: 'Role[]',
 					imports: [{ source: '#identity/types/role', typeImports: ['Role'] }],

@@ -88,6 +88,7 @@ export const withTotpManagement = (
 			/**
 			 * Confirms enrolment with a code from the pending secret. A wrong code
 			 * returns `false` and leaves the model untouched.
+			 * Throws `E_TOTP_ENROLLMENT_NOT_STARTED` when there is no pending secret.
 			 */
 			async enableTwoFactor(code: string): Promise<boolean> {
 				const pending = this.getEnrollmentSecret();

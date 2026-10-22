@@ -22,7 +22,7 @@ export class UserSchema extends BaseModel {
   declare id: UUID
   @column({ serializeAs: null })
   declare password: string
-  @column()
+  @column({ serializeAs: null })
   declare recoveryCodes: string | null
   @column()
   declare roles: Role[]
@@ -30,11 +30,11 @@ export class UserSchema extends BaseModel {
   declare totpEnabledAt: DateTime | null
   @column()
   declare totpLastConsumedTimestep: number | null
-  @column()
+  @column({ serializeAs: null })
   declare totpPendingSecret: string | null
   @column()
   declare totpRequired: boolean | null
-  @column()
+  @column({ serializeAs: null })
   declare totpSecret: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
