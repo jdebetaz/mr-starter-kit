@@ -1,11 +1,11 @@
 import { randomBytes } from 'node:crypto';
+import { Secret } from '@adonisjs/core/helpers';
 import { DateTime } from 'luxon';
-import { Secret, TOTP } from 'otpauth';
+import { Secret as TotpSecret, TOTP } from 'otpauth';
 import QRCode from 'qrcode';
 import twoFactorConfig from '#config/two_factor';
-import { TotpEnrollmentNotStarted, TotpNotEnabled, TotpSecretUnreadable } from '#identity/exceptions/totp';
+import { TotpEnrollmentNotStarted, TotpNotEnabled } from '#identity/exceptions/totp';
 import type { TwoFactorConfig } from '#config/two_factor';
-import type { Encryption } from '@adonisjs/core/encryption';
 import type { HashService } from '@adonisjs/core/types';
 import type { NormalizeConstructor } from '@adonisjs/core/types/helpers';
 import type { BaseModel } from '@adonisjs/lucid/orm';
@@ -21,24 +21,21 @@ const RECOVERY_BYTE_LIMIT = 256 - (256 % RECOVERY_ALPHABET.length);
 /**
  * Adds TOTP two-factor management to a model that carries the generated
  * TOTP and recovery-code columns. It declares no columns itself: the schema
- * owns them.
+ * owns them, and the `@encrypted` / `@secret` decorators there own
+ * encryption at rest and keeping the values out of `serialize()`.
  */
-export const withTotpManagement = (
-	encryption: Pick<Encryption, 'encrypt' | 'decrypt'>,
-	hash: HashService,
-	override: Partial<TwoFactorConfig> = {},
-) => {
+export const withTotpManagement = (hash: HashService, override: Partial<TwoFactorConfig> = {}) => {
 	const config: TwoFactorConfig = { ...twoFactorConfig, ...override };
 
 	return <Model extends NormalizeConstructor<typeof BaseModel>>(superclass: Model) => {
 		class WithTotpManagementClass extends superclass {
 			// Declared by the generated schema; typed here only for the mixin body.
 			declare email: string;
-			declare totpPendingSecret: string | null;
-			declare totpSecret: string | null;
+			declare totpPendingSecret: Secret<string> | null;
+			declare totpSecret: Secret<string> | null;
 			declare totpEnabledAt: DateTime | null;
 			declare totpLastConsumedTimestep: number | null;
-			declare recoveryCodes: string | null;
+			declare recoveryCodes: Secret<string> | null;
 
 			// ---- State -------------------------------------------------------
 
@@ -78,7 +75,7 @@ export const withTotpManagement = (
 			 * confirmed authenticator keeps working until the new one is confirmed.
 			 */
 			async generateSecret(): Promise<void> {
-				this.totpPendingSecret = encryption.encrypt(new Secret().base32);
+				this.totpPendingSecret = new Secret(new TotpSecret().base32);
 				await this.save();
 			}
 
@@ -86,18 +83,19 @@ export const withTotpManagement = (
 				if (!this.totpPendingSecret) {
 					throw new TotpEnrollmentNotStarted();
 				}
-				return this.#decrypt(this.totpPendingSecret);
+				return this.totpPendingSecret.release();
 			}
 
 			/**
-			 * The decrypted confirmed secret used at login.
+			 * The confirmed secret used at login. The column decrypts it on read,
+			 * and fails loudly when the ciphertext is unreadable.
 			 * Throws `E_TOTP_NOT_ENABLED` when enrolment was never completed.
 			 */
 			getConfirmedSecret(): string {
 				if (!this.totpSecret) {
 					throw new TotpNotEnabled();
 				}
-				return this.#decrypt(this.totpSecret);
+				return this.totpSecret.release();
 			}
 
 			getSecretUri(): string {
@@ -192,7 +190,7 @@ export const withTotpManagement = (
 			async generateRecoveryCodes(): Promise<string[]> {
 				const codes = Array.from({ length: config.recoveryCodesCount }, () => this.seedRecoveryCode());
 				const hashes = await Promise.all(codes.map((code) => hash.make(code)));
-				this.recoveryCodes = JSON.stringify(hashes);
+				this.recoveryCodes = new Secret(JSON.stringify(hashes));
 				await this.save();
 				return codes;
 			}
@@ -224,7 +222,7 @@ export const withTotpManagement = (
 				}
 
 				for (;;) {
-					const snapshot = this.recoveryCodes;
+					const snapshot = this.recoveryCodes?.release() ?? null;
 					const hashes = this.#storedRecoveryHashes();
 
 					if (hashes.length === 0) {
@@ -279,7 +277,7 @@ export const withTotpManagement = (
 				}
 
 				try {
-					const parsed: unknown = JSON.parse(this.recoveryCodes);
+					const parsed: unknown = JSON.parse(this.recoveryCodes.release());
 					return Array.isArray(parsed) ? (parsed as string[]) : [];
 				} catch {
 					return [];
@@ -301,7 +299,7 @@ export const withTotpManagement = (
 				if (!affected) {
 					return false;
 				}
-				this.recoveryCodes = next;
+				this.recoveryCodes = new Secret(next);
 				this.$original.recoveryCodes = next;
 				return true;
 			}
@@ -313,9 +311,9 @@ export const withTotpManagement = (
 					.where('id', (this as unknown as { id: number }).id)
 					.select('recovery_codes')
 					.first();
-				const fresh = (row as unknown as { recoveryCodes: string | null } | null)?.recoveryCodes ?? null;
+				const fresh = (row as unknown as { recoveryCodes: Secret<string> | null } | null)?.recoveryCodes ?? null;
 				this.recoveryCodes = fresh;
-				this.$original.recoveryCodes = fresh;
+				this.$original.recoveryCodes = fresh?.release() ?? null;
 			}
 
 			/**
@@ -342,19 +340,6 @@ export const withTotpManagement = (
 			 */
 			#timestepOf(delta: number, timestamp: number): number {
 				return Math.floor(timestamp / 1000 / TOTP_PERIOD_SECONDS) + delta;
-			}
-
-			/**
-			 * A null from `decrypt` means the ciphertext is unreadable. That must
-			 * fail rather than read as "not enrolled".
-			 */
-			#decrypt(ciphertext: string): string {
-				const plain = encryption.decrypt<string>(ciphertext);
-
-				if (plain === null) {
-					throw new TotpSecretUnreadable();
-				}
-				return plain;
 			}
 		}
 

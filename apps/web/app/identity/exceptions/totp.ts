@@ -12,17 +12,6 @@ export const TotpEnrollmentNotStarted = createError(
 );
 
 /**
- * Raised when a stored TOTP secret cannot be decrypted, for example after
- * `APP_KEY` rotation or a tampered column. Treating it as "not enrolled"
- * would turn key rotation into a two-factor bypass, so it must fail loudly.
- */
-export const TotpSecretUnreadable = createError(
-	'Stored TOTP secret could not be decrypted',
-	'E_TOTP_SECRET_UNREADABLE',
-	500,
-);
-
-/**
  * Raised when the confirmed secret is read for a user who has not completed
  * enrolment. Login verification checks `isTwoFactorEnabled` first, so this
  * guards a caller that skipped that check.

@@ -1,6 +1,5 @@
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid';
 import { compose } from '@adonisjs/core/helpers';
-import encryption from '@adonisjs/core/services/encryption';
 import hash from '@adonisjs/core/services/hash';
 import { WithPrimaryUuid } from '#app/core/mixins/with_primary_uuid';
 import { WithTimestamps } from '#app/core/mixins/with_timestamps';
@@ -11,7 +10,7 @@ import { Role } from '#identity/types/role';
 export default class User extends compose(
 	UserSchema,
 	withAuthFinder(hash),
-	withTotpManagement(encryption, hash),
+	withTotpManagement(hash),
 	WithPrimaryUuid,
 	WithTimestamps,
 ) {

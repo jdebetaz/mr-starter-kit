@@ -7,6 +7,8 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import type { UUID } from '#core/types'
+import { secret, encrypted } from '#core/orm/columns'
+import type { Secret } from '@adonisjs/core/helpers'
 import type { Role } from '#identity/types/role'
 
 export class UserSchema extends BaseModel {
@@ -22,20 +24,20 @@ export class UserSchema extends BaseModel {
   declare id: UUID
   @column({ serializeAs: null })
   declare password: string
-  @column({ serializeAs: null })
-  declare recoveryCodes: string | null
+  @secret()
+  declare recoveryCodes: Secret<string> | null
   @column()
   declare roles: Role[]
   @column.dateTime()
   declare totpEnabledAt: DateTime | null
   @column()
   declare totpLastConsumedTimestep: number | null
-  @column({ serializeAs: null })
-  declare totpPendingSecret: string | null
+  @encrypted({ purpose: 'users.totp_pending_secret' })
+  declare totpPendingSecret: Secret<string> | null
   @column()
   declare totpRequired: boolean | null
-  @column({ serializeAs: null })
-  declare totpSecret: string | null
+  @encrypted({ purpose: 'users.totp_secret' })
+  declare totpSecret: Secret<string> | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

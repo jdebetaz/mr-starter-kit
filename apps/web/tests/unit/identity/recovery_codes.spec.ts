@@ -1,3 +1,4 @@
+import { Secret } from '@adonisjs/core/helpers';
 import { test } from '@japa/runner';
 import twoFactorConfig from '#config/two_factor';
 import User from '#identity/models/user';
@@ -21,10 +22,11 @@ test.group('Recovery codes', (group) => {
 		const user = await createUser();
 		const codes = await user.generateRecoveryCodes();
 		await user.refresh();
-		assert.isString(user.recoveryCodes);
+		const stored = user.recoveryCodes?.release();
+		assert.isString(stored);
 		for (const code of codes) {
-			assert.notInclude(user.recoveryCodes!, code);
-			assert.notInclude(user.recoveryCodes!, code.replace('-', ''));
+			assert.notInclude(stored!, code);
+			assert.notInclude(stored!, code.replace('-', ''));
 		}
 	});
 
@@ -84,14 +86,19 @@ test.group('Recovery codes', (group) => {
 	test('generating codes leaves the TOTP state untouched', async ({ assert }) => {
 		const user = await enabledUser();
 		const before = [
-			user.totpSecret,
-			user.totpPendingSecret,
+			user.totpSecret?.release(),
+			user.totpPendingSecret?.release(),
 			user.totpEnabledAt?.toMillis(),
 			user.totpLastConsumedTimestep,
 		];
 		await user.generateRecoveryCodes();
 		assert.deepEqual(
-			[user.totpSecret, user.totpPendingSecret, user.totpEnabledAt?.toMillis(), user.totpLastConsumedTimestep],
+			[
+				user.totpSecret?.release(),
+				user.totpPendingSecret?.release(),
+				user.totpEnabledAt?.toMillis(),
+				user.totpLastConsumedTimestep,
+			],
 			before,
 		);
 	});
@@ -152,9 +159,9 @@ test.group('Recovery codes', (group) => {
 
 	test('a malformed stored value reads as no codes', async ({ assert }) => {
 		const user = await createUser();
-		user.recoveryCodes = 'not json';
+		user.recoveryCodes = new Secret('not json');
 		assert.equal(user.remainingRecoveryCodesCount, 0);
-		user.recoveryCodes = '{"a":1}';
+		user.recoveryCodes = new Secret('{"a":1}');
 		assert.equal(user.remainingRecoveryCodesCount, 0);
 		assert.isFalse(await user.verifyRecoveryCode('abcde-fghij'));
 	});

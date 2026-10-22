@@ -1,9 +1,10 @@
+import db from '@adonisjs/lucid/services/db';
 import { test } from '@japa/runner';
 import { TOTP_PERIOD_SECONDS } from '#core/mixins/with_totp_management';
+import User from '#identity/models/user';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { currentCodeFor, enabledUser } from '#tests/helpers/two_factor';
 import { createUser } from '#tests/helpers/user_factory';
-import type User from '#identity/models/user';
 
 const PERIOD_MS = TOTP_PERIOD_SECONDS * 1000;
 
@@ -22,6 +23,15 @@ async function atFixedTime<T>(fn: () => Promise<T>): Promise<T> {
 function codeOfThrown(fn: () => unknown): string | undefined {
 	try {
 		fn();
+	} catch (error) {
+		return (error as { code?: string }).code;
+	}
+	return undefined;
+}
+
+async function codeOfRejected(fn: () => Promise<unknown>): Promise<string | undefined> {
+	try {
+		await fn();
 	} catch (error) {
 		return (error as { code?: string }).code;
 	}
@@ -132,12 +142,13 @@ test.group('TOTP login verification', (group) => {
 
 	test('an unreadable confirmed secret throws instead of reading as not enrolled', async ({ assert }) => {
 		const user = await enabledUser();
-		user.totpSecret = 'not-a-ciphertext';
-		await assert.rejects(() => user.verifyTotpForLogin('123456'), /could not be decrypted/);
-		assert.equal(
-			codeOfThrown(() => user.getConfirmedSecret()),
-			'E_TOTP_SECRET_UNREADABLE',
-		);
+		await db.from('users').where('id', user.id).update({ totp_secret: 'not-a-ciphertext' });
+
+		// The column decrypts on read, so the failure now lands at load time: no
+		// login path can get hold of a user whose secret is unreadable and treat
+		// that user as not enrolled.
+		await assert.rejects(() => User.findOrFail(user.id), /could not be decrypted/);
+		assert.equal(await codeOfRejected(() => User.findOrFail(user.id)), 'E_ENCRYPTED_COLUMN_UNREADABLE');
 	});
 
 	test('getConfirmedSecret throws when 2FA is not enabled', async ({ assert }) => {
