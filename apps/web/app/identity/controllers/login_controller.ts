@@ -21,7 +21,7 @@ export default class LoginController {
 			return response.redirect().toRoute('login.render');
 		}
 
-		await auth.use('web').login(signedIn.value);
+		await auth.use('web').login(signedIn.value.user);
 		return response.redirect().toRoute('home');
 	}
 }
