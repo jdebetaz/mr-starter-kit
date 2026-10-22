@@ -59,6 +59,32 @@ test.group('SignIn', (group) => {
 	});
 });
 
+test.group('SignIn credentials', (group) => {
+	truncateBetweenTests(group);
+	const signIn = new SignIn(new UserRepository());
+
+	test('an unknown email reports invalid_credentials', async ({ assert }) => {
+		const result = await signIn.execute({ email: 'nobody@example.com', password: 'password' });
+		assert.isFalse(result.ok);
+
+		if (result.ok) {
+			return;
+		}
+		assert.equal(result.error.type, 'invalid_credentials');
+	});
+
+	test('a wrong password reports the same invalid_credentials', async ({ assert }) => {
+		const user = await createUser();
+		const result = await signIn.execute({ email: user.email, password: 'not-the-password' });
+		assert.isFalse(result.ok);
+
+		if (result.ok) {
+			return;
+		}
+		assert.equal(result.error.type, 'invalid_credentials');
+	});
+});
+
 test.group('VerifyTotpChallenge', (group) => {
 	truncateBetweenTests(group);
 	const action = new VerifyTotpChallenge(new UserRepository());
@@ -135,6 +161,19 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		assert.equal(result.error.type, 'no_pending_login');
 	});
 
+	test('a pending login for a deleted user reports not_challengeable', async ({ assert }) => {
+		const user = await enabledUser();
+		const id = user.id;
+		await user.delete();
+		const result = await action.execute({ userId: id, code: 'AAAA-BBBB' });
+		assert.isFalse(result.ok);
+
+		if (result.ok) {
+			return;
+		}
+		assert.equal(result.error.type, 'not_challengeable');
+	});
+
 	test('a user who disabled 2FA reports not_challengeable', async ({ assert }) => {
 		const user = await enabledUser();
 		await user.disableTwoFactor();
@@ -167,7 +206,7 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		if (!result.ok) {
 			return;
 		}
-		assert.equal(result.value.remainingCodes, 9);
+		assert.equal(result.value.remainingCodes, twoFactorConfig.recoveryCodesCount - 1);
 	});
 });
 
@@ -196,6 +235,15 @@ test.group('PendingLogin', () => {
 			assert.isNull(PendingLogin.peek(session));
 			assert.isNull(PendingLogin.take(session));
 		});
+	});
+
+	test('a malformed marker reads as absent and is cleared', ({ assert }) => {
+		const session = fakeSession();
+		session.put('pending_login', { userId: id });
+		assert.isNull(PendingLogin.peek(session));
+		assert.isUndefined(session.get('pending_login'));
+		session.put('pending_login', 'garbage');
+		assert.isNull(PendingLogin.take(session));
 	});
 
 	test('an expired marker is cleared, not merely hidden', async ({ assert }) => {

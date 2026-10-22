@@ -10,9 +10,15 @@ interface PendingLoginMarker {
 }
 
 function read(session: Session): UUID | null {
-	const marker = session.get(SESSION_KEY) as PendingLoginMarker | undefined;
+	const marker = session.get(SESSION_KEY) as Partial<PendingLoginMarker> | undefined;
 
-	if (!marker) {
+	if (marker === undefined) {
+		return null;
+	}
+
+	/** A malformed marker could never expire, so it is discarded rather than trusted. */
+	if (typeof marker?.userId !== 'string' || typeof marker.expiresAt !== 'number') {
+		session.forget(SESSION_KEY);
 		return null;
 	}
 
