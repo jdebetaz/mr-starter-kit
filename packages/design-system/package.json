@@ -12,6 +12,7 @@
     "./code-input": "./src/molecules/code-input/code-input.tsx",
     "./field": "./src/molecules/field/field.tsx",
     "./input": "./src/atoms/input/input.tsx",
+    "./password-meter": "./src/molecules/password-meter/password-meter.tsx",
     "./recovery-codes": "./src/molecules/recovery-codes/recovery-codes.tsx"
   },
   "scripts": {
@@ -22,6 +23,7 @@
   },
   "dependencies": {
     "@ark-ui/react": "^5.39.2",
+    "@boilerplate/validation": "workspace:*",
     "tailwind-variants": "catalog:"
   },
   "devDependencies": {

@@ -302,6 +302,9 @@ importers:
       '@boilerplate/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
+      '@boilerplate/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       '@inertiajs/core':
         specifier: ^3.7.1
         version: 3.7.1(axios@1.20.0(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2))
@@ -320,6 +323,9 @@ importers:
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
+      disposable-email-domains-js:
+        specifier: ^1.26.0
+        version: 1.26.0
       edge.js:
         specifier: ^6.5.1
         version: 6.5.1
@@ -438,6 +444,9 @@ importers:
       '@ark-ui/react':
         specifier: ^5.39.2
         version: 5.39.2(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@boilerplate/validation':
+        specifier: workspace:*
+        version: link:../validation
       tailwind-variants:
         specifier: 'catalog:'
         version: 3.3.1(tailwindcss@4.3.3)
@@ -481,6 +490,15 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.1.5(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1)
+
+  packages/validation:
+    devDependencies:
+      '@adonisjs/tsconfig':
+        specifier: 'catalog:'
+        version: 2.0.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
 packages:
 
@@ -4044,6 +4062,9 @@ packages:
 
   dijkstrajs@1.0.3:
     resolution: {integrity: sha512-qiSlmBq9+BCdCA/L46dw8Uy93mloxsPSbwnm5yrKn2vMPiy8KyAskTF6zuV/j5BMsmOGZDPs7KjU+mjb670kfA==}
+
+  disposable-email-domains-js@1.26.0:
+    resolution: {integrity: sha512-pSqALZAiuw6HDC1HqhhtvShRnniUNObQ6kzwa5N280XbyxxCPBZnQQ7fO6Uk/CNTi4cAaKE1UZl3Mc30Zfj4UA==}
 
   dlv@1.1.3:
     resolution: {integrity: sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==}
@@ -10573,6 +10594,8 @@ snapshots:
       wrappy: 1.0.2
 
   dijkstrajs@1.0.3: {}
+
+  disposable-email-domains-js@1.26.0: {}
 
   dlv@1.1.3: {}
 

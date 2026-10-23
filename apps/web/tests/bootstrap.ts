@@ -43,6 +43,11 @@ export const plugins: Config['plugins'] = [
  * The teardown functions are executed after all the tests
  */
 export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
+	/**
+	 * Migrations run once per test process. Anything that reads a table during
+	 * validation needs this, not only the tests that write rows: the signup
+	 * validator's `unique` rule queries the users table.
+	 */
 	setup: [() => testUtils.db().migrate()],
 	teardown: [],
 };
