@@ -7,6 +7,12 @@
 			"skillPath": "skills/conventional-commit/SKILL.md",
 			"computedHash": "f29c9486cede6c7b2df0cfb0a2e4aa67446552b991bcf17d1b309e903171f03d"
 		},
+		"graphify": {
+			"source": "graphify-labs/graphify",
+			"sourceType": "github",
+			"skillPath": "graphify/SKILL.md",
+			"computedHash": "e8a378ed623d7cb2b8273e9ee0ae6fdd4d89ca4a7898d283f78b5f05466a878e"
+		},
 		"security-audit": {
 			"source": "cloudflare/security-audit-skill",
 			"sourceType": "github",
