@@ -198,7 +198,7 @@ catalogs:
       specifier: ^5.9.3
       version: 5.9.3
     vite:
-      specifier: 8.1.5
+      specifier: ^8.1.5
       version: 8.1.5
 
 importers:
@@ -215,7 +215,7 @@ importers:
         specifier: ^1.4.25
         version: 1.5.4
       '@oxlint/plugins':
-        specifier: 1.78.0
+        specifier: ^1.78.0
         version: 1.78.0
       commander:
         specifier: ^15.0.0
@@ -233,7 +233,7 @@ importers:
         specifier: ^0.74.0
         version: 0.74.0
       oxlint:
-        specifier: 1.78.0
+        specifier: ^1.78.0
         version: 1.78.0
 
   apps/web:
