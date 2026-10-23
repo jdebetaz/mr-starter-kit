@@ -7,11 +7,13 @@ import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import { Command, Option } from 'commander';
+import { glob } from 'glob';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = join(projectRoot, 'package.json');
 const documents = ['README.md', 'CONTEXT.md'];
 const sources = ['bin/release.mjs', 'bin/rewrite-release.mjs', 'bin/lib/release-content.mjs'];
+const packageManifests = await glob('{apps,packages}/*/package.json', { cwd: projectRoot, absolute: true });
 const workflows = [
 	{
 		file: '.github/workflows/release.yml',
@@ -27,6 +29,12 @@ const unlicensed = 'UNLICENSED';
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
 const readme = await readFile(join(projectRoot, 'README.md'), 'utf8');
 
+const workspaceManifests = await Promise.all(
+	packageManifests.map(async (p) => {
+		return { path: p, content: JSON.parse(await readFile(p, 'utf8')) };
+	}),
+);
+
 const current = {
 	projectName: readme.match(/^# (.+)$/mu)?.[1] ?? 'My Project',
 	projectSlug: manifest.name,
@@ -34,6 +42,7 @@ const current = {
 	authorName: manifest.author,
 	repository: manifest.repository,
 	license: manifest.license,
+	workspaceScope: workspaceManifests[0]?.content.name?.split('/')[0]?.replace('@', '') ?? 'boilerplate',
 };
 
 const questions = [
@@ -136,6 +145,7 @@ const replacements = [
 	[current.repository, answers.repository],
 	[current.projectSlug, answers.projectSlug],
 	[current.projectName, answers.projectName],
+	[`@${current.workspaceScope}/`, `@${answers.projectSlug}/`],
 ].filter(([search, replacement]) => search && replacement);
 
 function personalize(source) {
@@ -177,6 +187,15 @@ await writeFile(
 	)}\n`,
 );
 console.log('  updated package.json');
+
+for (const { path, content } of workspaceManifests) {
+	const updated = {
+		...content,
+		name: content.name.replace(`@${current.workspaceScope}/`, `@${answers.projectSlug}/`),
+	};
+	await writeFile(path, `${JSON.stringify(updated, null, '\t')}\n`);
+	console.log(`  updated ${path.replace(projectRoot + '/', '')}`);
+}
 
 await enableWorkflows();
 

@@ -32,16 +32,16 @@ Controllers are delivery adapters with at most two public methods. Register the 
 
 Use the same controller when a page and its mutation belong to the same use case. For example, `LoginController.render` displays the login form and `LoginController.execute` submits it. A read-only page may expose only `render`; an endpoint without a page may expose only `execute`. Do not introduce other public controller methods. Use `@inject()` and constructor injection for Actions and Queries.
 
-Controller ownership follows the use case, not the URL or the React page. A composite page does not make all of its mutations one use case. For example, a Settings page may have:
+Controller ownership follows the use case, not the URL or the React page. A composite page does not make all of its mutations one use case. For example, the Security Settings page may have:
 
 ```text
-GET   /settings          -> SettingsController.render
-PATCH /settings/profile  -> UpdateProfileController.execute
-PUT   /settings/password -> ChangePasswordController.execute
-POST  /settings/members  -> InviteMemberController.execute
+GET  /settings/security                    -> SecuritySettingsController.render
+POST /settings/security/two-factor         -> StartTotpEnrollmentController.execute
+POST /settings/security/two-factor/verify  -> ConfirmTotpEnrollmentController.execute
+POST /settings/security/two-factor/disable -> DisableTotpController.execute
 ```
 
-`SettingsController.render` owns the complete page composition and may compose several Queries. Each independently submitted settings module has a focused controller with only `execute`, delegating its mutation to the owning Action. This keeps unrelated validators, authorization rules, expected outcomes, and redirects out of one broad controller.
+`SecuritySettingsController.render` owns the complete page composition and may compose several Queries. Each independently submitted settings module has a focused controller with only `execute`, delegating its mutation to the owning Action. This keeps unrelated validators, authorization rules, expected outcomes, and redirects out of one broad controller.
 
 Use these rules to choose the shape:
 
@@ -143,21 +143,34 @@ POST /signup
   -> UserRepository.createUser
   -> User
 
-GET /account
-  -> AccountController.render
-  -> AccountDetailsQuery.execute
-  -> AccountDetails projection
+GET /login
+  -> LoginController.render
+  -> (page composition)
 
-Settings demonstrates a composite page:
+POST /login
+  -> LoginController.execute
+  -> SignIn.execute
+  -> UserRepository.findByEmail
 
-GET /settings
-  -> SettingsController.render
-  -> ProfileSettingsQuery.execute + TeamMembersQuery.execute
-  -> one Settings page
+GET /settings/security
+  -> SecuritySettingsController.render
+  -> TwoFactorStatusQuery.execute + PendingTotpEnrollmentQuery.execute
+  -> SecuritySettings page
 
-PATCH /settings/profile
-  -> UpdateProfileController.execute
-  -> UpdateProfile.execute
+POST /settings/security/two-factor
+  -> StartTotpEnrollmentController.execute
+  -> StartTotpEnrollment.execute
+  -> UserRepository.updateTotpSecret
+
+POST /settings/security/two-factor/verify
+  -> ConfirmTotpEnrollmentController.execute
+  -> ConfirmTotpEnrollment.execute
+  -> UserRepository.confirmTotpEnrollment
+
+POST /settings/security/two-factor/disable
+  -> DisableTotpController.execute
+  -> DisableTotp.execute
+  -> UserRepository.disableTotp
 ```
 
 ## Completion checklist
