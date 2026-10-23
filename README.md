@@ -173,7 +173,7 @@ The `identity` capability demonstrates the architecture:
 - **Policies** → Role-based 2FA requirement (`TwoFactorRequirementPolicy`)
 - **Queries** → `TwoFactorStatusQuery`, `PendingTotpEnrollmentQuery`
 
-Routes: `/signup`, `/login`, `/account`, `/settings/security`, `/challenge/totp`, `/challenge/recovery`
+Routes: `/signup`, `/login`, `/settings/security`, `/settings/security/two-factor`, `/settings/security/two-factor/verify`, `/settings/security/two-factor/recovery`, `/challenge/totp`, `/challenge/recovery`
 
 ## Testing
 
