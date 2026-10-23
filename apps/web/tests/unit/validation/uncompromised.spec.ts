@@ -3,6 +3,7 @@ import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
 import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
 import { uncompromised } from '#core/validation/rules/uncompromised';
+import { fakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
 import { validationErrors } from '#tests/helpers/validation';
 
 /** SHA-1 of "password", which every prefix fixture below is built from. */
@@ -18,64 +19,41 @@ const respondWith = (body: string, status = 200) => {
 	return { calls, fetchImpl: fetchImpl as unknown as typeof fetch };
 };
 
-/** Swaps a verifier into the container for the duration of one test. */
-const withVerifier = async (verify: PwnedPasswordsVerifier['verify'], run: () => Promise<void>) => {
-	app.container.swap(PwnedPasswordsVerifier, () => ({ verify }) as PwnedPasswordsVerifier);
-	try {
-		await run();
-	} finally {
+test.group('Uncompromised rule', (group) => {
+	group.each.teardown(() => {
 		app.container.restore(PwnedPasswordsVerifier);
-	}
-};
+	});
 
-test.group('Uncompromised rule', () => {
 	test('a leaked password above the threshold is rejected', async ({ assert }) => {
-		await withVerifier(
-			async () => 12,
-			async () => {
-				const validator = vine.create({ password: vine.string().use(uncompromised()) });
+		fakePwnedPasswords(app.container).leaked('password', 12);
+		const validator = vine.create({ password: vine.string().use(uncompromised()) });
 
-				const errors = await validationErrors(validator, { password: 'password' });
+		const errors = await validationErrors(validator, { password: 'password' });
 
-				assert.includeMembers(
-					errors.map((error) => error.rule),
-					['uncompromisedPassword'],
-				);
-			},
+		assert.includeMembers(
+			errors.map((error) => error.rule),
+			['uncompromisedPassword'],
 		);
 	});
 
 	test('a password at or below the threshold passes', async ({ assert }) => {
-		await withVerifier(
-			async () => 3,
-			async () => {
-				const validator = vine.create({ password: vine.string().use(uncompromised({ threshold: 3 })) });
+		fakePwnedPasswords(app.container).leaked('password', 3);
+		const validator = vine.create({ password: vine.string().use(uncompromised({ threshold: 3 })) });
 
-				const errors = await validationErrors(validator, { password: 'password' });
+		const errors = await validationErrors(validator, { password: 'password' });
 
-				assert.lengthOf(errors, 0);
-			},
-		);
+		assert.lengthOf(errors, 0);
 	});
 
 	test('the check is skipped when the field already failed an earlier rule', async ({ assert }) => {
-		let called = false;
+		const pwned = fakePwnedPasswords(app.container).leakedAll(99);
+		const validator = vine.create({ password: vine.string().minLength(50).use(uncompromised()) });
 
-		await withVerifier(
-			async () => {
-				called = true;
-				return 99;
-			},
-			async () => {
-				const validator = vine.create({
-					password: vine.string().minLength(50).use(uncompromised()),
-				});
+		const errors = await validationErrors(validator, { password: 'short' });
 
-				await validationErrors(validator, { password: 'short' });
-
-				assert.isFalse(called);
-			},
-		);
+		/** The earlier rule must have failed, or this proves nothing. */
+		assert.isAbove(errors.length, 0);
+		pwned.assertNoneVerified();
 	});
 });
 
