@@ -68,7 +68,10 @@ test.group('TOTP enrollment', (group) => {
 			.form({ code: '000000' });
 
 		response.assertRedirectsTo('/settings/security/two-factor/verify');
-		assert.equal(response.body().flash.error, 'That code is not valid. Check your authenticator app and try again.');
+		assert.equal(
+			response.body().flash.error,
+			'That code is not valid. Check your authenticator app and try again.',
+		);
 		await user.refresh();
 		assert.isFalse(user.isTwoFactorEnabled);
 		assert.isTrue(user.hasPendingTwoFactor);
@@ -234,7 +237,10 @@ test.group('TOTP enrollment', (group) => {
 	test('a GET on the regenerate path redirects to the recovery page', async ({ client, assert }) => {
 		const user = await enabledUser();
 
-		const response = await client.get('/settings/security/two-factor/recovery/regenerate').loginAs(user).redirects(0);
+		const response = await client
+			.get('/settings/security/two-factor/recovery/regenerate')
+			.loginAs(user)
+			.redirects(0);
 
 		response.assertStatus(302);
 		assert.equal(response.header('location'), '/settings/security/two-factor/recovery');

@@ -36,7 +36,12 @@ export default function Signup({ passwordPolicy }: { passwordPolicy: Prettify<Pa
 						<>
 							<div>
 								<label htmlFor="fullName">Full name</label>
-								<input type="text" name="fullName" id="fullName" data-invalid={errors.fullName ? 'true' : undefined} />
+								<input
+									type="text"
+									name="fullName"
+									id="fullName"
+									data-invalid={errors.fullName ? 'true' : undefined}
+								/>
 								{errors.fullName && <div>{errors.fullName}</div>}
 							</div>
 

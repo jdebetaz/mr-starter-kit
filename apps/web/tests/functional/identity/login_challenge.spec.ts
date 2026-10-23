@@ -112,7 +112,10 @@ test.group('Login challenge', (group) => {
 			.form({ code: '000000' });
 
 		response.assertRedirectsTo('/login/challenge');
-		assert.equal(response.body().flash.error, 'That code is not valid. Check your authenticator app and try again.');
+		assert.equal(
+			response.body().flash.error,
+			'That code is not valid. Check your authenticator app and try again.',
+		);
 
 		assert.notProperty(response.session(), 'auth_web');
 		const page = await client.get('/settings/security').withSession(response.session()).redirects(0);
@@ -226,7 +229,10 @@ test.group('Login challenge', (group) => {
 		for (let i = 0; i < 5; i++) {
 			const wrong = await attempt('000000');
 			wrong.assertRedirectsTo('/login/challenge');
-			assert.equal(wrong.body().flash.error, 'That code is not valid. Check your authenticator app and try again.');
+			assert.equal(
+				wrong.body().flash.error,
+				'That code is not valid. Check your authenticator app and try again.',
+			);
 		}
 
 		/** A CORRECT code on the sixth try is still refused: verification never ran. */
@@ -272,7 +278,11 @@ test.group('Login challenge', (group) => {
 		await user.save();
 
 		for (let i = 0; i < 5; i++) {
-			await client.post('/login/challenge').withCsrfToken().withSession(pendingFor(user)).form({ code: '000000' });
+			await client
+				.post('/login/challenge')
+				.withCsrfToken()
+				.withSession(pendingFor(user))
+				.form({ code: '000000' });
 		}
 
 		const recovery = await client
@@ -289,7 +299,11 @@ test.group('Login challenge', (group) => {
 	test('a throttled response carries Retry-After', async ({ client, assert }) => {
 		const user = await enabledUser();
 		for (let i = 0; i < 5; i++) {
-			await client.post('/login/challenge').withCsrfToken().withSession(pendingFor(user)).form({ code: '000000' });
+			await client
+				.post('/login/challenge')
+				.withCsrfToken()
+				.withSession(pendingFor(user))
+				.form({ code: '000000' });
 		}
 
 		const sixth = await client
@@ -328,7 +342,11 @@ test.group('Login challenge', (group) => {
 	test('a successful login clears the attempt budget', async ({ client, assert }) => {
 		const user = await enabledUser();
 		for (let i = 0; i < 4; i++) {
-			await client.post('/login/challenge').withCsrfToken().withSession(pendingFor(user)).form({ code: '000000' });
+			await client
+				.post('/login/challenge')
+				.withCsrfToken()
+				.withSession(pendingFor(user))
+				.form({ code: '000000' });
 		}
 
 		await client
