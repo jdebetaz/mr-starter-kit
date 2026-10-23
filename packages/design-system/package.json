@@ -5,11 +5,12 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./css": "./src/css/app.css",
     "./button": "./src/atoms/button/button.tsx",
     "./card": "./src/atoms/card/card.tsx",
+    "./css": "./src/css/app.css",
     "./field": "./src/molecules/field/field.tsx",
-    "./input": "./src/atoms/input/input.tsx"
+    "./input": "./src/atoms/input/input.tsx",
+    "./password-meter": "./src/molecules/password-meter/password-meter.tsx"
   },
   "scripts": {
     "build": "tsc --noEmit",
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "@ark-ui/react": "^5.39.2",
+    "@boilerplate/validation": "workspace:*",
     "tailwind-variants": "catalog:"
   },
   "devDependencies": {

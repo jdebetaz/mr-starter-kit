@@ -429,6 +429,9 @@ importers:
       '@ark-ui/react':
         specifier: ^5.39.2
         version: 5.39.2(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@boilerplate/validation':
+        specifier: workspace:*
+        version: link:../validation
       tailwind-variants:
         specifier: 'catalog:'
         version: 3.3.1(tailwindcss@4.3.3)

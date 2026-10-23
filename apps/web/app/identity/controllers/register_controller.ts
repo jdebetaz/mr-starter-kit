@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core';
 import RegisterUser from '#identity/actions/register_user';
-import { signupValidator } from '#identity/validators/user';
+import { passwordPolicy, signupValidator } from '#identity/validators/user';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -8,7 +8,12 @@ export default class RegisterController {
 	constructor(private readonly registerUser: RegisterUser) {}
 
 	async render({ inertia }: HttpContext) {
-		return inertia.render('auth/signup', {});
+		/**
+		 * The page measures a password against the very policy the validator
+		 * enforces, so the checklist it shows cannot drift from what signup
+		 * will accept.
+		 */
+		return inertia.render('auth/signup', { passwordPolicy });
 	}
 
 	async execute({ request, auth, response, session }: HttpContext) {
