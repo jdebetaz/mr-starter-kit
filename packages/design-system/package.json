@@ -22,21 +22,21 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ark-ui/react": "^5.39.2",
+    "@ark-ui/react": "^5.39.3",
     "@boilerplate/validation": "workspace:*",
     "tailwind-variants": "catalog:"
   },
   "devDependencies": {
     "@adonisjs/tsconfig": "catalog:",
-    "@chromatic-com/storybook": "^5.3.1",
-    "@storybook/react-vite": "^10.6.0",
+    "@chromatic-com/storybook": "^5.6.0",
+    "@storybook/react-vite": "^10.6.3",
     "@tailwindcss/vite": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "storybook": "^10.6.0",
+    "storybook": "^10.6.3",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"

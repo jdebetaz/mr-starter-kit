@@ -324,7 +324,8 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 					.where('id', (this as unknown as { id: UUID }).id)
 					.select('recovery_codes')
 					.first();
-				const fresh = (row as unknown as { recoveryCodes: Secret<string> | null } | null)?.recoveryCodes ?? null;
+				const fresh =
+					(row as unknown as { recoveryCodes: Secret<string> | null } | null)?.recoveryCodes ?? null;
 				this.recoveryCodes = fresh;
 				this.$original.recoveryCodes = fresh?.release() ?? null;
 			}

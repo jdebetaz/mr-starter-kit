@@ -30,7 +30,9 @@ router
 
 router
 	.group(() => {
-		router.get('settings/security', [controllers.identity.SecuritySettings, 'render']).as('settings.security.render');
+		router
+			.get('settings/security', [controllers.identity.SecuritySettings, 'render'])
+			.as('settings.security.render');
 
 		router
 			.get('settings/security/two-factor', [controllers.identity.StartTotpEnrollment, 'render'])

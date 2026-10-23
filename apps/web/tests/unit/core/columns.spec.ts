@@ -158,7 +158,10 @@ test.group('Core column decorators | encrypted', () => {
 	});
 
 	test('fails loudly when the ciphertext cannot be read', ({ assert }) => {
-		assert.throws(() => fromDatabase('apiKey', 'not-a-ciphertext'), 'Encrypted column "apiKey" could not be decrypted');
+		assert.throws(
+			() => fromDatabase('apiKey', 'not-a-ciphertext'),
+			'Encrypted column "apiKey" could not be decrypted',
+		);
 	});
 
 	test('uses the application encryption service by default', ({ assert }) => {

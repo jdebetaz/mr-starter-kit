@@ -121,11 +121,16 @@ export function PasswordMeter({ password, policy, className }: PasswordMeterProp
 			<div className={meterHeader()}>
 				<div className={meterTrack()} aria-hidden="true">
 					{Array.from({ length: SEGMENT_COUNT }, (_, index) => (
-						<span key={index} className={meterSegment({ tone: !empty && index < score ? TONES[score] : 'empty' })} />
+						<span
+							key={index}
+							className={meterSegment({ tone: !empty && index < score ? TONES[score] : 'empty' })}
+						/>
 					))}
 				</div>
 
-				<output className={meterCaption()}>{empty ? 'Enter a password' : `Strength: ${SCORE_LABELS[score]}`}</output>
+				<output className={meterCaption()}>
+					{empty ? 'Enter a password' : `Strength: ${SCORE_LABELS[score]}`}
+				</output>
 			</div>
 
 			<ul className={meterList()}>

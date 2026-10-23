@@ -35,7 +35,12 @@ const bodyParserConfig = defineConfig({
 		/**
 		 * Content types handled by the JSON parser.
 		 */
-		types: ['application/json', 'application/json-patch+json', 'application/vnd.api+json', 'application/csp-report'],
+		types: [
+			'application/json',
+			'application/json-patch+json',
+			'application/vnd.api+json',
+			'application/csp-report',
+		],
 	},
 
 	/**

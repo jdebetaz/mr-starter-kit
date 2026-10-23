@@ -9,8 +9,8 @@ export default function Start() {
 
 			<Card className="space-y-4">
 				<p className="text-ink-muted text-sm">
-					You will need an authenticator app, such as 1Password, Authy or Google Authenticator. In the next step you
-					scan a QR code with it, then enter the six-digit code it shows.
+					You will need an authenticator app, such as 1Password, Authy or Google Authenticator. In the next
+					step you scan a QR code with it, then enter the six-digit code it shows.
 				</p>
 				<div className="flex items-center gap-3">
 					<Form route="two_factor.start.execute">

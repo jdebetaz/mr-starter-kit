@@ -17,7 +17,8 @@ export default class RegisterController {
 	}
 
 	async execute({ request, auth, response, session }: HttpContext) {
-		const { passwordConfirmation: _passwordConfirmation, ...payload } = await request.validateUsing(signupValidator);
+		const { passwordConfirmation: _passwordConfirmation, ...payload } =
+			await request.validateUsing(signupValidator);
 
 		const registered = await this.registerUser.execute(payload);
 
