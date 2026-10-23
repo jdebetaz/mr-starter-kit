@@ -5,12 +5,15 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./button": "./src/atoms/button/button.tsx",
-    "./card": "./src/atoms/card/card.tsx",
     "./css": "./src/css/app.css",
+    "./button": "./src/atoms/button/button.tsx",
+    "./callout": "./src/atoms/callout/callout.tsx",
+    "./card": "./src/atoms/card/card.tsx",
+    "./code-input": "./src/molecules/code-input/code-input.tsx",
     "./field": "./src/molecules/field/field.tsx",
     "./input": "./src/atoms/input/input.tsx",
-    "./password-meter": "./src/molecules/password-meter/password-meter.tsx"
+    "./password-meter": "./src/molecules/password-meter/password-meter.tsx",
+    "./recovery-codes": "./src/molecules/recovery-codes/recovery-codes.tsx"
   },
   "scripts": {
     "build": "tsc --noEmit",

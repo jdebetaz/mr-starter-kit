@@ -1,0 +1,161 @@
+import db from '@adonisjs/lucid/services/db';
+import { test } from '@japa/runner';
+import { TOTP_PERIOD_SECONDS } from '#core/mixins/with_totp_management';
+import User from '#identity/models/user';
+import { truncateBetweenTests } from '#tests/helpers/database';
+import { currentCodeFor, enabledUser } from '#tests/helpers/two_factor';
+import { createUser } from '#tests/helpers/user_factory';
+
+const PERIOD_MS = TOTP_PERIOD_SECONDS * 1000;
+
+/** Runs `fn` with the clock pinned, so a step boundary cannot fall inside it. */
+async function atFixedTime<T>(fn: () => Promise<T>): Promise<T> {
+	const realNow = Date.now;
+	const pinned = realNow();
+	Date.now = () => pinned;
+	try {
+		return await fn();
+	} finally {
+		Date.now = realNow;
+	}
+}
+
+function codeOfThrown(fn: () => unknown): string | undefined {
+	try {
+		fn();
+	} catch (error) {
+		return (error as { code?: string }).code;
+	}
+	return undefined;
+}
+
+async function codeOfRejected(fn: () => Promise<unknown>): Promise<string | undefined> {
+	try {
+		await fn();
+	} catch (error) {
+		return (error as { code?: string }).code;
+	}
+	return undefined;
+}
+
+/** A valid code for the step `stepsAgo` steps before the current one. */
+function codeFromStepsAgo(user: User, stepsAgo: number): string {
+	return user.createTotp(user.getConfirmedSecret()).generate({ timestamp: Date.now() - stepsAgo * PERIOD_MS });
+}
+
+test.group('TOTP login verification', (group) => {
+	truncateBetweenTests(group);
+
+	test('a valid code verifies', async ({ assert }) => {
+		const user = await enabledUser();
+		assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
+	});
+
+	test('the same code cannot be used twice', async ({ assert }) => {
+		const user = await enabledUser();
+		const code = currentCodeFor(user);
+		assert.isTrue(await user.verifyTotpForLogin(code));
+		assert.isFalse(await user.verifyTotpForLogin(code));
+	});
+
+	test('consuming a code records its timestep and persists it', async ({ assert }) => {
+		const user = await enabledUser();
+		const stepBefore = Math.floor(Date.now() / PERIOD_MS);
+		assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
+		await user.refresh();
+		assert.oneOf(user.totpLastConsumedTimestep, [stepBefore, stepBefore + 1]);
+	});
+
+	test('a code from a consumed timestep is rejected after a later one', async ({ assert }) => {
+		const user = await enabledUser();
+		await atFixedTime(async () => {
+			const earlier = codeFromStepsAgo(user, 1);
+			assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
+			assert.isFalse(await user.verifyTotpForLogin(earlier));
+		});
+	});
+
+	test('an earlier code still verifies when nothing later was consumed', async ({ assert }) => {
+		const user = await enabledUser();
+		await atFixedTime(async () => {
+			user.totpLastConsumedTimestep = Math.floor(Date.now() / PERIOD_MS) - 2;
+			await user.save();
+			assert.isTrue(await user.verifyTotpForLogin(codeFromStepsAgo(user, 1)));
+		});
+	});
+
+	test('a wrong code is rejected and consumes nothing', async ({ assert }) => {
+		const user = await enabledUser();
+		const before = user.totpLastConsumedTimestep;
+		assert.isFalse(await user.verifyTotpForLogin('000000'));
+		assert.equal(user.totpLastConsumedTimestep, before);
+	});
+
+	test('a code with spaces or a dash verifies', async ({ assert }) => {
+		const spacedUser = await enabledUser();
+		const spaced = currentCodeFor(spacedUser);
+		assert.isTrue(await spacedUser.verifyTotpForLogin(`${spaced.slice(0, 3)} ${spaced.slice(3)}`));
+
+		const dashedUser = await enabledUser();
+		const dashed = currentCodeFor(dashedUser);
+		assert.isTrue(await dashedUser.verifyTotpForLogin(`${dashed.slice(0, 3)}-${dashed.slice(3)}`));
+	});
+
+	test('a code with spaces or a dash confirms enrollment', async ({ assert }) => {
+		for (const separator of [' ', '-']) {
+			const user = await createUser();
+			await user.generateSecret();
+			const code = user.createTotp(user.getEnrollmentSecret()).generate();
+
+			assert.isTrue(await user.enableTwoFactor(`${code.slice(0, 3)}${separator}${code.slice(3)}`));
+			assert.isTrue(user.isTwoFactorEnabled);
+		}
+	});
+
+	test('normalizeTotpCode strips whitespace and dashes', async ({ assert }) => {
+		const user = await createUser();
+		assert.equal(user.normalizeTotpCode(' 123 456\t'), '123456');
+		assert.equal(user.normalizeTotpCode('123-456'), '123456');
+	});
+
+	test('a user without 2FA enabled cannot verify', async ({ assert }) => {
+		const user = await createUser();
+		assert.isFalse(await user.verifyTotpForLogin('000000'));
+	});
+
+	test('a user with only a pending secret cannot verify', async ({ assert }) => {
+		const user = await createUser();
+		await user.generateSecret();
+		const pendingCode = user.createTotp(user.getEnrollmentSecret()).generate();
+		assert.isFalse(await user.verifyTotpForLogin(pendingCode));
+	});
+
+	test('the code that enabled 2FA cannot be replayed at login', async ({ assert }) => {
+		const user = await createUser();
+		await user.generateSecret();
+		const enablingCode = user.createTotp(user.getEnrollmentSecret()).generate();
+
+		assert.isTrue(await user.enableTwoFactor(enablingCode));
+		assert.isNotNull(user.totpLastConsumedTimestep);
+		assert.isFalse(await user.verifyTotpForLogin(enablingCode));
+	});
+
+	test('an unreadable confirmed secret throws instead of reading as not enrolled', async ({ assert }) => {
+		const user = await enabledUser();
+		await db.from('users').where('id', user.id).update({ totp_secret: 'not-a-ciphertext' });
+
+		// The column decrypts on read, so the failure now lands at load time: no
+		// login path can get hold of a user whose secret is unreadable and treat
+		// that user as not enrolled.
+		await assert.rejects(() => User.findOrFail(user.id), /could not be decrypted/);
+		assert.equal(await codeOfRejected(() => User.findOrFail(user.id)), 'E_ENCRYPTED_COLUMN_UNREADABLE');
+	});
+
+	test('getConfirmedSecret throws when 2FA is not enabled', async ({ assert }) => {
+		const user = await createUser();
+		assert.equal(
+			codeOfThrown(() => user.getConfirmedSecret()),
+			'E_TOTP_NOT_ENABLED',
+		);
+	});
+});

@@ -7,10 +7,12 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 import type { UUID } from '#core/types'
+import { secret, encrypted } from '#core/orm/columns'
+import type { Secret } from '@adonisjs/core/helpers'
 import type { Role } from '#identity/types/role'
 
 export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'roles', 'updatedAt'] as const
+  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'recoveryCodes', 'roles', 'totpEnabledAt', 'totpLastConsumedTimestep', 'totpPendingSecret', 'totpRequired', 'totpSecret', 'updatedAt'] as const
   $columns = UserSchema.$columns
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -22,8 +24,20 @@ export class UserSchema extends BaseModel {
   declare id: UUID
   @column({ serializeAs: null })
   declare password: string
+  @secret()
+  declare recoveryCodes: Secret<string> | null
   @column()
   declare roles: Role[]
+  @column.dateTime()
+  declare totpEnabledAt: DateTime | null
+  @column()
+  declare totpLastConsumedTimestep: number | null
+  @encrypted({ purpose: 'users.totp_pending_secret' })
+  declare totpPendingSecret: Secret<string> | null
+  @column()
+  declare totpRequired: boolean | null
+  @encrypted({ purpose: 'users.totp_secret' })
+  declare totpSecret: Secret<string> | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime | null
 }

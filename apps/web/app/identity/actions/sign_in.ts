@@ -8,6 +8,12 @@ export interface SignInParams {
 	password: string;
 }
 
+export interface SignInSuccess {
+	user: User;
+	/** True when the user owes a second factor before they may be logged in. */
+	challengeRequired: boolean;
+}
+
 export interface SignInError {
 	type: 'invalid_credentials';
 }
@@ -16,7 +22,7 @@ export interface SignInError {
 export default class SignIn {
 	constructor(private readonly userRepository: UserRepository) {}
 
-	async execute({ email, password }: SignInParams): Promise<Result<User, SignInError>> {
+	async execute({ email, password }: SignInParams): Promise<Result<SignInSuccess, SignInError>> {
 		const user = await this.userRepository.findByEmail(email);
 
 		/**
@@ -27,6 +33,6 @@ export default class SignIn {
 			return err({ type: 'invalid_credentials' });
 		}
 
-		return ok(user);
+		return ok({ user, challengeRequired: user.isTwoFactorEnabled });
 	}
 }
