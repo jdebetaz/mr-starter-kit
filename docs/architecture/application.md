@@ -6,7 +6,7 @@ This boilerplate is a pragmatic modular monolith. It uses business capability sl
 
 - `app/**` owns HTTP and Inertia delivery: routes, controllers, request validators, middleware, policies, response mapping, models, repositories, and transformers.
 - `inertia/**` owns pages, layouts, browser state, and page-specific composition.
-- `app/core` contains the exception handler, shared middleware, model mixins, and the base repository used by every capability.
+- `app/core` contains the exception handler, shared middleware, model mixins, the `@secret` and `@encrypted` column decorators in `app/core/orm/columns.ts`, and the base repository used by every capability.
 - `providers`, `config`, `start`, `commands`, and `database` retain their AdonisJS roles.
 
 Organize by business capability before technical layer:

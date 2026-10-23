@@ -14,4 +14,13 @@ export default class UserRepository extends BaseRepository<typeof User> {
 	createUser(payload: CreateUserPayload): Promise<User> {
 		return User.create(payload);
 	}
+
+	/**
+	 * Sets the per-user two-factor override. `null` clears it, so the user's
+	 * roles decide again.
+	 */
+	async setTwoFactorRequired(user: User, required: boolean | null): Promise<void> {
+		user.totpRequired = required;
+		await user.save();
+	}
 }

@@ -41,6 +41,7 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 		return {
 			error: session?.flashMessages.get('error') as string | undefined,
 			success: session?.flashMessages.get('success') as string | undefined,
+			warning: session?.flashMessages.get('warning') as string | undefined,
 		};
 	}
 

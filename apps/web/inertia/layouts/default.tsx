@@ -19,6 +19,10 @@ export default function Layout({ children }: { children: ReactElement<Data.Share
 		if (flash.success) {
 			toast.success(flash.success);
 		}
+
+		if (flash.warning) {
+			toast.warning(flash.warning);
+		}
 	});
 
 	return (
