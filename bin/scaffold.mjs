@@ -7,16 +7,13 @@ import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import { Command, Option } from 'commander';
+import { glob } from 'glob';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = join(projectRoot, 'package.json');
 const documents = ['README.md', 'CONTEXT.md'];
 const sources = ['bin/release.mjs', 'bin/rewrite-release.mjs', 'bin/lib/release-content.mjs'];
-const packageManifests = [
-	'apps/web/package.json',
-	'packages/design-system/package.json',
-	'packages/validation/package.json',
-];
+const packageManifests = await glob('{apps,packages}/*/package.json', { cwd: projectRoot, absolute: true });
 const workflows = [
 	{
 		file: '.github/workflows/release.yml',
@@ -34,8 +31,7 @@ const readme = await readFile(join(projectRoot, 'README.md'), 'utf8');
 
 const workspaceManifests = await Promise.all(
 	packageManifests.map(async (p) => {
-		const path = join(projectRoot, p);
-		return { path, content: JSON.parse(await readFile(path, 'utf8')) };
+		return { path: p, content: JSON.parse(await readFile(p, 'utf8')) };
 	}),
 );
 
