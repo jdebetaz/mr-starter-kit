@@ -29,11 +29,16 @@ export class PwnedPasswordsVerifier {
 	}
 
 	async verify(password: string, timeout: number): Promise<number> {
-		const hash = createHash('sha1').update(password, 'utf8').digest('hex').toUpperCase();
-		const prefix = hash.slice(0, PREFIX_LENGTH);
-		const suffix = hash.slice(PREFIX_LENGTH);
-
 		try {
+			/**
+			 * Hashing is inside the guarantee, not before it: a build that
+			 * refuses SHA-1 must fail open like any other failure rather than
+			 * throwing out of a rule that promises never to.
+			 */
+			const hash = createHash('sha1').update(password, 'utf8').digest('hex').toUpperCase();
+			const prefix = hash.slice(0, PREFIX_LENGTH);
+			const suffix = hash.slice(PREFIX_LENGTH);
+
 			const response = await this.#fetch(`${RANGE_ENDPOINT}/${prefix}`, {
 				signal: AbortSignal.timeout(timeout),
 			});

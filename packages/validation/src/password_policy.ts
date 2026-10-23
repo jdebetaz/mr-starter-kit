@@ -70,9 +70,10 @@ const scorePassword = (password: string): PasswordScore => {
 /**
  * Fills in every option a policy does not set and freezes the result, so one
  * policy object can be shared by the server, the validator and the browser
- * without any of them mutating it.
+ * without any of them mutating it. The return type says `Readonly` so a write
+ * is a type error rather than a runtime throw under ESM strict mode.
  */
-export function definePasswordPolicy(options: Partial<PasswordPolicy> = {}): PasswordPolicy {
+export function definePasswordPolicy(options: Partial<PasswordPolicy> = {}): Readonly<PasswordPolicy> {
 	return Object.freeze({ ...DEFAULTS, ...options });
 }
 

@@ -5,8 +5,7 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    "./password-policy": "./src/password_policy.ts",
-    "./types": "./src/types.ts"
+    "./password-policy": "./src/password_policy.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

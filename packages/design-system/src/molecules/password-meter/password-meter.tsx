@@ -108,6 +108,14 @@ export function PasswordMeter({ password, policy, className }: PasswordMeterProp
 	const { score, requirements } = checkPassword(password, policy);
 	const empty = password.length === 0;
 
+	/**
+	 * A ceiling is not something a person works towards, so its row appears
+	 * only once it is breached. "No more than 256 characters ✓" on an empty
+	 * form teaches people the checklist is decorative, which costs the rows
+	 * that do matter.
+	 */
+	const visible = requirements.filter((requirement) => requirement.rule !== 'maxLength' || !requirement.met);
+
 	return (
 		<div className={meterRoot({ className })}>
 			<div className={meterHeader()}>
@@ -121,7 +129,7 @@ export function PasswordMeter({ password, policy, className }: PasswordMeterProp
 			</div>
 
 			<ul className={meterList()}>
-				{requirements.map((requirement) => (
+				{visible.map((requirement) => (
 					<li key={requirement.rule} className={meterItem({ met: requirement.met })}>
 						<span className={meterMarker({ met: requirement.met })} aria-hidden="true">
 							{requirement.met ? '✓' : '•'}

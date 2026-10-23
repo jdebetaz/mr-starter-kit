@@ -3,7 +3,7 @@ import { PasswordMeter } from './password-meter';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 /** The policy the application enforces at signup. */
-const appPolicy = definePasswordPolicy({ minLength: 12, maxLength: 256, minScore: 2 });
+const appPolicy = definePasswordPolicy({ minLength: 12, maxLength: 256, minScore: 3 });
 
 const meta = {
 	title: 'Molecules/PasswordMeter',
@@ -30,7 +30,7 @@ export const Strong: Story = { args: { password: 'correct horse battery staple' 
 /** A password that is strong but too long for the policy's ceiling. */
 export const TooLong: Story = {
 	args: {
-		policy: definePasswordPolicy({ minLength: 12, maxLength: 24, minScore: 2 }),
+		policy: definePasswordPolicy({ minLength: 12, maxLength: 24, minScore: 3 }),
 		password: 'correct horse battery staple and then some',
 	},
 };

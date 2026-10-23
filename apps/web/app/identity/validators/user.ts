@@ -10,13 +10,21 @@ import vine from '@vinejs/vine';
  * digit and a symbol. The leak check in `signupValidator` catches the common
  * passwords that length alone would let through.
  *
- * `maxLength` is not a strength requirement. It bounds the work scrypt does
- * per signup, since scrypt hashes the whole input.
+ * `minScore` is 3 because that is the lowest value `minLength: 12` does not
+ * already guarantee: it asks for 16 characters, or 12 drawing on three
+ * character classes. A score of 2 would be dead configuration — every password
+ * long enough to pass `minLength` scores at least 2 — and would put a row on
+ * the signup form that ticks itself.
+ *
+ * `maxLength` is not a strength requirement, and it is not a meaningful guard
+ * against hashing cost either: scrypt's work is dominated by its fixed memory
+ * parameters, and the request body limit already bounds the input. It is here
+ * as a sane absolute ceiling, nothing more.
  */
 export const passwordPolicy = definePasswordPolicy({
 	minLength: 12,
 	maxLength: 256,
-	minScore: 2,
+	minScore: 3,
 });
 
 /**
@@ -37,8 +45,13 @@ const password = () => vine.string();
  * has no way to know about the errors reported for this field.
  *
  * The password rules run cheapest first: the local policy before the leak
- * lookup, so a password that was never going to be accepted costs no network
- * round trip.
+ * lookup, so a password that fails the policy costs no network round trip.
+ *
+ * A mistyped confirmation does not save one, and moving `confirmed` up the
+ * chain would not change that. It is not really a rule on this field: it
+ * reports against the confirmation field, and only once the password itself
+ * has passed everything else — so by the time it can fail, the lookup has
+ * already happened. Accepted as it is.
  */
 export const signupValidator = vine.create({
 	fullName: vine.string().nullable(),
