@@ -1,0 +1,19 @@
+{
+  "name": "@boilerplate/validation",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./password-policy": "./src/password_policy.ts",
+    "./types": "./src/types.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@adonisjs/tsconfig": "catalog:",
+    "typescript": "catalog:"
+  }
+}

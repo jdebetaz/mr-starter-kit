@@ -67,6 +67,7 @@
     "@adonisjs/static": "^2.0.1",
     "@adonisjs/vite": "^6.0.2",
     "@boilerplate/design-system": "workspace:*",
+    "@boilerplate/validation": "workspace:*",
     "@inertiajs/core": "^3.7.1",
     "@inertiajs/react": "^3.7.1",
     "@tuyau/core": "catalog:",
