@@ -11,6 +11,8 @@ Architecture: read [the application architecture](docs/architecture/application.
 
 Domain language: read [the glossary](CONTEXT.md) before naming or changing domain concepts.
 
+Observability: read [the observability guide](docs/architecture/observability.md) before changing `apps/web/otel.ts`, `apps/web/config/otel.ts`, or the imports at the top of `apps/web/bin/server.ts`. OpenTelemetry auto-instrumentation breaks silently when `../otel.js` stops being the first import.
+
 Use Kysely with Postgres for persistence. Keep database invariants in migrations and persistence mapping inside repositories. Prefer explicit read models for non-trivial reads and domain objects for command paths that enforce business rules.
 
 ## Design system

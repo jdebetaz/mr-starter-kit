@@ -9,9 +9,45 @@ export interface ApiDefinition {
   login: {
     render: typeof routes['login.render']
     execute: typeof routes['login.execute']
+    challenge: {
+      render: typeof routes['login.challenge.render']
+      execute: typeof routes['login.challenge.execute']
+      recovery: {
+        render: typeof routes['login.challenge.recovery.render']
+        execute: typeof routes['login.challenge.recovery.execute']
+      }
+    }
   }
   session: {
     execute: typeof routes['session.execute']
+  }
+  settings: {
+    security: {
+      render: typeof routes['settings.security.render']
+    }
+  }
+  twoFactor: {
+    start: {
+      render: typeof routes['two_factor.start.render']
+      execute: typeof routes['two_factor.start.execute']
+    }
+    verify: {
+      render: typeof routes['two_factor.verify.render']
+      execute: typeof routes['two_factor.verify.execute']
+    }
+    recovery: {
+      render: typeof routes['two_factor.recovery.render']
+      execute: typeof routes['two_factor.recovery.execute']
+      regenerate: {
+        execute: typeof routes['two_factor.recovery.regenerate.execute']
+      }
+    }
+    disable: {
+      execute: typeof routes['two_factor.disable.execute']
+    }
+  }
+  regenerateRecoveryCodes: {
+    render: typeof routes['regenerate_recovery_codes.render']
   }
   home: typeof routes['home']
 }

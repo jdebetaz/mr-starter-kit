@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
 import { err, ok, type Result } from '#core/result';
+import UserRepository from '#identity/repositories/user_repository';
 import type User from '#identity/models/user';
-import type UserRepository from '#identity/repositories/user_repository';
 import type { CreateUserPayload } from '#identity/types/user';
 
 export interface RegisterUserError {

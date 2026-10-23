@@ -1,6 +1,28 @@
 import { Form } from '@adonisjs/inertia/react';
+import { PasswordMeter } from '@boilerplate/design-system/password-meter';
+import { toPasswordRulesString } from '@boilerplate/validation/password-policy';
+import { useState } from 'react';
+import type { Prettify } from '@adonisjs/core/types/common';
+import type { PasswordPolicy } from '@boilerplate/validation/password-policy';
 
-export default function Signup() {
+/**
+ * `Prettify` flattens the policy into an anonymous object type. Inertia only
+ * accepts JSON-shaped props, and TypeScript gives an implicit index signature
+ * to object types but not to interfaces — so the interface itself would be
+ * rejected at `inertia.render`. The constraint belongs to this boundary, not
+ * to the shared package, which is why it is spelled out here.
+ */
+export default function Signup({ passwordPolicy }: { passwordPolicy: Prettify<PasswordPolicy> }) {
+	const [password, setPassword] = useState('');
+
+	/**
+	 * `passwordrules` is a real HTML attribute that React's types do not know
+	 * about, so it is spread in rather than written inline. It tells a password
+	 * manager what to generate, so a suggested password satisfies the policy on
+	 * the first try instead of being rejected after the form is submitted.
+	 */
+	const passwordRules = { passwordrules: toPasswordRulesString(passwordPolicy) };
+
 	return (
 		<div className="form-container">
 			<div>
@@ -37,8 +59,12 @@ export default function Signup() {
 									name="password"
 									id="password"
 									autoComplete="new-password"
+									{...passwordRules}
+									value={password}
+									onChange={(event) => setPassword(event.target.value)}
 									data-invalid={errors.password ? 'true' : undefined}
 								/>
+								<PasswordMeter password={password} policy={passwordPolicy} />
 								{errors.password && <div>{errors.password}</div>}
 							</div>
 

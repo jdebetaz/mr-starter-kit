@@ -1,0 +1,9 @@
+{
+	"extends": "@adonisjs/tsconfig/tsconfig.client.json",
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"types": []
+	},
+	"include": ["src/**/*.ts"]
+}

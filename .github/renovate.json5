@@ -5,6 +5,15 @@
 	rangeStrategy: 'bump',
 	// implied by default, pinned so renovate/* branches never pile up
 	pruneStaleBranches: true,
+	// maturity gate: a version has to survive a few days in the wild before we
+	// see it, so a compromised or yanked release is caught upstream rather than
+	// here. Keep this in step with `--maturity-period` in the root package.json
+	// "taze" script, so updating by hand and updating by bot apply one policy.
+	// Security updates bypass this on their own, so nothing to exempt.
+	minimumReleaseAge: '3 days',
+	// default, but stated: without it renovate opens the PR anyway and leaves
+	// a failing status check, which is not a gate
+	internalChecksFilter: 'strict',
 	packageRules: [
 		{
 			matchDepTypes: ['peerDependencies'],

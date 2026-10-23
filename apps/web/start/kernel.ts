@@ -35,6 +35,7 @@ server.use([
  * requests with a registered route.
  */
 router.use([
+	() => import('@adonisjs/otel/otel_middleware'),
 	() => import('@adonisjs/core/bodyparser_middleware'),
 	() => import('@adonisjs/session/session_middleware'),
 	() => import('@adonisjs/shield/shield_middleware'),
@@ -50,4 +51,5 @@ export const middleware = router.named({
 	guest: () => import('#identity/middleware/guest_middleware'),
 	auth: () => import('#identity/middleware/auth_middleware'),
 	role: () => import('#identity/middleware/role_middleware'),
+	requireTwoFactor: () => import('#identity/middleware/require_two_factor_middleware'),
 });
