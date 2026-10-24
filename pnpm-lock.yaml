@@ -198,7 +198,7 @@ catalogs:
       specifier: ^5.9.3
       version: 5.9.3
     vite:
-      specifier: ^8.3.4
+      specifier: ^8.3.5
       version: 8.3.5
 
 importers:
