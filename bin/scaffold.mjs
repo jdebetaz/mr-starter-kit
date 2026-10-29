@@ -1,29 +1,20 @@
 #!/usr/bin/env node
 
 import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { glob, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import { Command, Option } from 'commander';
-import { glob } from 'glob';
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifestPath = join(projectRoot, 'package.json');
 const documents = ['README.md', 'CONTEXT.md'];
 const sources = ['bin/release.mjs', 'bin/rewrite-release.mjs', 'bin/lib/release-content.mjs'];
-const packageManifests = await glob('{apps,packages}/*/package.json', { cwd: projectRoot, absolute: true });
-const workflows = [
-	{
-		file: '.github/workflows/release.yml',
-		disabled:
-			'# Disabled in the starter kit so cloning it cannot publish a release.\n' +
-			'# `pnpm scaffold` restores the automatic push trigger.\n' +
-			'on:\n  workflow_dispatch:\n',
-		enabled: 'on:\n  push:\n    branches:\n      - main\n  workflow_dispatch:\n',
-	},
-];
+const packageManifests = await Array.fromAsync(glob('{apps,packages}/*/package.json', { cwd: projectRoot }), (match) =>
+	join(projectRoot, match),
+);
 const unlicensed = 'UNLICENSED';
 
 const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
@@ -71,29 +62,7 @@ function withLicenseSection(document, answers) {
 	return `${document.trimEnd()}\n\n## License\n\n${answers.license} © ${answers.authorName}. See [LICENSE](LICENSE) for details.\n`;
 }
 
-async function enableWorkflows() {
-	for (const { file, disabled, enabled } of workflows) {
-		const path = join(projectRoot, file);
-
-		if (!existsSync(path)) {
-			continue;
-		}
-
-		const source = await readFile(path, 'utf8');
-
-		if (!source.includes(disabled)) {
-			continue;
-		}
-
-		await writeFile(path, source.replace(disabled, enabled));
-		console.log(`  enabled ${file}`);
-	}
-}
-
-const program = new Command()
-	.name('scaffold')
-	.description('Rewrite the project identity and enable the release workflow')
-	.showHelpAfterError();
+const program = new Command().name('scaffold').description('Rewrite the project identity').showHelpAfterError();
 
 for (const question of questions) {
 	const flag = `--${question.option.replaceAll(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)} <value>`;
@@ -196,8 +165,6 @@ for (const { path, content } of workspaceManifests) {
 	await writeFile(path, `${JSON.stringify(updated, null, '\t')}\n`);
 	console.log(`  updated ${path.replace(projectRoot + '/', '')}`);
 }
-
-await enableWorkflows();
 
 console.log(`\n${answers.projectName} is ready.\n`);
 console.log('Next steps:\n');
