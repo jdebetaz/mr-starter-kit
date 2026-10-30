@@ -23,16 +23,27 @@ pnpm --filter @boilerplate/web worker
 worker runs — in development and in production alike, where the worker is a second process
 beside the web one.
 
-The entrypoint is `bin/worker.ts` rather than `node ace queue:work` directly, because
-`bin/console.ts` does not import `../otel.js` first and an Ace-launched worker would run
-with no instrumentation. In development, `node ace queue:work --hmr` reloads jobs on change.
+By default it drains the `default` queue only. A job sent with `.toQueue('emails')` needs
+`--queue=emails` or `--all-queues`, or it is never picked up. `node ace queue:work --hmr`
+reloads jobs on change during development.
+
+### A note on tracing
+
+The worker runs through Ace, and `bin/console.ts` deliberately does **not** import
+`../otel.js` first. Doing so installs an OpenTelemetry ESM loader hook that strips
+`default` from TypeScript modules transpiled on the fly, which breaks Ace's command
+discovery and every `node ace` command — including the test suite. Jobs are therefore
+traced in a compiled build, where there is no on-the-fly transpilation, and not under
+`node ace` in development. `config/otel.ts` registers the queue's `QueueInstrumentation`
+either way.
 
 ## Writing a job
 
 Jobs are application code, so they live in `src/<capability>/jobs/` beside that
-capability's Actions and repositories — not in `app/`, and not in the `app/jobs/` directory
-`node ace make:job` defaults to. `config/queue.ts` discovers them at
-`./src/*/jobs/**/*.{ts,js}`.
+capability's Actions and repositories. `config/queue.ts` discovers them at
+`./src/*/jobs/**/*.{ts,js}`, and `apps/web/stubs/make/job/main.stub` overrides the
+package's generator so `node ace make:job billing/process_webhook` lands there rather than
+in `app/jobs/`, which the glob would never find.
 
 ```ts
 import { Job } from '@adonisjs/queue';
@@ -95,6 +106,8 @@ name, so re-registering on deploy updates it in place and keeps its run count an
 
 The suite runs on the `sync` adapter (`QUEUE_DRIVER=sync` in `.env.test`), so no test needs
 Redis or a worker, and a dispatched job runs inline where that is what you want to assert.
+Run the worker from `apps/web`: the discovery glob resolves against the working directory,
+so from the repo root it quietly finds nothing.
 
 To assert on dispatch instead of execution, opt in per group:
 

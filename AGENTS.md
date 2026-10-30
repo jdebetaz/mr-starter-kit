@@ -11,7 +11,7 @@ Architecture: read [the application architecture](docs/architecture/application.
 
 Domain language: read [the glossary](CONTEXT.md) before naming or changing domain concepts.
 
-Observability: read [the observability guide](docs/architecture/observability.md) before changing `apps/web/otel.ts`, `apps/web/config/otel.ts`, or the imports at the top of any entrypoint — `apps/web/bin/server.ts` and `apps/web/bin/worker.ts` today. OpenTelemetry auto-instrumentation breaks silently when `../otel.js` stops being the first import, and every new entrypoint inherits the rule.
+Observability: read [the observability guide](docs/architecture/observability.md) before changing `apps/web/otel.ts`, `apps/web/config/otel.ts`, or the imports at the top of any entrypoint — `apps/web/bin/server.ts` today — but never `apps/web/bin/console.ts`, where the loader hook breaks Ace's command discovery. OpenTelemetry auto-instrumentation breaks silently when `../otel.js` stops being the first import, and every new entrypoint inherits the rule.
 
 Use Lucid ORM with Postgres for persistence. Keep database invariants in migrations and persistence mapping inside repositories. Prefer explicit read models for non-trivial reads and domain objects for command paths that enforce business rules.
 
