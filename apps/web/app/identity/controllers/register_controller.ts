@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core';
+import { passwordPolicy, signupValidator } from '#app/identity/validators/user';
 import RegisterUser from '#identity/actions/register_user';
-import { passwordPolicy, signupValidator } from '#identity/validators/user';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()

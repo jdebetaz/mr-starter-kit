@@ -1,5 +1,5 @@
 import { test } from '@japa/runner';
-import { challengeLimiter } from '#identity/limiters/challenge_limiter';
+import { challengeLimiter } from '#app/identity/limiters/challenge_limiter';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { currentCodeFor, enabledUser } from '#tests/helpers/two_factor';
 import { createUser } from '#tests/helpers/user_factory';

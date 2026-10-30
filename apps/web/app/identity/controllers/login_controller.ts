@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
+import { loginValidator } from '#app/identity/validators/user';
 import SignIn from '#identity/actions/sign_in';
 import { PendingLogin } from '#identity/services/pending_login';
-import { loginValidator } from '#identity/validators/user';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()

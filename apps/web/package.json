@@ -18,7 +18,7 @@
   },
   "imports": {
     "#app/*": "./app/*.js",
-    "#identity/*": "./app/identity/*.js",
+    "#identity/*": "./src/identity/*.js",
     "#core/*": "./src/core/*.js",
     "#generated/*": "./.adonisjs/server/*.js",
     "#providers/*": "./providers/*.js",

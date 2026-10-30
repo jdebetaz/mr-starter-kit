@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core';
+import { challengeLimiter, throttledMessage } from '#app/identity/limiters/challenge_limiter';
+import { totpCodeValidator } from '#app/identity/validators/two_factor';
 import { assertNever } from '#core/assert_never';
 import VerifyTotpChallenge from '#identity/actions/verify_totp_challenge';
-import { challengeLimiter, throttledMessage } from '#identity/limiters/challenge_limiter';
 import { PendingLogin } from '#identity/services/pending_login';
-import { totpCodeValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()

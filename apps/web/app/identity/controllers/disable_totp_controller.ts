@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
+import { passwordConfirmationValidator } from '#app/identity/validators/two_factor';
 import { assertNever } from '#core/assert_never';
 import DisableTotp from '#identity/actions/disable_totp';
-import { passwordConfirmationValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()

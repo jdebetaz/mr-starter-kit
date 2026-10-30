@@ -1,5 +1,5 @@
 import { test } from '@japa/runner';
-import { isTwoFactorRequiredFor } from '#identity/policies/two_factor_requirement';
+import { isTwoFactorRequiredFor } from '#identity/domain/two_factor_requirement';
 import UserRepository from '#identity/repositories/user_repository';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { createUser } from '#tests/helpers/user_factory';

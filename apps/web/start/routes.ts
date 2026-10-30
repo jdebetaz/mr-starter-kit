@@ -1,4 +1,4 @@
-import '#identity/routes';
+import '#app/identity/routes';
 /*
 |--------------------------------------------------------------------------
 | Routes file

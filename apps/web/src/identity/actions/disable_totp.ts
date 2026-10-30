@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core';
 import { err, ok, type Result } from '#core/result';
-import { isTwoFactorRequiredFor } from '#identity/policies/two_factor_requirement';
+import { isTwoFactorRequiredFor } from '#identity/domain/two_factor_requirement';
 import type User from '#identity/models/user';
 
 export interface DisableTotpParams {
