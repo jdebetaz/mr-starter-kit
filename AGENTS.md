@@ -1,7 +1,7 @@
 <critical>
 - Use PNPM workspaces and keep `pnpm-lock.yaml` synchronized with dependency changes.
 - Use Oxlint and Oxfmt as the only linting and formatting tools; their root config files own code style.
-- Treat `apps/web/.adonisjs/` and `apps/web/types/db.ts` as generated code.
+- Treat `apps/web/.adonisjs/` and `apps/web/database/schema.ts` as generated code.
 - Organize `apps/web/app` by business capability, not technical layer. Point delivery dependencies from controllers and routes to actions, queries, repositories, and domain objects, never the reverse.
 </critical>
 

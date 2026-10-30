@@ -14,8 +14,20 @@ inertia/          ──┘
 - `inertia/**` owns pages, layouts, browser state, and page-specific composition.
 - `src/**` owns Actions, Queries, domain objects, repositories, jobs, and application services.
 - `src/**` never imports from `app/**` or `inertia/**`.
-- `app/shared` contains shared delivery concerns. `src/shared` contains application foundations needed by multiple capabilities.
+- `app/core` contains shared delivery concerns: the exception handler, framework middleware, and VineJS rules. `src/core` contains application foundations needed by multiple capabilities: `Result`, branded types, Lucid mixins, ORM column helpers, the base repository, and `DomainError`.
 - `providers`, `config`, `start`, `commands`, and `database` retain their AdonisJS roles.
+
+Subpath imports follow that split, so a specifier says which side it reaches:
+
+| Specifier     | Resolves to                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| `#core/*`     | `apps/web/src/core/*`                                                        |
+| `#identity/*` | `apps/web/src/identity/*`                                                    |
+| `#app/*`      | `apps/web/app/*` — including `#app/core/*` and `#app/identity/controllers/*` |
+
+A new capability adds one entry, `#<capability>/*` → `./src/<capability>/*.js`, and reaches its own delivery code through `#app/<capability>/...`.
+
+The `src/** → app/**` rule is enforced, not merely documented: `oxlint.config.ts` carries an `overrides` entry scoped to `apps/*/src/**/*.ts` that restricts the `#app/*` and `#inertia/*` import patterns. Breaking the boundary fails `pnpm lint`.
 
 Organize by business capability before technical layer:
 
@@ -104,7 +116,7 @@ A Query is the public read side. Use a named Query when a read has business inte
 - Keep filtering, visibility, aggregation, and read-side calculations inside the Query.
 - Hydrate a domain entity only when the caller needs its behavior or will continue into a command.
 
-A controller may use Kysely directly for a genuinely trivial delivery lookup. Move the read into a Query as soon as it carries application meaning.
+A controller may use the Lucid query builder directly for a genuinely trivial delivery lookup. Move the read into a Query as soon as it carries application meaning.
 
 ```text
 controller or adapter -> Query -> projection or read model
@@ -120,7 +132,7 @@ Use DDD patterns where they protect meaning and invariants:
 - Repositories load and persist complete aggregates; they do not expose lazy-loaded domain objects.
 - Read models remain independent from aggregates and may be optimized for their caller.
 
-This is pragmatic DDD, not ceremony. A simple write without domain behavior may remain in an Action and repository. A simple read may remain a direct Kysely query. Add a module only when its interface hides meaningful complexity.
+This is pragmatic DDD, not ceremony. A simple write without domain behavior may remain in an Action and repository. A simple read may remain a direct Lucid query. Add a module only when its interface hides meaningful complexity.
 
 ## Results and exceptions
 
@@ -134,9 +146,13 @@ Expected errors contain stable application facts, not HTTP statuses, form field 
 
 Throw for unexpected infrastructure failures, invalid persisted data, broken configuration, and impossible states. Code in `src/**` does not throw Adonis or HTTP-aware exceptions.
 
+Those throws extend `DomainError` from `#core/exceptions/domain_error`, which carries a stable `code` and no HTTP status. `app/core/exceptions/handler.ts` owns the mapping from code to status; a code with no entry becomes a 500. This keeps `createError` and its status argument out of `src/**`.
+
 ## Transactions and persistence
 
-Kysely repositories map Postgres rows to command-side domain objects. Queries map rows directly to read models.
+Lucid repositories map Postgres rows to command-side domain objects. Queries map rows directly to read models.
+
+Lucid models live in `src/<capability>/models/` and are composed from the generated `database/schema.ts`, which `node ace migration:run` rewrites from the migrations. Column definitions are therefore written as migrations; neither `database/schema.ts` nor `apps/web/.adonisjs/` is edited by hand. The generator scans the live database, so regenerate it against a database this repository's migrations own.
 
 - A public Action starts a transaction when its use case needs atomic writes.
 - Nested application work reuses the active transaction through `TransactionManager`.
