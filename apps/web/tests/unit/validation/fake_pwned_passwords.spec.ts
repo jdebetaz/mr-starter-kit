@@ -1,8 +1,8 @@
 import app from '@adonisjs/core/services/app';
 import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
-import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
-import { uncompromised } from '#core/validation/rules/uncompromised';
+import { PwnedPasswordsVerifier } from '#app/core/validation/pwned_passwords_verifier';
+import { uncompromised } from '#app/core/validation/rules/uncompromised';
 import { fakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
 import { validationErrors } from '#tests/helpers/validation';
 

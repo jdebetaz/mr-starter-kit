@@ -2,7 +2,7 @@ import app from '@adonisjs/core/services/app';
 import testUtils from '@adonisjs/core/services/test_utils';
 import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
-import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
+import { PwnedPasswordsVerifier } from '#app/core/validation/pwned_passwords_verifier';
 import { loginValidator, signupValidator } from '#identity/validators/user';
 import { fakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
 import { validationErrors } from '#tests/helpers/validation';

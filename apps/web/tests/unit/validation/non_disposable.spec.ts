@@ -1,6 +1,6 @@
 import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
-import { nonDisposable } from '#core/validation/rules/non_disposable';
+import { nonDisposable } from '#app/core/validation/rules/non_disposable';
 import { validationErrors } from '#tests/helpers/validation';
 
 /** The chain a real validator uses: only well-formed addresses reach the rule. */

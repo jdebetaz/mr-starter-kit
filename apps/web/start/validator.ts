@@ -16,9 +16,9 @@
 
 import vine, { SimpleMessagesProvider, VineDate, VineString } from '@vinejs/vine';
 import { DateTime } from 'luxon';
-import { nonDisposable, type NonDisposableOptions } from '#core/validation/rules/non_disposable';
-import { enforcePasswordPolicy } from '#core/validation/rules/password_policy';
-import { uncompromised, type UncompromisedOptions } from '#core/validation/rules/uncompromised';
+import { nonDisposable, type NonDisposableOptions } from '#app/core/validation/rules/non_disposable';
+import { enforcePasswordPolicy } from '#app/core/validation/rules/password_policy';
+import { uncompromised, type UncompromisedOptions } from '#app/core/validation/rules/uncompromised';
 import type { PasswordPolicy } from '@boilerplate/validation/password-policy';
 
 declare module '@vinejs/vine/types' {
