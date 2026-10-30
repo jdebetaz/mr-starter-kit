@@ -1,4 +1,5 @@
 import '#app/identity/routes';
+import '#app/teams/routes';
 /*
 |--------------------------------------------------------------------------
 | Routes file

@@ -25,6 +25,37 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 		return {
 			errors: ctx.inertia.always(this.getValidationErrors(ctx)),
 			user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
+
+			/**
+			 * Which workspace the request is acting in. Every page needs it, and
+			 * resolving it per page would invite reading it from the wrong place.
+			 */
+			workspace: ctx.inertia.always(this.#shareWorkspace(ctx)),
+		};
+	}
+
+	/**
+	 * Undefined before the auth and workspace middleware have run, e.g. on a 404.
+	 *
+	 * Flat rather than a discriminated union: Inertia's shared-props type rejects
+	 * a union whose members differ in which keys they carry.
+	 */
+	#shareWorkspace(ctx: HttpContext) {
+		/** SAFETY: widening only, as in `share` above; `workspace` is read optionally. */
+		const { workspace } = ctx as Partial<HttpContext>;
+
+		if (!workspace) {
+			return undefined;
+		}
+
+		if (workspace.kind === 'personal') {
+			return { kind: workspace.kind, team: null, role: null };
+		}
+
+		return {
+			kind: workspace.kind,
+			team: { id: workspace.team.id, name: workspace.team.name },
+			role: workspace.role,
 		};
 	}
 

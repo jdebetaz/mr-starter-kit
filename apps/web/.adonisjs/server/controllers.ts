@@ -17,4 +17,7 @@ export const controllers = {
     StartTotpEnrollment: () => import('#app/identity/controllers/start_totp_enrollment_controller'),
     TotpChallenge: () => import('#app/identity/controllers/totp_challenge_controller'),
   },
+  teams: {
+    SwitchWorkspace: () => import('#app/teams/controllers/switch_workspace_controller'),
+  },
 }
