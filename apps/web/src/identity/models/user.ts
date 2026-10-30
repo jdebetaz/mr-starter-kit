@@ -3,8 +3,8 @@ import { compose } from '@adonisjs/core/helpers';
 import hash from '@adonisjs/core/services/hash';
 import { WithPrimaryUuid } from '#core/mixins/with_primary_uuid';
 import { WithTimestamps } from '#core/mixins/with_timestamps';
-import { withTotpManagement } from '#core/mixins/with_totp_management';
 import { UserSchema } from '#database/schema';
+import { withTotpManagement } from '#identity/models/mixins/with_totp_management';
 import { Role } from '#identity/types/role';
 
 export default class User extends compose(

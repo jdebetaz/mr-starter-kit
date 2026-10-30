@@ -1,6 +1,6 @@
 import db from '@adonisjs/lucid/services/db';
 import { test } from '@japa/runner';
-import { TOTP_PERIOD_SECONDS } from '#core/mixins/with_totp_management';
+import { TOTP_PERIOD_SECONDS } from '#identity/models/mixins/with_totp_management';
 import User from '#identity/models/user';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { currentCodeFor, enabledUser } from '#tests/helpers/two_factor';

@@ -27,6 +27,10 @@ Read [the mail guide](docs/architecture/mail.md) before adding or changing a mes
 
 Read [the queue guide](docs/architecture/queue.md) before adding or changing a job, the retry policy, or the scheduler. Jobs live in `src/<capability>/jobs/`, not the `app/jobs/` that `node ace make:job` defaults to.
 
+## Teams and workspaces
+
+Read [the teams guide](docs/architecture/teams.md) before changing team membership, roles, invitations, or anything that authorizes an action. Authorization and entitlement questions take a `Workspace`, never a `User`.
+
 ## Verification
 
 Run `pnpm lint`, `pnpm format`, `pnpm typecheck`, and `pnpm test` before committing. Run `pnpm test:lint` as well when changing `tools/oxlint` or `oxlint.config.ts`. Custom lint rules live under the `tenkai/` namespace; see [the lint rules guide](tools/oxlint/README.md) before disabling one. Use Conventional Commits.
