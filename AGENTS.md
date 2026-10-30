@@ -11,7 +11,7 @@ Architecture: read [the application architecture](docs/architecture/application.
 
 Domain language: read [the glossary](CONTEXT.md) before naming or changing domain concepts.
 
-Observability: read [the observability guide](docs/architecture/observability.md) before changing `apps/web/otel.ts`, `apps/web/config/otel.ts`, or the imports at the top of `apps/web/bin/server.ts`. OpenTelemetry auto-instrumentation breaks silently when `../otel.js` stops being the first import.
+Observability: read [the observability guide](docs/architecture/observability.md) before changing `apps/web/otel.ts`, `apps/web/config/otel.ts`, or the imports at the top of any entrypoint — `apps/web/bin/server.ts` and `apps/web/bin/worker.ts` today. OpenTelemetry auto-instrumentation breaks silently when `../otel.js` stops being the first import, and every new entrypoint inherits the rule.
 
 Use Lucid ORM with Postgres for persistence. Keep database invariants in migrations and persistence mapping inside repositories. Prefer explicit read models for non-trivial reads and domain objects for command paths that enforce business rules.
 
@@ -22,6 +22,10 @@ Read [the design system guide](docs/agents/design-system.md) before changing `pa
 ## Email
 
 Read [the mail guide](docs/architecture/mail.md) before adding or changing a message, an MJML template, or the mail configuration. Install AdonisJS packages with `node ace configure <package>`: the codemod owns `config/<name>.ts`, the provider registration and the env block, and overwrites a hand-written setup.
+
+## Background jobs
+
+Read [the queue guide](docs/architecture/queue.md) before adding or changing a job, the retry policy, or the scheduler. Jobs live in `src/<capability>/jobs/`, not the `app/jobs/` that `node ace make:job` defaults to.
 
 ## Verification
 
