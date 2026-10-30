@@ -1,4 +1,5 @@
 import edge from 'edge.js';
+import { buildMailUrl } from '#core/mails/mail_url';
 import env from '#start/env';
 
 /**
@@ -8,14 +9,5 @@ import env from '#start/env';
  */
 edge.global('appName', env.get('APP_NAME'));
 
-/**
- * Builds an absolute URL for an email. A relative href has no origin to resolve
- * against once the message leaves the app, so every link in a template goes
- * through this. `APP_URL` is normalised, because a configured trailing slash
- * would otherwise produce `https://example.com//settings`.
- */
-edge.global('mailUrl', (path: string): string => {
-	const base = env.get('APP_URL').replace(/\/+$/, '');
-
-	return `${base}/${path.replace(/^\/+/, '')}`;
-});
+/** Absolute link for a template. See `buildMailUrl` for why links are absolute. */
+edge.global('mailUrl', (path: string): string => buildMailUrl(env.get('APP_URL'), path));

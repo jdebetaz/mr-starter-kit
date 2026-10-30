@@ -13,18 +13,31 @@ import type { Group } from '@japa/runner/core';
  */
 export function captureMail(group: Group): void {
 	group.each.setup(() => {
-		mail.restore();
-		mail.fake();
+		clearCaptured();
 	});
+}
+
+/**
+ * Empties the suite-wide fake rather than replacing it. Installing a second
+ * fake here would leave it in place after the group, so a later group could
+ * pass on this one's fake instead of the bootstrap's — which would quietly
+ * retire the regression test for "a test sends real mail".
+ */
+function clearCaptured(): void {
+	fakeMailer().mails.clear();
 }
 
 /** The messages sent so far, for assertions `mails.assertSent` cannot express. */
 export function sentMails(): BaseMail[] {
+	return fakeMailer().mails.sent();
+}
+
+function fakeMailer(): FakeMailer {
 	const mailer = mail.use();
 
 	if (!(mailer instanceof FakeMailer)) {
 		throw new Error('The mailer is not faked; tests/bootstrap.ts should have faked it.');
 	}
 
-	return mailer.mails.sent();
+	return mailer;
 }

@@ -69,17 +69,18 @@ Four things the base class settles for you:
   malformed template in its result rather than throwing, so without that check a broken
   layout would ship as partial or empty HTML.
 
-The template extends the shared layout and uses the `mailUrl` global for links — an email
+The template composes the shared layout and uses the `mailUrl` global for links — an email
 has no origin to resolve a relative `href` against:
 
 ```edge
-@layout('mails/layout')
-  @section('content')
-    <mj-text>You have been invited to {{ teamName }}.</mj-text>
-    <mj-button href="{{ mailUrl(acceptUrl) }}">Accept</mj-button>
-  @end
+@component('mails/layout')
+  <mj-text>You have been invited to {{ teamName }}.</mj-text>
+  <mj-button href="{{ mailUrl(acceptUrl) }}">Accept</mj-button>
 @end
 ```
+
+Edge 6 has no `@layout`/`@section` tags — components and slots replaced them — so the
+layout is a component and your body arrives as its default slot.
 
 `mailUrl` and `appName` are registered in `start/mail.ts`. The `globals` key in
 `config/mail.ts` is deliberately empty: it only reaches the mailer's own view helpers, and

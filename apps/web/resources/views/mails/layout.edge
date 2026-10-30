@@ -1,15 +1,16 @@
 {{--
   The shell every message renders inside. A message's own view does:
 
-    @layout('mails/layout')
-      @section('content')
-        <mj-text>...</mj-text>
-      @end
+    @component('mails/layout')
+      <mj-text>...</mj-text>
     @end
 
-  Keep it free of images and web fonts: many clients block the first and
-  ignore the second, and both cost a network round trip the reader did not ask
-  for. Every link goes through the `mailUrl` global so it is absolute.
+  Edge 6 has no `@layout`/`@section` tags — components and slots replaced them —
+  so this is a component and the message's body arrives as the default slot.
+
+  Keep it free of images and web fonts: many clients block the first and ignore
+  the second, and both cost a network round trip the reader did not ask for.
+  Every link goes through the `mailUrl` global so it is absolute.
 --}}
 <mjml>
   <mj-head>
@@ -30,7 +31,7 @@
 
     <mj-section background-color="#ffffff" border-radius="8px">
       <mj-column>
-        @!section('content')
+        {{{ await $slots.main() }}}
       </mj-column>
     </mj-section>
 
