@@ -31,6 +31,7 @@ export default defineConfig({
 		() => import('@adonisjs/session/commands'),
 		() => import('@adonisjs/inertia/commands'),
 		() => import('@adonisjs/mail/commands'),
+		() => import('@adonisjs/queue/commands'),
 	],
 
 	/*
@@ -63,6 +64,8 @@ export default defineConfig({
 		() => import('@adonisjs/limiter/limiter_provider'),
 		() => import('#providers/api_provider'),
 		() => import('@adonisjs/otel/otel_provider'),
+		() => import('@adonisjs/redis/redis_provider'),
+		() => import('@adonisjs/queue/queue_provider'),
 	],
 
 	/*
@@ -78,6 +81,10 @@ export default defineConfig({
 		() => import('#start/kernel'),
 		() => import('#start/validator'),
 		() => import('#start/mail'),
+		{
+			file: () => import('#start/scheduler'),
+			environment: ['web'],
+		},
 	],
 
 	/*

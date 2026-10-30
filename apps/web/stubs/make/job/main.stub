@@ -1,0 +1,28 @@
+{{#var jobName = string(entity.name).pascalCase().toString()}}
+{{#var jobFileName = string(entity.name).snakeCase().toString()}}
+{{{
+  exports({
+    to: app.makePath('src', entity.path, 'jobs', jobFileName + '.ts')
+  })
+}}}
+import { Job } from '@adonisjs/queue'
+import type { JobOptions } from '@adonisjs/queue/types'
+
+interface {{ jobName }}Payload {
+  // Define your payload type here
+}
+
+export default class {{ jobName }} extends Job<{{ jobName }}Payload> {
+  static options: JobOptions = {
+    queue: 'default',
+  }
+
+  async execute() {
+    // Your job logic here
+  }
+
+  /**
+   * Retries and backoff come from config/queue.ts. Add an
+   * "async failed(error: Error)" method here to react once they are exhausted.
+   */
+}
