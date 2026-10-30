@@ -1,7 +1,19 @@
 import { defineConfig, destinations } from '@adonisjs/otel';
+import { QueueManager } from '@adonisjs/queue';
+import { QueueInstrumentation } from '@adonisjs/queue/otel';
 import env from '#start/env';
 
 const otlpEndpoint = env.get('OTEL_EXPORTER_OTLP_ENDPOINT');
+
+const queueInstrumentation = new QueueInstrumentation({
+	/**
+	 * 'link' (default) starts a new trace for each job execution
+	 * and links it to the dispatch span. 'parent' makes the
+	 * execution a child of the dispatch span, in the same trace.
+	 */
+	executionSpanLinkMode: 'link',
+});
+queueInstrumentation.manuallyRegister({ QueueManager });
 
 const otelConfig = defineConfig({
 	/**
@@ -23,6 +35,7 @@ const otelConfig = defineConfig({
 		 * and the SQL spans are the ones worth having under an HTTP span.
 		 */
 		'@opentelemetry/instrumentation-pg': { enabled: true },
+		'@adonisjs/queue': queueInstrumentation,
 	},
 
 	/**
