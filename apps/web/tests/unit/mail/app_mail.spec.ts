@@ -11,20 +11,12 @@ class FixtureMail extends AppMail<WelcomeProps> {
 	subject = 'Fixture';
 	view = 'fixture';
 	props: WelcomeProps = { name: 'Ada' };
-
-	textBody(): string {
-		return 'Hello Ada';
-	}
 }
 
 class BrokenTemplateMail extends AppMail<Record<string, never>> {
 	subject = 'Broken';
 	view = 'broken';
 	props: Record<string, never> = {};
-
-	textBody(): string {
-		return 'Broken';
-	}
 }
 
 test.group('AppMail', (group) => {
@@ -54,7 +46,7 @@ test.group('AppMail', (group) => {
 		const { html, text } = mail.message.toJSON().message;
 
 		assert.isNotEmpty(html);
-		assert.equal(text, 'Hello Ada');
+		assert.include(text, 'Hello Ada');
 	});
 
 	/** `from` is left unset so the mailer applies the configured sender. */

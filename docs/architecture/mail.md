@@ -49,10 +49,6 @@ export default class TeamInvitationMail extends AppMail<{ teamName: string; acce
   subject = 'You have been invited to a team';
   view = 'team_invitation';
   props = { teamName: this.team.name, acceptUrl: ... };
-
-  textBody(): string {
-    return `You have been invited to ${this.team.name}. Accept: ${this.props.acceptUrl}`;
-  }
 }
 ```
 
@@ -61,8 +57,11 @@ Four things the base class settles for you:
 - **Recipients are `MailRecipient`, `{ email, name? }` — not `User`.** An invitation goes to
   an address that has no account yet, which is the whole point of inviting it. A caller
   holding a user passes `{ email: user.email, name: user.fullName ?? undefined }`.
-- **`textBody()` is abstract, so you cannot forget the plain-text part.** HTML with no text
-  alternative is scored down by spam filters and renders empty in text-only clients.
+- **The plain-text part is derived from your HTML with `html-to-text`,** so there is no
+  second copy of the words to forget to update. HTML with no text alternative is scored
+  down by spam filters and renders empty in text-only clients. Links keep their href, so a
+  reader in a text-only client still has somewhere to go. Override the protected
+  `textBody(html)` if one message needs something else.
 - **Do not set `from`.** Leaving it unset applies the configured sender. Set it only when a
   message genuinely must come from elsewhere.
 - **A template that does not compile raises `MailTemplateInvalid`.** MJML reports a

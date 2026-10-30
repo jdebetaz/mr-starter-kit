@@ -10,10 +10,6 @@ class ComposedMail extends AppMail<{ teamName: string }> {
 	subject = 'Composed';
 	view = 'composed_fixture';
 	props = { teamName: 'Acme Rockets' };
-
-	textBody(): string {
-		return 'You have been invited to Acme Rockets.';
-	}
 }
 
 /**

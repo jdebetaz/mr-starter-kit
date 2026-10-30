@@ -1,5 +1,6 @@
 import { BaseMail } from '@adonisjs/mail';
 import edge from 'edge.js';
+import { convert } from 'html-to-text';
 import mjml2html from 'mjml';
 import { MailTemplateInvalid } from '#core/mails/exceptions';
 
@@ -33,11 +34,23 @@ export default abstract class AppMail<TProps extends object> extends BaseMail {
 	}
 
 	/**
-	 * The plain-text alternative. Abstract rather than optional: a transactional
-	 * email with no text part is scored down by spam filters and renders empty in
-	 * text-only clients, so a subclass cannot forget it.
+	 * Turns the compiled HTML into the plain-text alternative. Derived rather
+	 * than hand-written: a transactional email with no text part is scored down
+	 * by spam filters and renders empty in text-only clients, and a second copy
+	 * of the same words is one more thing to forget to update.
+	 *
+	 * Links keep their href, because a reader in a text-only client still needs
+	 * somewhere to go.
 	 */
-	abstract textBody(): string;
+	protected textBody(html: string): string {
+		return convert(html, {
+			wordwrap: 78,
+			selectors: [
+				{ selector: 'img', format: 'skip' },
+				{ selector: 'a', options: { hideLinkHrefIfSameAsText: true } },
+			],
+		});
+	}
 
 	async prepare(): Promise<void> {
 		const template = await edge.render(`mails/${this.view}`, this.props);
@@ -56,6 +69,9 @@ export default abstract class AppMail<TProps extends object> extends BaseMail {
 			);
 		}
 
-		this.message.to(this.recipient.email, this.recipient.name).html(compiled.html).text(this.textBody());
+		this.message
+			.to(this.recipient.email, this.recipient.name)
+			.html(compiled.html)
+			.text(this.textBody(compiled.html));
 	}
 }

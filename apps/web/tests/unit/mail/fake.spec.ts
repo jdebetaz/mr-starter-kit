@@ -9,10 +9,6 @@ class NoticeMail extends AppMail<Record<string, never>> {
 	subject = 'Notice';
 	view = 'notice';
 	props: Record<string, never> = {};
-
-	textBody(): string {
-		return 'Notice';
-	}
 }
 
 /**

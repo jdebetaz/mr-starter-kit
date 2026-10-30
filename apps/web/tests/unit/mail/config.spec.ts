@@ -9,10 +9,6 @@ class SenderProbeMail extends AppMail<Record<string, never>> {
 	subject = 'Sender probe';
 	view = 'sender_probe';
 	props: Record<string, never> = {};
-
-	textBody(): string {
-		return 'Sender probe';
-	}
 }
 
 test.group('Mail configuration', (group) => {
