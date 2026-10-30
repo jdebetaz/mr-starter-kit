@@ -53,6 +53,20 @@ export default class TeamRepository extends BaseRepository<typeof Team> {
 		return TeamMember.query().where('team_id', teamId).exec();
 	}
 
+	async updateMemberRole(membership: TeamMember, role: TeamRole): Promise<void> {
+		membership.role = role;
+		await membership.save();
+	}
+
+	async removeMember(membership: TeamMember): Promise<void> {
+		await membership.delete();
+	}
+
+	/** Keeps `teams.owner_id` in step with the owning membership row. */
+	async setOwner(teamId: UUID, ownerId: UUID, trx: TransactionClientContract): Promise<void> {
+		await Team.query({ client: trx }).where('id', teamId).update({ owner_id: ownerId });
+	}
+
 	async ownerCount(teamId: UUID): Promise<number> {
 		const owners = await TeamMember.query()
 			.where('team_id', teamId)

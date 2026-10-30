@@ -18,6 +18,13 @@ export const controllers = {
     TotpChallenge: () => import('#app/identity/controllers/totp_challenge_controller'),
   },
   teams: {
+    ChangeMemberRole: () => import('#app/teams/controllers/change_member_role_controller'),
+    CreateTeam: () => import('#app/teams/controllers/create_team_controller'),
+    InviteMember: () => import('#app/teams/controllers/invite_member_controller'),
+    RemoveMember: () => import('#app/teams/controllers/remove_member_controller'),
+    RevokeInvitation: () => import('#app/teams/controllers/revoke_invitation_controller'),
     SwitchWorkspace: () => import('#app/teams/controllers/switch_workspace_controller'),
+    Teams: () => import('#app/teams/controllers/teams_controller'),
+    TransferOwnership: () => import('#app/teams/controllers/transfer_ownership_controller'),
   },
 }

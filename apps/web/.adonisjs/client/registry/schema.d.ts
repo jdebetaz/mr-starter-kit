@@ -254,6 +254,110 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'workspace.switch': {
+    methods: ["POST"]
+    pattern: '/workspace/switch'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').switchWorkspaceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').switchWorkspaceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/switch_workspace_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/switch_workspace_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/switch_workspace_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.settings.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/team'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
+    }
+  }
+  'teams.create': {
+    methods: ["POST"]
+    pattern: '/teams'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').createTeamValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').createTeamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/create_team_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/create_team_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/create_team_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.members.invite': {
+    methods: ["POST"]
+    pattern: '/settings/team/members/invite'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').inviteMemberValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').inviteMemberValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/invite_member_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/invite_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/invite_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.members.remove': {
+    methods: ["DELETE"]
+    pattern: '/settings/team/members'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/remove_member_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/remove_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/remove_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.members.role': {
+    methods: ["PATCH"]
+    pattern: '/settings/team/members/role'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').changeMemberRoleValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').changeMemberRoleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/change_member_role_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/change_member_role_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/change_member_role_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.ownership.transfer': {
+    methods: ["POST"]
+    pattern: '/settings/team/ownership'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/transfer_ownership_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/transfer_ownership_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/transfer_ownership_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.invitations.revoke': {
+    methods: ["DELETE"]
+    pattern: '/settings/team/invitations'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').invitationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').invitationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/revoke_invitation_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/revoke_invitation_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/revoke_invitation_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'home': {
     methods: ["GET","HEAD"]
     pattern: '/'

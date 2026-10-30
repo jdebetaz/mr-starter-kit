@@ -23,6 +23,14 @@ export type ScannedRoutes = {
     'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.regenerate.execute': { paramsTuple?: []; params?: {} }
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
+    'workspace.switch': { paramsTuple?: []; params?: {} }
+    'teams.settings.render': { paramsTuple?: []; params?: {} }
+    'teams.create': { paramsTuple?: []; params?: {} }
+    'teams.members.invite': { paramsTuple?: []; params?: {} }
+    'teams.members.remove': { paramsTuple?: []; params?: {} }
+    'teams.members.role': { paramsTuple?: []; params?: {} }
+    'teams.ownership.transfer': { paramsTuple?: []; params?: {} }
+    'teams.invitations.revoke': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
   }
   GET: {
@@ -35,6 +43,7 @@ export type ScannedRoutes = {
     'two_factor.verify.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
     'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
+    'teams.settings.render': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -47,6 +56,7 @@ export type ScannedRoutes = {
     'two_factor.verify.render': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
     'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
+    'teams.settings.render': { paramsTuple?: []; params?: {} }
     'home': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -60,6 +70,17 @@ export type ScannedRoutes = {
     'two_factor.recovery.execute': { paramsTuple?: []; params?: {} }
     'two_factor.recovery.regenerate.execute': { paramsTuple?: []; params?: {} }
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
+    'workspace.switch': { paramsTuple?: []; params?: {} }
+    'teams.create': { paramsTuple?: []; params?: {} }
+    'teams.members.invite': { paramsTuple?: []; params?: {} }
+    'teams.ownership.transfer': { paramsTuple?: []; params?: {} }
+  }
+  DELETE: {
+    'teams.members.remove': { paramsTuple?: []; params?: {} }
+    'teams.invitations.revoke': { paramsTuple?: []; params?: {} }
+  }
+  PATCH: {
+    'teams.members.role': { paramsTuple?: []; params?: {} }
   }
 }
 declare module '@adonisjs/core/types/http' {

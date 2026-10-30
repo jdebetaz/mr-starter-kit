@@ -49,5 +49,25 @@ export interface ApiDefinition {
   regenerateRecoveryCodes: {
     render: typeof routes['regenerate_recovery_codes.render']
   }
+  workspace: {
+    switch: typeof routes['workspace.switch']
+  }
+  teams: {
+    settings: {
+      render: typeof routes['teams.settings.render']
+    }
+    create: typeof routes['teams.create']
+    members: {
+      invite: typeof routes['teams.members.invite']
+      remove: typeof routes['teams.members.remove']
+      role: typeof routes['teams.members.role']
+    }
+    ownership: {
+      transfer: typeof routes['teams.ownership.transfer']
+    }
+    invitations: {
+      revoke: typeof routes['teams.invitations.revoke']
+    }
+  }
   home: typeof routes['home']
 }
