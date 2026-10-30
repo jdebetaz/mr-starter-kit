@@ -42,6 +42,7 @@
     "@poppinss/ts-exec": "^1.5.1",
     "@tailwindcss/vite": "catalog:",
     "@types/luxon": "^3.7.6",
+    "@types/mjml": "^5.4.2",
     "@types/node": "^26.6.5",
     "@types/qrcode": "^1.5.6",
     "@types/react": "catalog:",

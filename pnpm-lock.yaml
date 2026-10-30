@@ -402,6 +402,9 @@ importers:
       '@types/luxon':
         specifier: ^3.7.6
         version: 3.7.6
+      '@types/mjml':
+        specifier: ^5.4.2
+        version: 5.4.2
       '@types/node':
         specifier: ^26.6.5
         version: 26.6.5
@@ -3168,6 +3171,12 @@ packages:
 
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
+
+  '@types/mjml-core@5.1.1':
+    resolution: {integrity: sha512-H3ycAWAk7LCLUqX/uLVbrndU9zZ93tcjbfmrAoe2lsPw+lEpiLl0Gi6vYNXEcY7Ww/tv/oXm/9HkAGYWyY1TTw==}
+
+  '@types/mjml@5.4.2':
+    resolution: {integrity: sha512-f3Ueveyh+m1gD5jYVbUJhHAGBIhexi+N+XHqiuCyfkWixOWSiUTNSxuGt/NGlxNNePlqgV3BeJFsquGQQfXN7A==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -10015,6 +10024,12 @@ snapshots:
       '@types/node': 26.6.5
 
   '@types/methods@1.1.4': {}
+
+  '@types/mjml-core@5.1.1': {}
+
+  '@types/mjml@5.4.2':
+    dependencies:
+      '@types/mjml-core': 5.1.1
 
   '@types/ms@2.1.0': {}
 
