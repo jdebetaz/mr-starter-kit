@@ -21,7 +21,7 @@ Read [the design system guide](docs/agents/design-system.md) before changing `pa
 
 ## Email
 
-Read [the mail guide](docs/architecture/mail.md) before adding or changing a message, an MJML template, or the mail configuration. Install AdonisJS packages with `node ace configure <package>`: the codemod owns `config/<name>.ts`, the provider registration and the env block, and overwrites a hand-written setup.
+Read [the mail guide](docs/architecture/mail.md) before adding or changing a message, an MJML template, or the mail configuration. Install AdonisJS packages with `node ace add <package>`: the codemod owns `config/<name>.ts`, the provider registration and the env block, and overwrites a hand-written setup.
 
 ## Verification
 
