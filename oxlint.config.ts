@@ -50,4 +50,25 @@ export default defineConfig({
 		'react/react-in-jsx-scope': 'off',
 		'typescript/consistent-type-definitions': ['error', 'interface'],
 	},
+	overrides: [
+		{
+			// `src/**` is the application side: Actions, Queries, repositories, models and
+			// domain objects. Delivery (`app/**`) and the browser (`inertia/**`) depend on
+			// it, never the reverse. See docs/architecture/application.md.
+			files: ['apps/*/src/**/*.{ts,tsx}'],
+			rules: {
+				'no-restricted-imports': [
+					'error',
+					{
+						patterns: [
+							{
+								group: ['#app/*', '#app/**', '#inertia/*', '#inertia/**', '**/app/**', '**/inertia/**'],
+								message: 'src/** must not import from app/** or inertia/**',
+							},
+						],
+					},
+				],
+			},
+		},
+	],
 });

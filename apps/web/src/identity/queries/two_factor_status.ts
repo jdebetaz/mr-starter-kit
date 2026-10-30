@@ -1,4 +1,4 @@
-import { isTwoFactorRequiredFor } from '#identity/policies/two_factor_requirement';
+import { isTwoFactorRequiredFor } from '#identity/domain/two_factor_requirement';
 import type User from '#identity/models/user';
 
 export interface TwoFactorStatus {

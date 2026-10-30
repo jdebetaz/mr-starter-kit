@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core';
+import { challengeLimiter, throttledMessage } from '#app/identity/limiters/challenge_limiter';
+import { recoveryCodeValidator } from '#app/identity/validators/two_factor';
 import { assertNever } from '#core/assert_never';
 import VerifyRecoveryChallenge from '#identity/actions/verify_recovery_challenge';
-import { challengeLimiter, throttledMessage } from '#identity/limiters/challenge_limiter';
 import { PendingLogin } from '#identity/services/pending_login';
-import { recoveryCodeValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 /** At or below this many unused codes, the user is told to generate new ones. */

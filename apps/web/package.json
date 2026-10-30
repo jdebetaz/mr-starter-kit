@@ -18,8 +18,8 @@
   },
   "imports": {
     "#app/*": "./app/*.js",
-    "#identity/*": "./app/identity/*.js",
-    "#core/*": "./app/core/*.js",
+    "#identity/*": "./src/identity/*.js",
+    "#core/*": "./src/core/*.js",
     "#generated/*": "./.adonisjs/server/*.js",
     "#providers/*": "./providers/*.js",
     "#database/*": "./database/*.js",
@@ -91,8 +91,8 @@
   },
   "hotHook": {
     "boundaries": [
-      "./app/controllers/**/*.ts",
-      "./app/middleware/*.ts"
+      "./app/*/controllers/**/*.ts",
+      "./app/*/middleware/*.ts"
     ]
   },
   "overrides": {

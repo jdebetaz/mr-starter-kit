@@ -1,6 +1,6 @@
 import router from '@adonisjs/core/services/router';
 import { test } from '@japa/runner';
-import RequireTwoFactorMiddleware from '#identity/middleware/require_two_factor_middleware';
+import RequireTwoFactorMiddleware from '#app/identity/middleware/require_two_factor_middleware';
 import { middleware } from '#start/kernel';
 import { truncateBetweenTests } from '#tests/helpers/database';
 import { enabledUser } from '#tests/helpers/two_factor';

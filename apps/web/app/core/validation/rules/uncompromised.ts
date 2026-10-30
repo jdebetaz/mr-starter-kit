@@ -1,6 +1,6 @@
 import app from '@adonisjs/core/services/app';
 import vine from '@vinejs/vine';
-import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
+import { PwnedPasswordsVerifier } from '#app/core/validation/pwned_passwords_verifier';
 
 export interface UncompromisedOptions {
 	/**

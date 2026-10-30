@@ -133,7 +133,7 @@ export const encrypted = ({ purpose, encryption, ...options }: EncryptedColumnOp
 				const plain = cipher().decrypt<unknown>(String(value), purpose);
 
 				if (plain === null) {
-					throw new EncryptedColumnUnreadable([attribute]);
+					throw new EncryptedColumnUnreadable(attribute);
 				}
 
 				return options.consume ? options.consume(plain, attribute, model) : plain;

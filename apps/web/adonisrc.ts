@@ -137,7 +137,7 @@ export default defineConfig({
 					withSharedProps: true,
 					source: './app',
 					glob: ['**/transformers/**/*.ts'],
-					inertiaMiddlewareImportPath: '#core/middleware/inertia_middleware',
+					inertiaMiddlewareImportPath: '#app/core/middleware/inertia_middleware',
 					importAlias: '#app',
 				},
 				events: {

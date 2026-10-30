@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core';
+import { totpCodeValidator } from '#app/identity/validators/two_factor';
 import { assertNever } from '#core/assert_never';
 import ConfirmTotpEnrollment from '#identity/actions/confirm_totp_enrollment';
 import PendingTotpEnrollmentQuery from '#identity/queries/pending_totp_enrollment';
 import { RecoveryCodesGrant } from '#identity/services/recovery_codes_grant';
-import { totpCodeValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()

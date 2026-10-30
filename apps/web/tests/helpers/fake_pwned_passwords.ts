@@ -1,5 +1,5 @@
 import { AssertionError } from 'node:assert';
-import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
+import { PwnedPasswordsVerifier } from '#app/core/validation/pwned_passwords_verifier';
 import type { Container } from '@adonisjs/core/container';
 import type { ContainerBindings } from '@adonisjs/core/types';
 

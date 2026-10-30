@@ -1,9 +1,9 @@
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid';
 import { compose } from '@adonisjs/core/helpers';
 import hash from '@adonisjs/core/services/hash';
-import { WithPrimaryUuid } from '#app/core/mixins/with_primary_uuid';
-import { WithTimestamps } from '#app/core/mixins/with_timestamps';
-import { withTotpManagement } from '#app/core/mixins/with_totp_management';
+import { WithPrimaryUuid } from '#core/mixins/with_primary_uuid';
+import { WithTimestamps } from '#core/mixins/with_timestamps';
+import { withTotpManagement } from '#core/mixins/with_totp_management';
 import { UserSchema } from '#database/schema';
 import { Role } from '#identity/types/role';
 
