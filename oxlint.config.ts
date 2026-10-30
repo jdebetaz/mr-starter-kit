@@ -55,7 +55,7 @@ export default defineConfig({
 			// `src/**` is the application side: Actions, Queries, repositories, models and
 			// domain objects. Delivery (`app/**`) and the browser (`inertia/**`) depend on
 			// it, never the reverse. See docs/architecture/application.md.
-			files: ['apps/*/src/**/*.ts'],
+			files: ['apps/*/src/**/*.{ts,tsx}'],
 			rules: {
 				'no-restricted-imports': [
 					'error',

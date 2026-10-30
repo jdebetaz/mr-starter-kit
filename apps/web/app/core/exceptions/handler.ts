@@ -46,13 +46,26 @@ export default class HttpExceptionHandler extends ExceptionHandler {
 	 */
 	// oxlint-disable-next-line tenkai/no-unknown-parameters
 	async handle(error: unknown, ctx: HttpContext) {
+		return super.handle(error, ctx);
+	}
+
+	/**
+	 * Gives a domain error its HTTP status. Both `report` and `handle` funnel
+	 * through here, and `report` runs first — mapping any later would leave the
+	 * log level and `ignoreStatuses` reading the framework's 500 default while
+	 * the response carried the real status.
+	 *
+	 * The `unknown` error is AdonisJS's own signature, as for `handle` above.
+	 */
+	// oxlint-disable-next-line tenkai/no-unknown-parameters
+	toHttpError(error: unknown) {
 		if (error instanceof DomainError) {
 			const status = statusByDomainErrorCode.get(error.code) ?? 500;
 
-			return super.handle(Object.assign(error, { status }), ctx);
+			return super.toHttpError(Object.assign(error, { status }));
 		}
 
-		return super.handle(error, ctx);
+		return super.toHttpError(error);
 	}
 
 	/**

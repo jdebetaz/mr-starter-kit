@@ -2,7 +2,7 @@
 - Use PNPM workspaces and keep `pnpm-lock.yaml` synchronized with dependency changes.
 - Use Oxlint and Oxfmt as the only linting and formatting tools; their root config files own code style.
 - Treat `apps/web/.adonisjs/` and `apps/web/database/schema.ts` as generated code.
-- Organize `apps/web/app` by business capability, not technical layer. Point delivery dependencies from controllers and routes to actions, queries, repositories, and domain objects, never the reverse.
+- Organize `apps/web/app` and `apps/web/src` by business capability, not technical layer. `app/<capability>` owns HTTP and Inertia delivery (routes, controllers, validators, middleware, policies, transformers); `src/<capability>` owns actions, queries, repositories, models, domain objects and services. Point delivery dependencies at `src`, never the reverse — `src/**` importing `app/**` or `inertia/**` fails `pnpm lint`.
 </critical>
 
 ## Architecture
