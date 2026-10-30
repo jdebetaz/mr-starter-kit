@@ -53,6 +53,20 @@ export default class TeamInvitationRepository extends BaseRepository<typeof Team
 		return this.findById(verified.tokenableId as UUID);
 	}
 
+	/**
+	 * Deletes the invitation and the token with it, so a revoked link verifies
+	 * as unknown rather than as a known-but-dead invitation.
+	 */
+	async revoke(invitation: TeamInvitation): Promise<void> {
+		const tokens = await TeamInvitation.invitationTokens.all(invitation);
+
+		for (const token of tokens) {
+			await TeamInvitation.invitationTokens.delete(invitation, token.identifier);
+		}
+
+		await invitation.delete();
+	}
+
 	pendingFor(teamId: UUID): Promise<TeamInvitation[]> {
 		return TeamInvitation.query().where('team_id', teamId).whereNull('accepted_at').exec();
 	}

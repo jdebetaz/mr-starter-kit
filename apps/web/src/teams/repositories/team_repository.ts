@@ -5,6 +5,7 @@ import TeamMember from '#teams/models/team_member';
 import type { UUID } from '#core/types';
 import type { TeamRole } from '#teams/domain/team_role';
 import type { AddMemberPayload } from '#teams/types/team';
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database';
 
 export default class TeamRepository extends BaseRepository<typeof Team> {
 	constructor() {
@@ -33,8 +34,8 @@ export default class TeamRepository extends BaseRepository<typeof Team> {
 		return TeamMember.query().where('team_id', teamId).where('user_id', userId).first();
 	}
 
-	addMember({ teamId, userId, role }: AddMemberPayload): Promise<TeamMember> {
-		return TeamMember.create({ teamId, userId, role });
+	addMember({ teamId, userId, role }: AddMemberPayload, trx?: TransactionClientContract): Promise<TeamMember> {
+		return TeamMember.create({ teamId, userId, role }, trx ? { client: trx } : undefined);
 	}
 
 	/** Joins through users, because an invitation is addressed to an email. */
