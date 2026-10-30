@@ -67,5 +67,5 @@ After changing page props, transformers, controllers, or routes:
 
 1. Regenerate Adonis artifacts through the normal Adonis command/dev-server lifecycle.
 2. Confirm `Data.Identity.AccountDetails` and the `account.show` route appear in generated output.
-3. Run the repository-required `yarn lint`, `yarn format`, `yarn typecheck`, and `yarn test`.
+3. Run the repository-required `pnpm lint`, `pnpm format`, `pnpm typecheck`, and `pnpm test`.
 4. As a drift test, temporarily change a transformer field locally and confirm TypeScript flags stale frontend usage; then revert that temporary test.

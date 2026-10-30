@@ -209,14 +209,14 @@ Before completing a design-system change, verify every applicable item:
 Run the design-system checks:
 
 ```bash
-yarn workspace @boilerplate/design-system typecheck
-yarn workspace @boilerplate/design-system build:storybook
+pnpm --filter @boilerplate/design-system typecheck
+pnpm --filter @boilerplate/design-system build:storybook
 ```
 
 When an application consumer changes, also run:
 
 ```bash
-yarn workspace @boilerplate/web typecheck
+pnpm --filter @boilerplate/web typecheck
 ```
 
 Finish with the repository checks required by the root `AGENTS.md`. Use Storybook for visual verification whenever layout, responsive behavior, accessibility, or interaction changes.
