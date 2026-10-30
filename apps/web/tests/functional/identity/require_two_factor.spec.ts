@@ -39,6 +39,7 @@ router
 async function run(user: User, method: string, pattern: string) {
 	let redirected = false;
 	let passed = false;
+	/** SAFETY: handle() reads only auth.user, route, request.method() and response.redirect().toRoute(), and this stub provides exactly those. */
 	const ctx = {
 		auth: { user },
 		route: { pattern, name: undefined },
@@ -50,7 +51,7 @@ async function run(user: User, method: string, pattern: string) {
 				},
 			}),
 		},
-	} as unknown as HttpContext;
+	} as HttpContext;
 
 	await new RequireTwoFactorMiddleware().handle(ctx, async () => {
 		passed = true;
@@ -63,10 +64,8 @@ test.group('Two-factor enforcement middleware', (group) => {
 	truncateBetweenTests(group);
 
 	test('an admin without 2FA is sent to enrollment', async ({ client }) => {
-		const response = await client
-			.get('/__enforced')
-			.withInertia()
-			.loginAs(await createUser({ roles: ['ROLE_ADMIN'] }));
+		const admin = await createUser({ roles: ['ROLE_ADMIN'] });
+		const response = await client.get('/__enforced').withInertia().loginAs(admin);
 
 		response.assertRedirectsTo('/settings/security/two-factor');
 	});
@@ -82,14 +81,16 @@ test.group('Two-factor enforcement middleware', (group) => {
 	});
 
 	test('an admin with 2FA passes through', async ({ client }) => {
-		const response = await client.get('/__enforced').loginAs(await enabledUser({ roles: ['ROLE_ADMIN'] }));
+		const admin = await enabledUser({ roles: ['ROLE_ADMIN'] });
+		const response = await client.get('/__enforced').loginAs(admin);
 
 		response.assertStatus(200);
 		response.assertBodyContains({ reached: true });
 	});
 
 	test('an ordinary user passes through', async ({ client }) => {
-		const response = await client.get('/__enforced').loginAs(await createUser());
+		const user = await createUser();
+		const response = await client.get('/__enforced').loginAs(user);
 
 		response.assertStatus(200);
 		response.assertBodyContains({ reached: true });
@@ -107,17 +108,16 @@ test.group('Two-factor enforcement middleware', (group) => {
 	});
 
 	test('the enrollment page loads (smoke check only; the probe route is the real loop test)', async ({ client }) => {
-		const response = await client
-			.get('/settings/security/two-factor')
-			.withInertia()
-			.loginAs(await createUser({ roles: ['ROLE_ADMIN'] }));
+		const admin = await createUser({ roles: ['ROLE_ADMIN'] });
+		const response = await client.get('/settings/security/two-factor').withInertia().loginAs(admin);
 
 		response.assertStatus(200);
 		response.assertInertiaComponent('settings/two-factor/start');
 	});
 
 	test('a guarded route inside the enrollment namespace is not redirected', async ({ client }) => {
-		const response = await client.get('/__enrollment-probe').loginAs(await createUser({ roles: ['ROLE_ADMIN'] }));
+		const admin = await createUser({ roles: ['ROLE_ADMIN'] });
+		const response = await client.get('/__enrollment-probe').loginAs(admin);
 
 		response.assertStatus(200);
 		response.assertBodyContains({ reached: true });
@@ -133,10 +133,16 @@ test.group('Two-factor enforcement middleware', (group) => {
 	test('logout is not redirected', async ({ assert }) => {
 		const user = await createUser({ roles: ['ROLE_ADMIN'] });
 
-		assert.deepEqual(await run(user, 'POST', '/logout'), { redirected: false, passed: true });
+		const outcome = await run(user, 'POST', '/logout');
+
+		assert.deepEqual(outcome, { redirected: false, passed: true });
 		/** Control: the same context on any other route is redirected. */
-		assert.deepEqual(await run(user, 'POST', '/elsewhere'), { redirected: true, passed: false });
-		assert.deepEqual(await run(user, 'GET', '/logout'), { redirected: true, passed: false });
+		const elsewhere = await run(user, 'POST', '/elsewhere');
+
+		assert.deepEqual(elsewhere, { redirected: true, passed: false });
+		const getLogout = await run(user, 'GET', '/logout');
+
+		assert.deepEqual(getLogout, { redirected: true, passed: false });
 	});
 
 	test('a guest is sent to login, not to enrollment', async ({ client }) => {

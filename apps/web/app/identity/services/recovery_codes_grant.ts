@@ -36,12 +36,19 @@ export const RecoveryCodesGrant = {
 
 	/** Consumes the grant. `true` only if one was present, unexpired and minted for `userId`. */
 	take(session: Session, userId: UUID): boolean {
+		/** SAFETY: the shape is not trusted; every field is checked below before use. */
 		const marker = session.get(SESSION_KEY) as Partial<RecoveryCodesGrantMarker> | undefined;
 		session.forget(SESSION_KEY);
 
-		/** A malformed marker could never expire or be attributed, so it is discarded rather than trusted. */
+		/**
+		 * A malformed marker could never expire or be attributed, so it is discarded
+		 * rather than trusted. The session store is the I/O boundary: these checks are
+		 * the parse, so there is no earlier place to decode the marker.
+		 */
 		return (
+			// oxlint-disable-next-line tenkai/no-runtime-typeof
 			typeof marker?.expiresAt === 'number' &&
+			// oxlint-disable-next-line tenkai/no-runtime-typeof
 			typeof marker.userId === 'string' &&
 			Date.now() < marker.expiresAt &&
 			marker.userId === userId

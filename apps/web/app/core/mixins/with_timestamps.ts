@@ -11,5 +11,6 @@ export const WithTimestamps = <Model extends NormalizeConstructor<typeof BaseMod
 		@column.dateTime({ autoCreate: true, autoUpdate: true })
 		declare updatedAt: DateTime | null;
 	}
+
 	return WithTimestampsClass;
 };

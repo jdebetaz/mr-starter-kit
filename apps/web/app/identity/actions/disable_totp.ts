@@ -21,7 +21,9 @@ export default class DisableTotp {
 			return err({ type: 'two_factor_required' });
 		}
 
-		if (!(await user.verifyPassword(password))) {
+		const passwordMatches = await user.verifyPassword(password);
+
+		if (!passwordMatches) {
 			return err({ type: 'invalid_password' });
 		}
 

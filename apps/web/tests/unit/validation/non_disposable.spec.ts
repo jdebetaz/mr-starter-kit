@@ -15,16 +15,21 @@ const bareValidator = () => vine.create({ email: vine.string().use(nonDisposable
 
 const rejected = async (validator: ReturnType<typeof emailValidator>, email: string) => {
 	const errors = await validationErrors(validator, { email });
+
 	return errors.some((error) => error.rule === 'nonDisposableDomain');
 };
 
 test.group('Non disposable rule', () => {
 	test('a listed disposable domain is rejected', async ({ assert }) => {
-		assert.isTrue(await rejected(emailValidator(), 'someone@mailinator.com'));
+		const wasRejected = await rejected(emailValidator(), 'someone@mailinator.com');
+
+		assert.isTrue(wasRejected);
 	});
 
 	test('a subdomain of a listed domain is rejected', async ({ assert }) => {
-		assert.isTrue(await rejected(emailValidator(), 'someone@inbox.mailinator.com'));
+		const wasRejected = await rejected(emailValidator(), 'someone@inbox.mailinator.com');
+
+		assert.isTrue(wasRejected);
 	});
 
 	test('a suffix that is not a subdomain is accepted', async ({ assert }) => {
@@ -32,43 +37,59 @@ test.group('Non disposable rule', () => {
 		 * "xmailinator.com" ends with "mailinator.com" but is a different domain,
 		 * and is not itself on the blocklist. A bare `endsWith` would reject it.
 		 */
-		assert.isFalse(await rejected(emailValidator(), 'someone@xmailinator.com'));
+		const wasRejected = await rejected(emailValidator(), 'someone@xmailinator.com');
+
+		assert.isFalse(wasRejected);
 	});
 
 	test('the domain is matched case-insensitively', async ({ assert }) => {
-		assert.isTrue(await rejected(emailValidator(), 'USER@Mailinator.COM'));
+		const wasRejected = await rejected(emailValidator(), 'USER@Mailinator.COM');
+
+		assert.isTrue(wasRejected);
 	});
 
 	test('a trailing dot on the domain is ignored', async ({ assert }) => {
-		assert.isTrue(await rejected(bareValidator(), 'user@mailinator.com.'));
+		const wasRejected = await rejected(bareValidator(), 'user@mailinator.com.');
+
+		assert.isTrue(wasRejected);
 	});
 
 	test('allow accepts a listed domain', async ({ assert }) => {
 		const validator = emailValidator({ allow: ['mailinator.com'] });
 
-		assert.isFalse(await rejected(validator, 'someone@mailinator.com'));
+		const wasRejected = await rejected(validator, 'someone@mailinator.com');
+
+		assert.isFalse(wasRejected);
 	});
 
 	test('allow also accepts subdomains of the allowed domain', async ({ assert }) => {
 		const validator = emailValidator({ allow: ['mailinator.com'] });
 
-		assert.isFalse(await rejected(validator, 'someone@inbox.mailinator.com'));
+		const wasRejected = await rejected(validator, 'someone@inbox.mailinator.com');
+
+		assert.isFalse(wasRejected);
 	});
 
 	test('block rejects an extra domain', async ({ assert }) => {
 		const validator = emailValidator({ block: ['example.org'] });
 
-		assert.isTrue(await rejected(validator, 'someone@example.org'));
+		const wasRejected = await rejected(validator, 'someone@example.org');
+
+		assert.isTrue(wasRejected);
 	});
 
 	test('block also rejects subdomains of the blocked domain', async ({ assert }) => {
 		const validator = emailValidator({ block: ['example.org'] });
 
-		assert.isTrue(await rejected(validator, 'someone@mail.example.org'));
+		const wasRejected = await rejected(validator, 'someone@mail.example.org');
+
+		assert.isTrue(wasRejected);
 	});
 
 	test('an ordinary address passes', async ({ assert }) => {
-		assert.isFalse(await rejected(emailValidator(), 'someone@gmail.com'));
+		const wasRejected = await rejected(emailValidator(), 'someone@gmail.com');
+
+		assert.isFalse(wasRejected);
 	});
 
 	test('it does not run when the field already failed an earlier rule', async ({ assert }) => {

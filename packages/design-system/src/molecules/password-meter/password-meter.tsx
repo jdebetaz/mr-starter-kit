@@ -74,6 +74,7 @@ function requirementLabel({ rule, min, max }: PasswordRequirement): string {
 		case 'symbols':
 			return 'At least one symbol';
 		case 'minScore':
+			/** SAFETY: a `minScore` requirement carries its threshold, which the policy keeps on the scale. */
 			return `Strength of at least "${SCORE_LABELS[min as PasswordScore]}"`;
 	}
 }

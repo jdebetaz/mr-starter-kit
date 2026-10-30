@@ -24,6 +24,7 @@ test.group('Recovery codes', (group) => {
 		await user.refresh();
 		const stored = user.recoveryCodes?.release();
 		assert.isString(stored);
+
 		for (const code of codes) {
 			assert.notInclude(stored!, code);
 			assert.notInclude(stored!, code.replace('-', ''));
@@ -33,39 +34,57 @@ test.group('Recovery codes', (group) => {
 	test('a code is single use', async ({ assert }) => {
 		const user = await createUser();
 		const [first] = await user.generateRecoveryCodes();
-		assert.isTrue(await user.verifyRecoveryCode(first));
+		const acceptedFirst = await user.verifyRecoveryCode(first);
+
+		assert.isTrue(acceptedFirst);
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount - 1);
-		assert.isFalse(await user.verifyRecoveryCode(first));
+		const rejectedFirst = await user.verifyRecoveryCode(first);
+
+		assert.isFalse(rejectedFirst);
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount - 1);
 	});
 
 	test('consuming a code is persisted and leaves the others usable', async ({ assert }) => {
 		const user = await createUser();
 		const [first, second] = await user.generateRecoveryCodes();
-		assert.isTrue(await user.verifyRecoveryCode(first));
+		const acceptedFirst = await user.verifyRecoveryCode(first);
+
+		assert.isTrue(acceptedFirst);
 		await user.refresh();
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount - 1);
-		assert.isFalse(await user.verifyRecoveryCode(first));
-		assert.isTrue(await user.verifyRecoveryCode(second));
+		const rejectedFirst = await user.verifyRecoveryCode(first);
+
+		assert.isFalse(rejectedFirst);
+		const acceptedSecond = await user.verifyRecoveryCode(second);
+
+		assert.isTrue(acceptedSecond);
 	});
 
 	test('a code verifies uppercase and without the dash', async ({ assert }) => {
 		const user = await createUser();
 		const [first] = await user.generateRecoveryCodes();
-		assert.isTrue(await user.verifyRecoveryCode(first.toUpperCase().replace('-', '')));
+		const accepted = await user.verifyRecoveryCode(first.toUpperCase().replace('-', ''));
+
+		assert.isTrue(accepted);
 	});
 
 	test('a code verifies with surrounding and inner whitespace', async ({ assert }) => {
 		const user = await createUser();
 		const [first] = await user.generateRecoveryCodes();
-		assert.isTrue(await user.verifyRecoveryCode(` ${first.slice(0, 5)} - ${first.slice(6)}\n`));
+		const accepted = await user.verifyRecoveryCode(` ${first.slice(0, 5)} - ${first.slice(6)}\n`);
+
+		assert.isTrue(accepted);
 	});
 
 	test('a wrong code is rejected and consumes nothing', async ({ assert }) => {
 		const user = await createUser();
 		await user.generateRecoveryCodes();
-		assert.isFalse(await user.verifyRecoveryCode('zzzzz-zzzzz'));
-		assert.isFalse(await user.verifyRecoveryCode(''));
+		const rejectedWrong = await user.verifyRecoveryCode('zzzzz-zzzzz');
+
+		assert.isFalse(rejectedWrong);
+		const rejectedEmpty = await user.verifyRecoveryCode('');
+
+		assert.isFalse(rejectedEmpty);
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount);
 	});
 
@@ -73,13 +92,17 @@ test.group('Recovery codes', (group) => {
 		const user = await createUser();
 		const [old] = await user.generateRecoveryCodes();
 		await user.generateRecoveryCodes();
-		assert.isFalse(await user.verifyRecoveryCode(old));
+		const rejectedOld = await user.verifyRecoveryCode(old);
+
+		assert.isFalse(rejectedOld);
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount);
 	});
 
 	test('verifying against no codes returns false', async ({ assert }) => {
 		const user = await createUser();
-		assert.isFalse(await user.verifyRecoveryCode('abcde-fghij'));
+		const rejected = await user.verifyRecoveryCode('abcde-fghij');
+
+		assert.isFalse(rejected);
 		assert.equal(user.remainingRecoveryCodesCount, 0);
 	});
 
@@ -108,7 +131,9 @@ test.group('Recovery codes', (group) => {
 		const [code] = await user.generateRecoveryCodes();
 		await user.disableTwoFactor();
 		assert.equal(user.remainingRecoveryCodesCount, 0);
-		assert.isFalse(await user.verifyRecoveryCode(code));
+		const rejected = await user.verifyRecoveryCode(code);
+
+		assert.isFalse(rejected);
 	});
 
 	test('a stale instance cannot resurrect codes revoked by a regeneration', async ({ assert }) => {
@@ -119,11 +144,15 @@ test.group('Recovery codes', (group) => {
 		const other = await User.findOrFail(user.id);
 		const fresh = await other.generateRecoveryCodes();
 
-		assert.isFalse(await stale.verifyRecoveryCode(old));
+		const rejectedOld = await stale.verifyRecoveryCode(old);
+
+		assert.isFalse(rejectedOld);
 
 		await user.refresh();
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount);
-		assert.isTrue(await user.verifyRecoveryCode(fresh[0]));
+		const acceptedFresh = await user.verifyRecoveryCode(fresh[0]);
+
+		assert.isTrue(acceptedFresh);
 	});
 
 	test('a stale instance cannot resurrect a code consumed elsewhere', async ({ assert }) => {
@@ -132,21 +161,33 @@ test.group('Recovery codes', (group) => {
 
 		const stale = await User.findOrFail(user.id);
 		const other = await User.findOrFail(user.id);
-		assert.isTrue(await other.verifyRecoveryCode(first));
+		const acceptedElsewhere = await other.verifyRecoveryCode(first);
+
+		assert.isTrue(acceptedElsewhere);
 
 		// The stale snapshot still holds `first`; consuming `second` must not bring it back.
-		assert.isTrue(await stale.verifyRecoveryCode(second));
-		assert.isFalse(await stale.verifyRecoveryCode(first));
+		const acceptedSecond = await stale.verifyRecoveryCode(second);
+
+		assert.isTrue(acceptedSecond);
+		const rejectedStale = await stale.verifyRecoveryCode(first);
+
+		assert.isFalse(rejectedStale);
 		await user.refresh();
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount - 2);
-		assert.isFalse(await user.verifyRecoveryCode(first));
+		const rejectedFresh = await user.verifyRecoveryCode(first);
+
+		assert.isFalse(rejectedFresh);
 	});
 
 	test('input that cannot be a code is rejected', async ({ assert }) => {
 		const user = await createUser();
 		await user.generateRecoveryCodes();
-		assert.isFalse(await user.verifyRecoveryCode('!!!!!!!!!!'));
-		assert.isFalse(await user.verifyRecoveryCode('abcd!fghij'));
+		const rejectedSymbols = await user.verifyRecoveryCode('!!!!!!!!!!');
+
+		assert.isFalse(rejectedSymbols);
+		const rejectedInner = await user.verifyRecoveryCode('abcd!fghij');
+
+		assert.isFalse(rejectedInner);
 		assert.equal(user.remainingRecoveryCodesCount, twoFactorConfig.recoveryCodesCount);
 	});
 
@@ -154,7 +195,9 @@ test.group('Recovery codes', (group) => {
 		const user = await createUser();
 		const [first] = await user.generateRecoveryCodes();
 		const bare = first.replace('-', '');
-		assert.isTrue(await user.verifyRecoveryCode(`${bare.slice(0, 3)}-${bare.slice(3)}`));
+		const accepted = await user.verifyRecoveryCode(`${bare.slice(0, 3)}-${bare.slice(3)}`);
+
+		assert.isTrue(accepted);
 	});
 
 	test('a malformed stored value reads as no codes', async ({ assert }) => {
@@ -163,7 +206,9 @@ test.group('Recovery codes', (group) => {
 		assert.equal(user.remainingRecoveryCodesCount, 0);
 		user.recoveryCodes = new Secret('{"a":1}');
 		assert.equal(user.remainingRecoveryCodesCount, 0);
-		assert.isFalse(await user.verifyRecoveryCode('abcde-fghij'));
+		const rejected = await user.verifyRecoveryCode('abcde-fghij');
+
+		assert.isFalse(rejected);
 	});
 
 	test('seedRecoveryCode is overridable', async ({ assert }) => {
@@ -172,6 +217,8 @@ test.group('Recovery codes', (group) => {
 		user.seedRecoveryCode = () => `code${n++}-aaaaa`.slice(0, 11);
 		const codes = await user.generateRecoveryCodes();
 		assert.equal(codes[0], 'code0-aaaaa');
-		assert.isTrue(await user.verifyRecoveryCode('code3-aaaaa'));
+		const accepted = await user.verifyRecoveryCode('code3-aaaaa');
+
+		assert.isTrue(accepted);
 	});
 });

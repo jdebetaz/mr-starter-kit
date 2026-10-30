@@ -17,12 +17,15 @@ const packageManifests = await Array.fromAsync(glob('{apps,packages}/*/package.j
 );
 const unlicensed = 'UNLICENSED';
 
-const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const manifestSource = await readFile(manifestPath, 'utf8');
+const manifest = JSON.parse(manifestSource);
 const readme = await readFile(join(projectRoot, 'README.md'), 'utf8');
 
 const workspaceManifests = await Promise.all(
 	packageManifests.map(async (p) => {
-		return { path: p, content: JSON.parse(await readFile(p, 'utf8')) };
+		const source = await readFile(p, 'utf8');
+
+		return { path: p, content: JSON.parse(source) };
 	}),
 );
 
@@ -90,6 +93,9 @@ for (const question of questions) {
 		continue;
 	}
 
+	// A question declares its fallback either as a literal or as a function of the
+	// previous answers; this file is the boundary that reads the declaration.
+	// oxlint-disable-next-line tenkai/no-runtime-typeof
 	const fallback = typeof question.fallback === 'function' ? question.fallback(answers) : question.fallback;
 
 	if (question.choices) {
@@ -123,7 +129,8 @@ function personalize(source) {
 
 for (const document of documents) {
 	const path = join(projectRoot, document);
-	const rendered = withLicenseSection(personalize(await readFile(path, 'utf8')), answers);
+	const source = await readFile(path, 'utf8');
+	const rendered = withLicenseSection(personalize(source), answers);
 
 	await writeFile(path, rendered);
 	console.log(`  updated ${document}`);
@@ -136,7 +143,9 @@ for (const source of sources) {
 		continue;
 	}
 
-	await writeFile(path, personalize(await readFile(path, 'utf8')));
+	const content = await readFile(path, 'utf8');
+
+	await writeFile(path, personalize(content));
 	console.log(`  updated ${source}`);
 }
 

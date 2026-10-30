@@ -20,21 +20,25 @@ async function atFixedTime<T>(fn: () => Promise<T>): Promise<T> {
 	}
 }
 
-function codeOfThrown(fn: () => unknown): string | undefined {
+function codeOfThrown(fn: () => void): string | undefined {
 	try {
 		fn();
 	} catch (error) {
+		// SAFETY: the errors these helpers catch are AdonisJS exceptions, which carry an optional string `code`.
 		return (error as { code?: string }).code;
 	}
+
 	return undefined;
 }
 
-async function codeOfRejected(fn: () => Promise<unknown>): Promise<string | undefined> {
+async function codeOfRejected<T>(fn: () => Promise<T>): Promise<string | undefined> {
 	try {
 		await fn();
 	} catch (error) {
+		// SAFETY: the errors these helpers catch are AdonisJS exceptions, which carry an optional string `code`.
 		return (error as { code?: string }).code;
 	}
+
 	return undefined;
 }
 
@@ -48,20 +52,29 @@ test.group('TOTP login verification', (group) => {
 
 	test('a valid code verifies', async ({ assert }) => {
 		const user = await enabledUser();
-		assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
+		const accepted = await user.verifyTotpForLogin(currentCodeFor(user));
+
+		assert.isTrue(accepted);
 	});
 
 	test('the same code cannot be used twice', async ({ assert }) => {
 		const user = await enabledUser();
 		const code = currentCodeFor(user);
-		assert.isTrue(await user.verifyTotpForLogin(code));
-		assert.isFalse(await user.verifyTotpForLogin(code));
+		const acceptedFirst = await user.verifyTotpForLogin(code);
+
+		assert.isTrue(acceptedFirst);
+
+		const acceptedReplay = await user.verifyTotpForLogin(code);
+
+		assert.isFalse(acceptedReplay);
 	});
 
 	test('consuming a code records its timestep and persists it', async ({ assert }) => {
 		const user = await enabledUser();
 		const stepBefore = Math.floor(Date.now() / PERIOD_MS);
-		assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
+		const accepted = await user.verifyTotpForLogin(currentCodeFor(user));
+
+		assert.isTrue(accepted);
 		await user.refresh();
 		assert.oneOf(user.totpLastConsumedTimestep, [stepBefore, stepBefore + 1]);
 	});
@@ -70,8 +83,13 @@ test.group('TOTP login verification', (group) => {
 		const user = await enabledUser();
 		await atFixedTime(async () => {
 			const earlier = codeFromStepsAgo(user, 1);
-			assert.isTrue(await user.verifyTotpForLogin(currentCodeFor(user)));
-			assert.isFalse(await user.verifyTotpForLogin(earlier));
+			const acceptedLater = await user.verifyTotpForLogin(currentCodeFor(user));
+
+			assert.isTrue(acceptedLater);
+
+			const rejectedEarlier = await user.verifyTotpForLogin(earlier);
+
+			assert.isFalse(rejectedEarlier);
 		});
 	});
 
@@ -80,25 +98,33 @@ test.group('TOTP login verification', (group) => {
 		await atFixedTime(async () => {
 			user.totpLastConsumedTimestep = Math.floor(Date.now() / PERIOD_MS) - 2;
 			await user.save();
-			assert.isTrue(await user.verifyTotpForLogin(codeFromStepsAgo(user, 1)));
+			const accepted = await user.verifyTotpForLogin(codeFromStepsAgo(user, 1));
+
+			assert.isTrue(accepted);
 		});
 	});
 
 	test('a wrong code is rejected and consumes nothing', async ({ assert }) => {
 		const user = await enabledUser();
 		const before = user.totpLastConsumedTimestep;
-		assert.isFalse(await user.verifyTotpForLogin('000000'));
+		const rejected = await user.verifyTotpForLogin('000000');
+
+		assert.isFalse(rejected);
 		assert.equal(user.totpLastConsumedTimestep, before);
 	});
 
 	test('a code with spaces or a dash verifies', async ({ assert }) => {
 		const spacedUser = await enabledUser();
 		const spaced = currentCodeFor(spacedUser);
-		assert.isTrue(await spacedUser.verifyTotpForLogin(`${spaced.slice(0, 3)} ${spaced.slice(3)}`));
+		const acceptedSpaced = await spacedUser.verifyTotpForLogin(`${spaced.slice(0, 3)} ${spaced.slice(3)}`);
+
+		assert.isTrue(acceptedSpaced);
 
 		const dashedUser = await enabledUser();
 		const dashed = currentCodeFor(dashedUser);
-		assert.isTrue(await dashedUser.verifyTotpForLogin(`${dashed.slice(0, 3)}-${dashed.slice(3)}`));
+		const acceptedDashed = await dashedUser.verifyTotpForLogin(`${dashed.slice(0, 3)}-${dashed.slice(3)}`);
+
+		assert.isTrue(acceptedDashed);
 	});
 
 	test('a code with spaces or a dash confirms enrollment', async ({ assert }) => {
@@ -106,8 +132,9 @@ test.group('TOTP login verification', (group) => {
 			const user = await createUser();
 			await user.generateSecret();
 			const code = user.createTotp(user.getEnrollmentSecret()).generate();
+			const enabled = await user.enableTwoFactor(`${code.slice(0, 3)}${separator}${code.slice(3)}`);
 
-			assert.isTrue(await user.enableTwoFactor(`${code.slice(0, 3)}${separator}${code.slice(3)}`));
+			assert.isTrue(enabled);
 			assert.isTrue(user.isTwoFactorEnabled);
 		}
 	});
@@ -120,14 +147,18 @@ test.group('TOTP login verification', (group) => {
 
 	test('a user without 2FA enabled cannot verify', async ({ assert }) => {
 		const user = await createUser();
-		assert.isFalse(await user.verifyTotpForLogin('000000'));
+		const rejected = await user.verifyTotpForLogin('000000');
+
+		assert.isFalse(rejected);
 	});
 
 	test('a user with only a pending secret cannot verify', async ({ assert }) => {
 		const user = await createUser();
 		await user.generateSecret();
 		const pendingCode = user.createTotp(user.getEnrollmentSecret()).generate();
-		assert.isFalse(await user.verifyTotpForLogin(pendingCode));
+		const rejected = await user.verifyTotpForLogin(pendingCode);
+
+		assert.isFalse(rejected);
 	});
 
 	test('the code that enabled 2FA cannot be replayed at login', async ({ assert }) => {
@@ -135,9 +166,14 @@ test.group('TOTP login verification', (group) => {
 		await user.generateSecret();
 		const enablingCode = user.createTotp(user.getEnrollmentSecret()).generate();
 
-		assert.isTrue(await user.enableTwoFactor(enablingCode));
+		const enabled = await user.enableTwoFactor(enablingCode);
+
+		assert.isTrue(enabled);
 		assert.isNotNull(user.totpLastConsumedTimestep);
-		assert.isFalse(await user.verifyTotpForLogin(enablingCode));
+
+		const replayAccepted = await user.verifyTotpForLogin(enablingCode);
+
+		assert.isFalse(replayAccepted);
 	});
 
 	test('an unreadable confirmed secret throws instead of reading as not enrolled', async ({ assert }) => {
@@ -148,7 +184,9 @@ test.group('TOTP login verification', (group) => {
 		// login path can get hold of a user whose secret is unreadable and treat
 		// that user as not enrolled.
 		await assert.rejects(() => User.findOrFail(user.id), /could not be decrypted/);
-		assert.equal(await codeOfRejected(() => User.findOrFail(user.id)), 'E_ENCRYPTED_COLUMN_UNREADABLE');
+		const rejectionCode = await codeOfRejected(() => User.findOrFail(user.id));
+
+		assert.equal(rejectionCode, 'E_ENCRYPTED_COLUMN_UNREADABLE');
 	});
 
 	test('getConfirmedSecret throws when 2FA is not enabled', async ({ assert }) => {

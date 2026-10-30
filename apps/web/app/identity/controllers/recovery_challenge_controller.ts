@@ -38,6 +38,7 @@ export default class RecoveryChallengeController {
 			if (!attempt.allowed) {
 				response.header('Retry-After', String(attempt.retryAfterSeconds));
 				session.flash('error', throttledMessage(attempt.retryAfterSeconds));
+
 				return response.redirect().toRoute('login.challenge.recovery.render');
 			}
 		}
@@ -49,9 +50,11 @@ export default class RecoveryChallengeController {
 				case 'no_pending_login':
 				case 'not_challengeable':
 					session.flash('error', 'Your sign-in expired. Please log in again.');
+
 					return response.redirect().toRoute('login.render');
 				case 'invalid_recovery_code':
 					session.flash('error', 'That recovery code is not valid or was already used.');
+
 					return response.redirect().toRoute('login.challenge.recovery.render');
 				default:
 					return assertNever(verified.error);

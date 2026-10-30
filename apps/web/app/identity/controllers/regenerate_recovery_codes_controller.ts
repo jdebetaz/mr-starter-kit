@@ -33,6 +33,7 @@ export default class RegenerateRecoveryCodesController {
 					return response.redirect().toRoute('two_factor.start.render');
 				case 'invalid_password':
 					session.flash('error', 'That password is not correct.');
+
 					return response.redirect().toRoute('two_factor.recovery.render');
 				default:
 					return assertNever(regenerated.error);
@@ -40,6 +41,7 @@ export default class RegenerateRecoveryCodesController {
 		}
 
 		inertia.encryptHistory();
+
 		return inertia.render('settings/two-factor/recovery', {
 			codes: regenerated.value,
 			remaining: regenerated.value.length,

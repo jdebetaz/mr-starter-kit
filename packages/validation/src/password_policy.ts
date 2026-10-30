@@ -64,6 +64,7 @@ const scorePassword = (password: string): PasswordScore => {
 
 	const bonus = classes >= VARIETY_BONUS_THRESHOLD ? 1 : 0;
 
+	/** SAFETY: both terms are non-negative and the result is clamped to 4, the top of the scale. */
 	return Math.min(lengthScore + bonus, 4) as PasswordScore;
 };
 

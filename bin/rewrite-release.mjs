@@ -88,6 +88,7 @@ async function main() {
 
 	if (isDryRun) {
 		log.success(`Dry run complete for ${tag}; the GitHub release was not modified.`);
+
 		return;
 	}
 
@@ -98,6 +99,7 @@ async function main() {
 
 		if (!confirmed) {
 			log.warn(`Rewrite of ${tag} cancelled.`);
+
 			return;
 		}
 	}
@@ -107,6 +109,7 @@ async function main() {
 		notesDirectory = await runStep('Prepare temporary release notes', async () => {
 			const directory = await mkdtemp(join(tmpdir(), 'mr-starter-kit-release-'));
 			await writeFile(join(directory, 'notes.md'), `${releaseContent.notes}\n`);
+
 			return directory;
 		});
 

@@ -34,6 +34,7 @@ export const log = {
 
 function formatDuration(startedAt) {
 	const elapsed = Date.now() - startedAt;
+
 	return elapsed < 1000 ? `${elapsed}ms` : `${(elapsed / 1000).toFixed(1)}s`;
 }
 
@@ -44,9 +45,11 @@ export async function runStep(label, action) {
 	try {
 		const result = await action();
 		log.success(`Completed in ${formatDuration(startedAt)}`);
+
 		return result;
 	} catch (error) {
 		log.error(`Failed after ${formatDuration(startedAt)}`);
+
 		throw error;
 	}
 }
@@ -67,6 +70,7 @@ export async function runInherited(command, args) {
 		child.on('exit', (code, signal) => {
 			if (code === 0) {
 				resolve();
+
 				return;
 			}
 
@@ -80,5 +84,6 @@ export async function confirm(message) {
 	const readline = createInterface({ input, output });
 	const answer = await readline.question(`${message} ${colors.dim('[y/N]')} `);
 	readline.close();
+
 	return /^[Yy]$/.test(answer);
 }

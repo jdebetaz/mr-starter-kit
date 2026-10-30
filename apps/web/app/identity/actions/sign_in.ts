@@ -29,7 +29,13 @@ export default class SignIn {
 		 * An unknown address and a wrong password report the same variant, so the
 		 * outcome never reveals which addresses are registered.
 		 */
-		if (!user || !(await user.verifyPassword(password))) {
+		if (!user) {
+			return err({ type: 'invalid_credentials' });
+		}
+
+		const passwordMatches = await user.verifyPassword(password);
+
+		if (!passwordMatches) {
 			return err({ type: 'invalid_credentials' });
 		}
 

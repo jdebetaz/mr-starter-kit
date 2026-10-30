@@ -40,7 +40,10 @@ mr-starter-kit/
 │   └── validation/             # Shared validation logic (password policy, etc.)
 ├── docs/
 │   ├── architecture/           # Architecture decision records
-│   └── agents/                 # Agent guides for AI-assisted development
+│   ├── agents/                 # Agent guides for AI-assisted development
+│   └── adr/                    # Architectural decision records
+├── tools/
+│   └── oxlint/tenkai/          # Tenkai custom Oxlint rules and their tests
 ├── .husky/                     # Git hooks
 ├── docker/                     # Docker configuration
 ├── oxlint.config.ts            # OXLint configuration

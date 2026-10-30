@@ -12,6 +12,9 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 		 *
 		 * In that case, we must always assume that HttpContext is not fully hydrated
 		 * with all the properties
+		 *
+		 * SAFETY: widening only. Every property read from the result is optional,
+		 * so a context missing `auth` is handled rather than assumed away.
 		 */
 		const { auth } = ctx as Partial<HttpContext>;
 
@@ -33,10 +36,14 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 	 * middleware, so HttpContext must be treated as partially hydrated.
 	 */
 	flash(ctx: HttpContext) {
+		/** SAFETY: widening only, as in `share` above; `session` is read optionally. */
 		const { session } = ctx as Partial<HttpContext>;
 
 		/**
 		 * Fetching the first error from the flash messages
+		 *
+		 * SAFETY: these three keys are only ever flashed as strings, by the
+		 * controllers in this app; a missing key reads as `undefined`.
 		 */
 		return {
 			error: session?.flashMessages.get('error') as string | undefined,

@@ -13,6 +13,8 @@ export default class GenerateRecoveryCodes {
 			return err({ type: 'two_factor_not_enabled' });
 		}
 
-		return ok(await user.generateRecoveryCodes());
+		const codes = await user.generateRecoveryCodes();
+
+		return ok(codes);
 	}
 }

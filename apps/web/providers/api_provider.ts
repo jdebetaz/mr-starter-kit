@@ -1,15 +1,22 @@
 import { HttpContext } from '@adonisjs/core/http';
 import { BaseSerializer } from '@adonisjs/core/transformers';
-import { type SimplePaginatorMetaKeys } from '@adonisjs/lucid/types/querybuilder';
+
+interface PaginationMetaKeys {
+	total: number;
+	perPage: number;
+	currentPage: number;
+	lastPage: number;
+	firstPage: number;
+}
 
 /**
  * Custom serializer for API responses that ensures consistent JSON structure
  * across all API endpoints. Wraps response data in a 'data' property and handles
- * pagination metadata for Lucid ORM query results.
+ * pagination metadata for application query results.
  */
 class ApiSerializer extends BaseSerializer<{
 	Wrap: 'data';
-	PaginationMetaData: SimplePaginatorMetaKeys;
+	PaginationMetaData: PaginationMetaKeys;
 }> {
 	/**
 	 * Wraps all serialized data under this key in the response object.
@@ -19,22 +26,39 @@ class ApiSerializer extends BaseSerializer<{
 
 	/**
 	 * Validates and defines pagination metadata structure for paginated responses.
-	 * Ensures that pagination info from Lucid queries is properly formatted.
+	 * Ensures that pagination information is properly formatted.
 	 *
-	 * @throws Error if metadata doesn't match Lucid's pagination structure
+	 * @throws Error if metadata does not match the expected pagination structure
 	 */
-	definePaginationMetaData(metaData: unknown): SimplePaginatorMetaKeys {
-		if (!this.isLucidPaginatorMetaData(metaData)) {
-			throw new Error('Invalid pagination metadata. Expected metadata to contain Lucid pagination keys');
+	// Adonis supplies unknown pagination metadata; this override validates it at the serializer boundary.
+	// eslint-disable-next-line tenkai/no-unknown-parameters
+	definePaginationMetaData(metaData: unknown): PaginationMetaKeys {
+		if (!isPaginationMetaData(metaData)) {
+			throw new Error('Invalid pagination metadata');
 		}
+
 		return metaData;
 	}
 }
+
+// This boundary guard checks unknown framework metadata before exposing a typed pagination contract.
+/* eslint-disable tenkai/no-unknown-parameters, tenkai/no-runtime-typeof, tenkai/no-reflect-get */
+function isPaginationMetaData(metaData: unknown): metaData is PaginationMetaKeys {
+	if (typeof metaData !== 'object' || metaData === null) {
+		return false;
+	}
+
+	return ['total', 'perPage', 'currentPage', 'lastPage', 'firstPage'].every(
+		(key) => typeof Reflect.get(metaData, key) === 'number',
+	);
+}
+/* eslint-enable tenkai/no-unknown-parameters, tenkai/no-runtime-typeof, tenkai/no-reflect-get */
 
 /**
  * Single instance of ApiSerializer used across the application
  */
 const serializer = new ApiSerializer();
+// SAFETY: The assigned function and property delegate to the matching ApiSerializer methods.
 const serialize = Object.assign(
 	function (this: HttpContext, ...[data, resolver]: Parameters<ApiSerializer['serialize']>) {
 		return serializer.serialize(data, resolver ?? this.containerResolver);

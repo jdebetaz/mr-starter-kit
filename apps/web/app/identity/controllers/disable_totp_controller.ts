@@ -24,10 +24,12 @@ export default class DisableTotpController {
 				default:
 					return assertNever(disabled.error);
 			}
+
 			return response.redirect().toRoute('settings.security.render');
 		}
 
 		session.flash('success', 'Two-factor authentication is off.');
+
 		return response.redirect().toRoute('settings.security.render');
 	}
 }

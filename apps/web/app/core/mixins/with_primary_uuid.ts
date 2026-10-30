@@ -12,5 +12,6 @@ export const WithPrimaryUuid = <Model extends NormalizeConstructor<typeof BaseMo
 			model.id = randomUUID();
 		}
 	}
+
 	return WithPrimaryUuidClass;
 };

@@ -34,6 +34,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 	return <Model extends NormalizeConstructor<typeof BaseModel>>(superclass: Model) => {
 		class WithTotpManagementClass extends superclass {
 			// Declared by the generated schema; typed here only for the mixin body.
+			declare id: UUID;
 			declare email: string;
 			declare totpPendingSecret: Secret<string> | null;
 			declare totpSecret: Secret<string> | null;
@@ -87,6 +88,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 				if (!this.totpPendingSecret) {
 					throw new TotpEnrollmentNotStarted();
 				}
+
 				return this.totpPendingSecret.release();
 			}
 
@@ -99,6 +101,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 				if (!this.totpSecret) {
 					throw new TotpNotEnabled();
 				}
+
 				return this.totpSecret.release();
 			}
 
@@ -134,6 +137,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 				this.totpEnabledAt = DateTime.now();
 				this.totpPendingSecret = null;
 				await this.save();
+
 				return true;
 			}
 
@@ -181,6 +185,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 
 				this.totpLastConsumedTimestep = timestep;
 				await this.save();
+
 				return true;
 			}
 
@@ -196,6 +201,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 				const hashes = await Promise.all(codes.map((code) => hash.make(code)));
 				this.recoveryCodes = new Secret(JSON.stringify(hashes));
 				await this.save();
+
 				return codes;
 			}
 
@@ -204,6 +210,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 			 */
 			seedRecoveryCode(): string {
 				const chars = this.#randomRecoveryChars(RECOVERY_HALF_LENGTH * 2);
+
 				return `${chars.slice(0, RECOVERY_HALF_LENGTH)}-${chars.slice(RECOVERY_HALF_LENGTH)}`;
 			}
 
@@ -234,8 +241,11 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 					}
 
 					let matched = -1;
+
 					for (const [index, stored] of hashes.entries()) {
-						if (await hash.verify(stored, canonical)) {
+						const matches = await hash.verify(stored, canonical);
+
+						if (matches) {
 							matched = index;
 							break;
 						}
@@ -255,6 +265,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 					if (updated) {
 						return true;
 					}
+
 					await this.#reloadRecoveryCodes();
 				}
 
@@ -274,6 +285,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 				if (!/^[a-z0-9]{10}$/.test(bare)) {
 					return null;
 				}
+
 				return `${bare.slice(0, RECOVERY_HALF_LENGTH)}-${bare.slice(RECOVERY_HALF_LENGTH)}`;
 			}
 
@@ -284,6 +296,8 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 
 				try {
 					const parsed: unknown = JSON.parse(this.recoveryCodes.release());
+
+					/** SAFETY: the column only ever holds an array of hashes written by this mixin. */
 					return Array.isArray(parsed) ? (parsed as string[]) : [];
 				} catch {
 					return [];
@@ -302,30 +316,31 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 			 * reload below) must not be called inside a transaction.
 			 */
 			async #compareAndSetRecoveryCodes(expected: string | null, next: string): Promise<boolean> {
+				/** SAFETY: the mixin is only ever applied to a Lucid model class. */
 				const model = this.constructor as typeof BaseModel;
+				/** SAFETY: a `null` expectation is matched by Lucid's own null handling for this binding. */
 				const [affected] = await model
 					.query()
-					.where('id', (this as unknown as { id: UUID }).id)
+					.where('id', this.id)
 					.where('recovery_codes', expected as string)
 					.update({ recovery_codes: next });
 
 				if (!affected) {
 					return false;
 				}
+
 				this.recoveryCodes = new Secret(next);
 				this.$original.recoveryCodes = next;
+
 				return true;
 			}
 
 			async #reloadRecoveryCodes(): Promise<void> {
+				/** SAFETY: the mixin is only ever applied to a Lucid model class. */
 				const model = this.constructor as typeof BaseModel;
-				const row = await model
-					.query()
-					.where('id', (this as unknown as { id: UUID }).id)
-					.select('recovery_codes')
-					.first();
-				const fresh =
-					(row as unknown as { recoveryCodes: Secret<string> | null } | null)?.recoveryCodes ?? null;
+				const row = await model.query().where('id', this.id).select('recovery_codes').first();
+				/** SAFETY: the query runs on this model's own class, so a row is an instance of it. */
+				const fresh = (row as WithTotpManagementClass | null)?.recoveryCodes ?? null;
 				this.recoveryCodes = fresh;
 				this.$original.recoveryCodes = fresh?.release() ?? null;
 			}
@@ -343,6 +358,7 @@ export const withTotpManagement = (hash: HashService, override: Partial<TwoFacto
 						}
 					}
 				}
+
 				return chars;
 			}
 

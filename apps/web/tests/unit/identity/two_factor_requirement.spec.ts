@@ -8,11 +8,15 @@ test.group('Two-factor requirement', (group) => {
 	truncateBetweenTests(group);
 
 	test('a user with a required role must have 2FA', async ({ assert }) => {
-		assert.isTrue(isTwoFactorRequiredFor(await createUser({ roles: ['ROLE_ADMIN'] })));
+		const admin = await createUser({ roles: ['ROLE_ADMIN'] });
+
+		assert.isTrue(isTwoFactorRequiredFor(admin));
 	});
 
 	test('an ordinary user need not', async ({ assert }) => {
-		assert.isFalse(isTwoFactorRequiredFor(await createUser({ roles: ['ROLE_USER'] })));
+		const member = await createUser({ roles: ['ROLE_USER'] });
+
+		assert.isFalse(isTwoFactorRequiredFor(member));
 	});
 
 	test('the per-user override forces it on', async ({ assert }) => {
@@ -51,7 +55,9 @@ test.group('UserRepository.setTwoFactorRequired', (group) => {
 		const repository = new UserRepository();
 		const admin = await createUser({ roles: ['ROLE_ADMIN'] });
 		await repository.setTwoFactorRequired(admin, false);
-		assert.isFalse(isTwoFactorRequiredFor((await repository.findById(admin.id))!));
+		const cleared = (await repository.findById(admin.id))!;
+
+		assert.isFalse(isTwoFactorRequiredFor(cleared));
 
 		await repository.setTwoFactorRequired(admin, null);
 

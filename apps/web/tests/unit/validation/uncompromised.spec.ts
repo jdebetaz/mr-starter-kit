@@ -14,9 +14,12 @@ const respondWith = (body: string, status = 200) => {
 	const calls: string[] = [];
 	const fetchImpl = async (url: string | URL) => {
 		calls.push(String(url));
+
 		return new Response(body, { status });
 	};
-	return { calls, fetchImpl: fetchImpl as unknown as typeof fetch };
+
+	/** SAFETY: the verifier only passes a URL and reads the Response, which is all this fake accepts. */
+	return { calls, fetchImpl: fetchImpl as typeof fetch };
 };
 
 test.group('Uncompromised rule', (group) => {
@@ -73,14 +76,18 @@ test.group('Pwned passwords verifier', () => {
 		const { fetchImpl } = respondWith(`${PASSWORD_SUFFIX}:12\nAAAA:1`);
 		const verifier = new PwnedPasswordsVerifier(fetchImpl);
 
-		assert.equal(await verifier.verify('password', 5000), 12);
+		const count = await verifier.verify('password', 5000);
+
+		assert.equal(count, 12);
 	});
 
 	test('an absent suffix reports zero', async ({ assert }) => {
 		const { fetchImpl } = respondWith('0000000000000000000000000000000000A:5');
 		const verifier = new PwnedPasswordsVerifier(fetchImpl);
 
-		assert.equal(await verifier.verify('password', 5000), 0);
+		const count = await verifier.verify('password', 5000);
+
+		assert.equal(count, 0);
 	});
 
 	test('a malformed 200 response fails open', async ({ assert }) => {
@@ -90,7 +97,9 @@ test.group('Pwned passwords verifier', () => {
 			const { fetchImpl } = respondWith(body);
 			const verifier = new PwnedPasswordsVerifier(fetchImpl);
 
-			assert.equal(await verifier.verify('password', 5000), 0, `body: ${JSON.stringify(body)}`);
+			const count = await verifier.verify('password', 5000);
+
+			assert.equal(count, 0, `body: ${JSON.stringify(body)}`);
 		}
 	});
 
@@ -98,16 +107,20 @@ test.group('Pwned passwords verifier', () => {
 		const { fetchImpl } = respondWith('server error', 500);
 		const verifier = new PwnedPasswordsVerifier(fetchImpl);
 
-		assert.equal(await verifier.verify('password', 5000), 0);
+		const count = await verifier.verify('password', 5000);
+
+		assert.equal(count, 0);
 	});
 
 	test('a network failure or timeout fails open', async ({ assert }) => {
+		/** SAFETY: the verifier only needs fetch to reject, and this fake always does. */
 		const rejecting = (async () => {
 			throw new Error('aborted');
-		}) as unknown as typeof fetch;
+		}) as typeof fetch;
 		const verifier = new PwnedPasswordsVerifier(rejecting);
+		const count = await verifier.verify('password', 5000);
 
-		assert.equal(await verifier.verify('password', 5000), 0);
+		assert.equal(count, 0);
 	});
 
 	test('only the first five hash characters are sent', async ({ assert }) => {

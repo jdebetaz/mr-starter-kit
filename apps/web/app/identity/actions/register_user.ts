@@ -13,10 +13,14 @@ export default class RegisterUser {
 	constructor(private readonly userRepository: UserRepository) {}
 
 	async execute(payload: CreateUserPayload): Promise<Result<User, RegisterUserError>> {
-		if (await this.userRepository.findByEmail(payload.email)) {
+		const existingUser = await this.userRepository.findByEmail(payload.email);
+
+		if (existingUser) {
 			return err({ type: 'email_already_taken' });
 		}
 
-		return ok(await this.userRepository.createUser(payload));
+		const user = await this.userRepository.createUser(payload);
+
+		return ok(user);
 	}
 }

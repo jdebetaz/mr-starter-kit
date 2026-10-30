@@ -24,17 +24,24 @@ export type ColumnCipher = Pick<Encryption, 'encrypt' | 'decrypt'>;
  *
  * Must run before `column()`, which reads the descriptor to learn that the
  * attribute has an accessor.
+ *
+ * `target` and the accessor types mirror Lucid's `DecoratorFn` and its untyped
+ * `$attributes` bag, which is what `Object.defineProperty` is handed here.
  */
+// oxlint-disable-next-line tenkai/no-object-parameters
 const defineSecretAccessor = (target: object, property: string): void => {
 	Object.defineProperty(target, property, {
 		configurable: true,
 		enumerable: true,
 
+		// oxlint-disable-next-line tenkai/no-unknown-returns
 		get(this: LucidRow): unknown {
 			const value = this.$attributes[property];
+
 			return value === null || value === undefined ? value : new Secret(value);
 		},
 
+		// oxlint-disable-next-line tenkai/no-unknown-parameters
 		set(this: LucidRow, value: unknown) {
 			this.$setAttribute(property, value instanceof Secret ? value.release() : value);
 		},
@@ -101,6 +108,10 @@ export const encrypted = ({ purpose, encryption, ...options }: EncryptedColumnOp
 			serializeAs: null,
 			...options,
 
+			// `prepare` and `consume` below take Lucid's own signature: the column
+			// hook is handed whatever the model or the driver holds, before this
+			// code decides what it is.
+			// oxlint-disable-next-line tenkai/no-unknown-parameters
 			prepare: (value: unknown, attribute: string, model) => {
 				const plain = options.prepare ? options.prepare(value, attribute, model) : value;
 
@@ -109,9 +120,11 @@ export const encrypted = ({ purpose, encryption, ...options }: EncryptedColumnOp
 				if (plain === null || plain === undefined) {
 					return plain;
 				}
+
 				return cipher().encrypt(plain, { purpose });
 			},
 
+			// oxlint-disable-next-line tenkai/no-unknown-parameters
 			consume: (value: unknown, attribute: string, model) => {
 				if (value === null || value === undefined) {
 					return options.consume ? options.consume(value, attribute, model) : value;
@@ -122,6 +135,7 @@ export const encrypted = ({ purpose, encryption, ...options }: EncryptedColumnOp
 				if (plain === null) {
 					throw new EncryptedColumnUnreadable([attribute]);
 				}
+
 				return options.consume ? options.consume(plain, attribute, model) : plain;
 			},
 		})(target, property);

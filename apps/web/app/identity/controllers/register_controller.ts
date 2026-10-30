@@ -24,10 +24,12 @@ export default class RegisterController {
 
 		if (!registered.ok) {
 			session.flash('error', 'That email address is already registered.');
+
 			return response.redirect().toRoute('register.render');
 		}
 
 		await auth.use('web').login(registered.value);
+
 		return response.redirect().toRoute('home');
 	}
 }

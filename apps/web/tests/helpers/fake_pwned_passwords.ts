@@ -32,12 +32,14 @@ export class FakePwnedPasswords {
 	/** Marks one password as leaked, optionally the number of times it was seen. */
 	leaked(password: string, count = 1): this {
 		this.#counts.set(password, count);
+
 		return this;
 	}
 
 	/** Marks every password as leaked. Passwords marked individually keep their own count. */
 	leakedAll(count = 1): this {
 		this.#everything = count;
+
 		return this;
 	}
 
@@ -48,6 +50,7 @@ export class FakePwnedPasswords {
 	 */
 	simulateOutage(): this {
 		this.#outage = true;
+
 		return this;
 	}
 
@@ -104,6 +107,12 @@ export class FakePwnedPasswords {
 export function fakePwnedPasswords(container: Container<ContainerBindings>): FakePwnedPasswords {
 	const fake = new FakePwnedPasswords(container);
 
+	/**
+	 * SAFETY: the fake implements `verify`, the only member the app calls. The real
+	 * class holds private fields, so the two are not structurally comparable and the
+	 * swap cannot be expressed without going through `unknown`.
+	 */
+	// oxlint-disable-next-line tenkai/no-chained-type-assertions
 	container.swap(PwnedPasswordsVerifier, () => fake as unknown as PwnedPasswordsVerifier);
 
 	return fake;

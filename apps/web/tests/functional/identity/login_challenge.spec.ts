@@ -298,6 +298,7 @@ test.group('Login challenge', (group) => {
 
 	test('a throttled response carries Retry-After', async ({ client, assert }) => {
 		const user = await enabledUser();
+
 		for (let i = 0; i < 5; i++) {
 			await client
 				.post('/login/challenge')
@@ -320,12 +321,18 @@ test.group('Login challenge', (group) => {
 		const user = await enabledUser();
 
 		for (let i = 0; i < 5; i++) {
-			assert.isTrue((await challengeLimiter.attempt('totp', user.id, '203.0.113.9')).allowed);
+			const attacker = await challengeLimiter.attempt('totp', user.id, '203.0.113.9');
+
+			assert.isTrue(attacker.allowed);
 		}
-		assert.isFalse((await challengeLimiter.attempt('totp', user.id, '203.0.113.9')).allowed);
+		const exhausted = await challengeLimiter.attempt('totp', user.id, '203.0.113.9');
+
+		assert.isFalse(exhausted.allowed);
 
 		/** The attacker's IP is spent; the victim's own IP still has its full budget. */
-		assert.isTrue((await challengeLimiter.attempt('totp', user.id, '198.51.100.7')).allowed);
+		const victim = await challengeLimiter.attempt('totp', user.id, '198.51.100.7');
+
+		assert.isTrue(victim.allowed);
 	});
 
 	test('the per-user cap bounds guesses spread across many IPs', async ({ assert }) => {
@@ -336,11 +343,14 @@ test.group('Login challenge', (group) => {
 			assert.isTrue(attempt.allowed);
 		}
 
-		assert.isFalse((await challengeLimiter.attempt('totp', user.id, '192.0.2.250')).allowed);
+		const extra = await challengeLimiter.attempt('totp', user.id, '192.0.2.250');
+
+		assert.isFalse(extra.allowed);
 	});
 
 	test('a successful login clears the attempt budget', async ({ client, assert }) => {
 		const user = await enabledUser();
+
 		for (let i = 0; i < 4; i++) {
 			await client
 				.post('/login/challenge')
@@ -355,6 +365,8 @@ test.group('Login challenge', (group) => {
 			.withSession(pendingFor(user))
 			.form({ code: currentCodeFor(user) });
 
-		assert.deepEqual(await challengeLimiter.attempt('totp', user.id, '127.0.0.1'), { allowed: true });
+		const budget = await challengeLimiter.attempt('totp', user.id, '127.0.0.1');
+
+		assert.deepEqual(budget, { allowed: true });
 	});
 });

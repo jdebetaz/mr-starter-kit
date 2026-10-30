@@ -20,7 +20,9 @@ export default class ConfirmTotpEnrollment {
 			return err({ type: 'enrollment_not_started' });
 		}
 
-		if (!(await user.enableTwoFactor(code))) {
+		const enrolled = await user.enableTwoFactor(code);
+
+		if (!enrolled) {
 			return err({ type: 'invalid_code' });
 		}
 

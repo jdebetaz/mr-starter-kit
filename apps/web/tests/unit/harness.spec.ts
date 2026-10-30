@@ -13,6 +13,8 @@ test.group('Test harness', (group) => {
 
 	test('does not see the user created by the previous test', async ({ assert }) => {
 		const { default: User } = await import('#identity/models/user');
-		assert.lengthOf(await User.all(), 0);
+		const users = await User.all();
+
+		assert.lengthOf(users, 0);
 	});
 });

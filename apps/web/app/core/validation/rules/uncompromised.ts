@@ -37,6 +37,7 @@ export const uncompromised = vine.createRule<UncompromisedOptions | undefined>(
 		}
 
 		const verifier = await app.container.make(PwnedPasswordsVerifier);
+		/** SAFETY: the rule is only applied to `vine.string()`, which has already validated the type. */
 		const occurrences = await verifier.verify(value as string, options?.timeout ?? DEFAULT_TIMEOUT);
 
 		if (occurrences > (options?.threshold ?? DEFAULT_THRESHOLD)) {

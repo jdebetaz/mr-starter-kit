@@ -33,7 +33,9 @@ export default class VerifyTotpChallenge {
 			return err({ type: 'not_challengeable' });
 		}
 
-		if (!(await user.verifyTotpForLogin(code))) {
+		const codeMatches = await user.verifyTotpForLogin(code);
+
+		if (!codeMatches) {
 			return err({ type: 'invalid_code' });
 		}
 

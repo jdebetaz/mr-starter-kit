@@ -47,7 +47,9 @@ export class PwnedPasswordsVerifier {
 				return 0;
 			}
 
-			return this.#countFor(suffix, await response.text());
+			const body = await response.text();
+
+			return this.#countFor(suffix, body);
 		} catch {
 			/** Any failure reads as "not compromised" — see the class comment. */
 			return 0;

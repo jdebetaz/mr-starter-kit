@@ -29,6 +29,7 @@ function fixMarkdown(value) {
 		if (fixable.length === 0) {
 			break;
 		}
+
 		output = applyFixes(output, fixable);
 	}
 
@@ -47,6 +48,7 @@ function removeEmptySections(value) {
 			if (currentSection) {
 				sections.push(currentSection);
 			}
+
 			currentSection = { heading: line, lines: [] };
 		} else if (currentSection) {
 			currentSection.lines.push(line);
@@ -60,9 +62,11 @@ function removeEmptySections(value) {
 	}
 
 	const output = [...prefix];
+
 	for (const section of sections) {
 		const hasContent = section.lines.some((line) => {
 			const trimmed = line.trim();
+
 			return trimmed && !emptySectionValuePattern.test(trimmed);
 		});
 
@@ -77,6 +81,7 @@ function removeEmptySections(value) {
 function hasNotesContent(value) {
 	return value.split('\n').some((line) => {
 		const trimmed = line.trim();
+
 		return trimmed && !/^#{1,6}\s+/.test(trimmed) && !emptySectionValuePattern.test(trimmed);
 	});
 }
@@ -96,6 +101,11 @@ function normalizeNotes(value) {
 	return fixMarkdown(cleaned).trim();
 }
 
+/**
+ * The I/O boundary for the model's reply: nothing upstream has a schema, so
+ * these checks are the parse that turns the payload into a release.
+ */
+/* oxlint-disable tenkai/no-runtime-typeof */
 function parseReleaseContent(content) {
 	if (typeof content !== 'string' || !content.trim()) {
 		throw new Error('OpenRouter returned an empty response');
@@ -119,6 +129,7 @@ function parseReleaseContent(content) {
 
 	return { title, notes };
 }
+/* oxlint-enable tenkai/no-runtime-typeof */
 
 export async function generateReleaseContent({ tag, commits }) {
 	const apiKey = process.env.OPENROUTER_API_KEY?.trim();
@@ -190,6 +201,7 @@ ${commits}`,
 			if (attempt === maxAttempts) {
 				throw error;
 			}
+
 			await delay(attempt * 1000);
 		}
 	}

@@ -20,6 +20,7 @@ test.group('StartTotpEnrollment', (group) => {
 		if (!result.ok) {
 			return;
 		}
+
 		assert.match(user.getEnrollmentSecret(), /^[A-Z2-7]+$/);
 		assert.isTrue(user.hasPendingTwoFactor);
 		assert.isFalse(user.isTwoFactorEnabled);
@@ -48,6 +49,7 @@ test.group('ConfirmTotpEnrollment', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'invalid_code');
 		assert.isFalse(user.isTwoFactorEnabled);
 	});
@@ -59,6 +61,7 @@ test.group('ConfirmTotpEnrollment', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'enrollment_not_started');
 	});
 });
@@ -84,6 +87,7 @@ test.group('DisableTotp', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'invalid_password');
 		assert.isTrue(user.isTwoFactorEnabled);
 	});
@@ -96,6 +100,7 @@ test.group('DisableTotp', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'two_factor_required');
 		assert.isTrue(user.isTwoFactorEnabled);
 	});
@@ -108,6 +113,7 @@ test.group('DisableTotp', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'two_factor_required');
 	});
 });
@@ -117,12 +123,14 @@ test.group('GenerateRecoveryCodes', (group) => {
 	const action = new GenerateRecoveryCodes();
 
 	test('an admin can still regenerate recovery codes', async ({ assert }) => {
-		const result = await action.execute(await enabledUser({ roles: ['ROLE_ADMIN'] }));
+		const admin = await enabledUser({ roles: ['ROLE_ADMIN'] });
+		const result = await action.execute(admin);
 		assert.isTrue(result.ok);
 
 		if (!result.ok) {
 			return;
 		}
+
 		assert.lengthOf(result.value, twoFactorConfig.recoveryCodesCount);
 	});
 
@@ -134,6 +142,7 @@ test.group('GenerateRecoveryCodes', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'two_factor_not_enabled');
 		assert.equal(user.remainingRecoveryCodesCount, 0);
 	});

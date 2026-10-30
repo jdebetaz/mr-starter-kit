@@ -34,6 +34,7 @@ export default class TotpChallengeController {
 			if (!attempt.allowed) {
 				response.header('Retry-After', String(attempt.retryAfterSeconds));
 				session.flash('error', throttledMessage(attempt.retryAfterSeconds));
+
 				return response.redirect().toRoute('login.challenge.render');
 			}
 		}
@@ -45,9 +46,11 @@ export default class TotpChallengeController {
 				case 'no_pending_login':
 				case 'not_challengeable':
 					session.flash('error', 'Your sign-in expired. Please log in again.');
+
 					return response.redirect().toRoute('login.render');
 				case 'invalid_code':
 					session.flash('error', 'That code is not valid. Check your authenticator app and try again.');
+
 					return response.redirect().toRoute('login.challenge.render');
 				default:
 					return assertNever(verified.error);
@@ -57,6 +60,7 @@ export default class TotpChallengeController {
 		PendingLogin.take(session);
 		await challengeLimiter.reset('totp', verified.value.id, request.ip());
 		await auth.use('web').login(verified.value);
+
 		return response.redirect().toRoute('home');
 	}
 }

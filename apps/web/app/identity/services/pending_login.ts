@@ -10,20 +10,28 @@ interface PendingLoginMarker {
 }
 
 function read(session: Session): UUID | null {
+	/** SAFETY: the shape is not trusted; every field is checked below before use. */
 	const marker = session.get(SESSION_KEY) as Partial<PendingLoginMarker> | undefined;
 
 	if (marker === undefined) {
 		return null;
 	}
 
-	/** A malformed marker could never expire, so it is discarded rather than trusted. */
+	/**
+	 * A malformed marker could never expire, so it is discarded rather than trusted.
+	 * The session store is the I/O boundary: this check is the parse, so there is no
+	 * earlier place to decode the marker into a domain value.
+	 */
+	// oxlint-disable-next-line tenkai/no-runtime-typeof
 	if (typeof marker?.userId !== 'string' || typeof marker.expiresAt !== 'number') {
 		session.forget(SESSION_KEY);
+
 		return null;
 	}
 
 	if (Date.now() >= marker.expiresAt) {
 		session.forget(SESSION_KEY);
+
 		return null;
 	}
 
@@ -48,6 +56,7 @@ export const PendingLogin = {
 	take(session: Session): UUID | null {
 		const userId = read(session);
 		session.forget(SESSION_KEY);
+
 		return userId;
 	},
 

@@ -38,7 +38,9 @@ export default class VerifyRecoveryChallenge {
 			return err({ type: 'not_challengeable' });
 		}
 
-		if (!(await user.verifyRecoveryCode(code))) {
+		const codeMatches = await user.verifyRecoveryCode(code);
+
+		if (!codeMatches) {
 			return err({ type: 'invalid_recovery_code' });
 		}
 

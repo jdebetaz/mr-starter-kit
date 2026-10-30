@@ -23,10 +23,14 @@ export default class RegenerateRecoveryCodes {
 			return err({ type: 'two_factor_not_enabled' });
 		}
 
-		if (!(await user.verifyPassword(password))) {
+		const passwordMatches = await user.verifyPassword(password);
+
+		if (!passwordMatches) {
 			return err({ type: 'invalid_password' });
 		}
 
-		return ok(await user.generateRecoveryCodes());
+		const codes = await user.generateRecoveryCodes();
+
+		return ok(codes);
 	}
 }

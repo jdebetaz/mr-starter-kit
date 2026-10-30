@@ -20,6 +20,7 @@ export default class User extends compose(
 		if (first && last) {
 			return `${first.charAt(0)}${last.charAt(0)}`.toUpperCase();
 		}
+
 		return `${first.slice(0, 2)}`.toUpperCase();
 	}
 

@@ -12,12 +12,16 @@ export interface RecoveryCodesProps {
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
-const buttonLabel: Record<CopyState, string> = { idle: 'Copy all', copied: 'Copied', failed: 'Copy failed' };
-const announcement: Record<CopyState, string> = {
+const buttonLabel = {
+	idle: 'Copy all',
+	copied: 'Copied',
+	failed: 'Copy failed',
+} satisfies Record<CopyState, string>;
+const announcement = {
 	idle: '',
 	copied: 'Recovery codes copied to the clipboard.',
 	failed: 'Copy failed. Select the codes manually.',
-};
+} satisfies Record<CopyState, string>;
 const resetDelayMs = 2500;
 
 export function RecoveryCodes({ codes }: RecoveryCodesProps) {
@@ -32,7 +36,9 @@ export function RecoveryCodes({ codes }: RecoveryCodesProps) {
 		if (state === 'idle') {
 			return;
 		}
+
 		const timer = setTimeout(() => setState('idle'), resetDelayMs);
+
 		return () => clearTimeout(timer);
 	}, [state]);
 

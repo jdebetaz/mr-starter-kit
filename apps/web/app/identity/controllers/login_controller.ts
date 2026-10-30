@@ -19,6 +19,7 @@ export default class LoginController {
 
 		if (!signedIn.ok) {
 			session.flash('error', 'Those credentials do not match our records.');
+
 			return response.redirect().toRoute('login.render');
 		}
 
@@ -28,10 +29,12 @@ export default class LoginController {
 		 */
 		if (signedIn.value.challengeRequired) {
 			PendingLogin.put(session, signedIn.value.user.id);
+
 			return response.redirect().toRoute('login.challenge.render');
 		}
 
 		await auth.use('web').login(signedIn.value.user);
+
 		return response.redirect().toRoute('home');
 	}
 }

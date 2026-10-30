@@ -1,25 +1,30 @@
 import { defineRule } from '@oxlint/plugins';
+import type { ESTree } from '@oxlint/plugins';
 
 export const noTypescriptPrivateRule = defineRule({
 	meta: {
 		type: 'problem',
 		docs: {
 			description:
-				'Require native JavaScript private fields while allowing readonly constructor parameter properties.',
+				'Require native JavaScript private members, except constructors and readonly constructor parameter properties.',
 		},
 		messages: {
 			preferNative: 'Use a native JavaScript #private member instead of the TypeScript private modifier.',
 		},
 	},
 	createOnce(context) {
-		const reportPrivateMember = (node: { accessibility?: 'private' | 'protected' | 'public' | null }) => {
+		const reportPrivateMember = (node: ESTree.MethodDefinition | ESTree.PropertyDefinition) => {
 			if (node.accessibility === 'private') {
 				context.report({ node, messageId: 'preferNative' });
 			}
 		};
 
 		return {
-			MethodDefinition: reportPrivateMember,
+			MethodDefinition(node) {
+				if (node.kind !== 'constructor') {
+					reportPrivateMember(node);
+				}
+			},
 			PropertyDefinition: reportPrivateMember,
 			TSParameterProperty(node) {
 				if (node.accessibility === 'private' && !node.readonly) {
