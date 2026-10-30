@@ -10,4 +10,5 @@
 /// <reference path="../../config/logger.ts" />
 /// <reference path="../../config/mail.ts" />
 /// <reference path="../../config/otel.ts" />
+/// <reference path="../../config/teams.ts" />
 /// <reference path="../../config/two_factor.ts" />

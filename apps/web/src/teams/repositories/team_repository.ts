@@ -37,6 +37,17 @@ export default class TeamRepository extends BaseRepository<typeof Team> {
 		return TeamMember.create({ teamId, userId, role });
 	}
 
+	/** Joins through users, because an invitation is addressed to an email. */
+	async hasMemberWithEmail(teamId: UUID, email: string): Promise<boolean> {
+		const member = await TeamMember.query()
+			.where('team_members.team_id', teamId)
+			.join('users', 'users.id', 'team_members.user_id')
+			.where('users.email', email)
+			.first();
+
+		return member !== null;
+	}
+
 	membersOf(teamId: UUID): Promise<TeamMember[]> {
 		return TeamMember.query().where('team_id', teamId).exec();
 	}
