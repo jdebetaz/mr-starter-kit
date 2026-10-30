@@ -1,4 +1,4 @@
-import { createError } from '@adonisjs/core/exceptions';
+import { DomainError } from '#core/exceptions/domain_error';
 
 /**
  * Raised when an `@encrypted` column holds a ciphertext the current `APP_KEY`
@@ -9,8 +9,10 @@ import { createError } from '@adonisjs/core/exceptions';
  * previous key in the `keys` array of `config/encryption.ts`: the driver tries
  * every key, so existing rows stay readable.
  */
-export const EncryptedColumnUnreadable = createError<[string]>(
-	'Encrypted column "%s" could not be decrypted',
-	'E_ENCRYPTED_COLUMN_UNREADABLE',
-	500,
-);
+export class EncryptedColumnUnreadable extends DomainError {
+	readonly code = 'E_ENCRYPTED_COLUMN_UNREADABLE';
+
+	constructor(column: string) {
+		super(`Encrypted column "${column}" could not be decrypted`);
+	}
+}

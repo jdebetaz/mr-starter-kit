@@ -1,6 +1,18 @@
 import { type HttpContext, ExceptionHandler } from '@adonisjs/core/http';
 import app from '@adonisjs/core/services/app';
+import { DomainError } from '#core/exceptions/domain_error';
 import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http';
+
+/**
+ * HTTP statuses for the exceptions `src/**` throws. Domain errors carry a
+ * stable code and no status of their own, so the mapping lives here, in
+ * delivery. A code with no entry is an unexpected failure and becomes a 500.
+ */
+const statusByDomainErrorCode = new Map<string, number>([
+	['E_TOTP_ENROLLMENT_NOT_STARTED', 409],
+	['E_TOTP_NOT_ENABLED', 409],
+	['E_ENCRYPTED_COLUMN_UNREADABLE', 500],
+]);
 
 export default class HttpExceptionHandler extends ExceptionHandler {
 	/**
@@ -34,6 +46,12 @@ export default class HttpExceptionHandler extends ExceptionHandler {
 	 */
 	// oxlint-disable-next-line tenkai/no-unknown-parameters
 	async handle(error: unknown, ctx: HttpContext) {
+		if (error instanceof DomainError) {
+			const status = statusByDomainErrorCode.get(error.code) ?? 500;
+
+			return super.handle(Object.assign(error, { status }), ctx);
+		}
+
 		return super.handle(error, ctx);
 	}
 
