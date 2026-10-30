@@ -1,12 +1,21 @@
 import { defineConfig, drivers, exponentialBackoff } from '@adonisjs/queue';
 import env from '#start/env';
 
+/**
+ * The Redis connection the queue uses, exported as plain data because
+ * `drivers.redis()` returns a lazy ConfigProvider whose options cannot be read
+ * back. The web process enqueues and the worker drains: if they resolved
+ * different connections, jobs would pile up where nothing is listening and
+ * neither side would report an error.
+ */
+export const QUEUE_REDIS_CONNECTION = 'main';
+
 export default defineConfig({
 	default: env.get('QUEUE_DRIVER', 'redis'),
 
 	adapters: {
 		redis: drivers.redis({
-			connectionName: 'main',
+			connectionName: QUEUE_REDIS_CONNECTION,
 		}),
 		sync: drivers.sync(),
 	},

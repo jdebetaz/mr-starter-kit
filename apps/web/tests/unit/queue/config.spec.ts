@@ -1,6 +1,7 @@
 import queue from '@adonisjs/queue/services/main';
 import { test } from '@japa/runner';
-import queueConfig from '#config/queue';
+import queueConfig, { QUEUE_REDIS_CONNECTION } from '#config/queue';
+import redisConfig from '#config/redis';
 import env from '#start/env';
 
 /**
@@ -16,6 +17,16 @@ test.group('Queue configuration', () => {
 
 	test('redis is the driver everywhere else', ({ assert }) => {
 		assert.property(queueConfig.adapters, 'redis');
+	});
+
+	/**
+	 * The web process enqueues and the worker drains. If they resolved different
+	 * Redis connections, jobs would pile up where nothing is listening and
+	 * neither side would report an error.
+	 */
+	test('the queue uses the application connection, not one of its own', ({ assert }) => {
+		assert.equal(QUEUE_REDIS_CONNECTION, redisConfig.connection);
+		assert.property(redisConfig.connections, QUEUE_REDIS_CONNECTION);
 	});
 
 	test('jobs are discovered under src, not app', ({ assert }) => {
