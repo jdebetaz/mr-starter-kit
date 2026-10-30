@@ -25,6 +25,8 @@ export type ScannedRoutes = {
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
     'workspace.switch': { paramsTuple?: []; params?: {} }
     'teams.settings.render': { paramsTuple?: []; params?: {} }
+    'teams.invitations.render': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
+    'teams.invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'teams.create': { paramsTuple?: []; params?: {} }
     'teams.members.invite': { paramsTuple?: []; params?: {} }
     'teams.members.remove': { paramsTuple?: []; params?: {} }
@@ -44,6 +46,7 @@ export type ScannedRoutes = {
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
     'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
     'teams.settings.render': { paramsTuple?: []; params?: {} }
+    'teams.invitations.render': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'home': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -57,6 +60,7 @@ export type ScannedRoutes = {
     'two_factor.recovery.render': { paramsTuple?: []; params?: {} }
     'regenerate_recovery_codes.render': { paramsTuple?: []; params?: {} }
     'teams.settings.render': { paramsTuple?: []; params?: {} }
+    'teams.invitations.render': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'home': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -71,6 +75,7 @@ export type ScannedRoutes = {
     'two_factor.recovery.regenerate.execute': { paramsTuple?: []; params?: {} }
     'two_factor.disable.execute': { paramsTuple?: []; params?: {} }
     'workspace.switch': { paramsTuple?: []; params?: {} }
+    'teams.invitations.accept': { paramsTuple: [ParamValue]; params: {'token': ParamValue} }
     'teams.create': { paramsTuple?: []; params?: {} }
     'teams.members.invite': { paramsTuple?: []; params?: {} }
     'teams.ownership.transfer': { paramsTuple?: []; params?: {} }

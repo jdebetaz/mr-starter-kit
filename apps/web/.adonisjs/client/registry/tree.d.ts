@@ -56,6 +56,11 @@ export interface ApiDefinition {
     settings: {
       render: typeof routes['teams.settings.render']
     }
+    invitations: {
+      render: typeof routes['teams.invitations.render']
+      accept: typeof routes['teams.invitations.accept']
+      revoke: typeof routes['teams.invitations.revoke']
+    }
     create: typeof routes['teams.create']
     members: {
       invite: typeof routes['teams.members.invite']
@@ -64,9 +69,6 @@ export interface ApiDefinition {
     }
     ownership: {
       transfer: typeof routes['teams.ownership.transfer']
-    }
-    invitations: {
-      revoke: typeof routes['teams.invitations.revoke']
     }
   }
   home: typeof routes['home']

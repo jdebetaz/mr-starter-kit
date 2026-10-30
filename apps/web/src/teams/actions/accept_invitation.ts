@@ -19,7 +19,11 @@ export interface AcceptInvitationParams {
  * invitation is deleted. Collapsing them is also the safer answer, since it
  * tells a guesser nothing about whether a token ever existed.
  */
-export type AcceptInvitationError = { type: 'not_found' } | { type: 'already_accepted' } | { type: 'wrong_recipient' };
+export type AcceptInvitationError =
+	| { type: 'not_found' }
+	| { type: 'already_accepted' }
+	| { type: 'already_a_member' }
+	| { type: 'wrong_recipient' };
 
 @inject()
 export default class AcceptInvitation {
@@ -42,6 +46,17 @@ export default class AcceptInvitation {
 		/** The link is a bearer token in an inbox: it must not re-target. */
 		if (invitation.email !== user.email) {
 			return err({ type: 'wrong_recipient' });
+		}
+
+		/**
+		 * Without this the unique(team_id, user_id) index throws a raw database
+		 * error instead of an outcome the controller can map. It is reachable: an
+		 * invitation sent before the person joined some other way is still live.
+		 */
+		const existing = await this.teamRepository.membershipFor(invitation.teamId, user.id);
+
+		if (existing) {
+			return err({ type: 'already_a_member' });
 		}
 
 		/** SAFETY: the `role` column is only ever written from `TeamRole`, by InviteMember. */

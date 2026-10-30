@@ -280,6 +280,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
     }
   }
+  'teams.invitations.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/teams/invitations/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['render']>>>
+    }
+  }
+  'teams.invitations.accept': {
+    methods: ["POST"]
+    pattern: '/teams/invitations/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['execute']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['execute']>>>
+    }
+  }
   'teams.create': {
     methods: ["POST"]
     pattern: '/teams'

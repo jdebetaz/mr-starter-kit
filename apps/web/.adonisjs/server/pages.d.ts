@@ -23,6 +23,7 @@ declare module '@adonisjs/inertia/types' {
     'settings/two-factor/recovery': ExtractProps<(typeof import('../../inertia/pages/settings/two-factor/recovery.tsx'))['default']>
     'settings/two-factor/start': ExtractProps<(typeof import('../../inertia/pages/settings/two-factor/start.tsx'))['default']>
     'settings/two-factor/verify': ExtractProps<(typeof import('../../inertia/pages/settings/two-factor/verify.tsx'))['default']>
+    'teams/invitation': ExtractProps<(typeof import('../../inertia/pages/teams/invitation.tsx'))['default']>
     'teams/settings': ExtractProps<(typeof import('../../inertia/pages/teams/settings.tsx'))['default']>
   }
 }

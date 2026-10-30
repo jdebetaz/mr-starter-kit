@@ -7,6 +7,13 @@ router
 		router.post('workspace/switch', [controllers.teams.SwitchWorkspace, 'execute']).as('workspace.switch');
 
 		router.get('settings/team', [controllers.teams.Teams, 'render']).as('teams.settings.render');
+
+		router
+			.get('teams/invitations/:token', [controllers.teams.AcceptInvitation, 'render'])
+			.as('teams.invitations.render');
+		router
+			.post('teams/invitations/:token', [controllers.teams.AcceptInvitation, 'execute'])
+			.as('teams.invitations.accept');
 		router.post('teams', [controllers.teams.CreateTeam, 'execute']).as('teams.create');
 
 		router

@@ -132,6 +132,18 @@ const routes = {
     tokens: [[0,"settings"],[0,"team"]],
     types: placeholder as Registry['teams.settings.render']['types'],
   },
+  'teams.invitations.render': {
+    methods: ["GET","HEAD"],
+    pattern: '/teams/invitations/:token',
+    tokens: [[0,"teams"],[0,"invitations"],[1,"token"]],
+    types: placeholder as Registry['teams.invitations.render']['types'],
+  },
+  'teams.invitations.accept': {
+    methods: ["POST"],
+    pattern: '/teams/invitations/:token',
+    tokens: [[0,"teams"],[0,"invitations"],[1,"token"]],
+    types: placeholder as Registry['teams.invitations.accept']['types'],
+  },
   'teams.create': {
     methods: ["POST"],
     pattern: '/teams',
