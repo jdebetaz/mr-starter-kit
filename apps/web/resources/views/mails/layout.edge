@@ -1,0 +1,46 @@
+{{--
+  The shell every message renders inside. A message's own view does:
+
+    @component('mails/layout')
+      <mj-text>...</mj-text>
+    @end
+
+  Edge 6 has no `@layout`/`@section` tags — components and slots replaced them —
+  so this is a component and the message's body arrives as the default slot.
+
+  Keep it free of images and web fonts: many clients block the first and ignore
+  the second, and both cost a network round trip the reader did not ask for.
+  Every link goes through the `mailUrl` global so it is absolute.
+--}}
+<mjml>
+  <mj-head>
+    <mj-title>{{ appName }}</mj-title>
+    <mj-attributes>
+      <mj-all font-family="Helvetica, Arial, sans-serif" />
+      <mj-text font-size="15px" line-height="1.5" color="#1f2328" />
+      <mj-button background-color="#1f2328" color="#ffffff" border-radius="6px" />
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body background-color="#f6f8fa">
+    <mj-section padding-bottom="0">
+      <mj-column>
+        <mj-text font-size="18px" font-weight="700">{{ appName }}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" border-radius="8px">
+      <mj-column>
+        {{{ await $slots.main() }}}
+      </mj-column>
+    </mj-section>
+
+    <mj-section padding-top="0">
+      <mj-column>
+        <mj-text font-size="12px" color="#59636e">
+          You received this email because you have an account on {{ appName }}.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
