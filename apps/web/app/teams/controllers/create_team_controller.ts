@@ -10,16 +10,10 @@ export default class CreateTeamController {
 
 	async execute({ auth, request, response, session }: HttpContext) {
 		const { name } = await request.validateUsing(createTeamValidator);
-		const result = await this.createTeam.execute({ name, owner: auth.getUserOrFail() });
-
-		if (!result.ok) {
-			session.flash('error', 'A team with that name already exists.');
-
-			return response.redirect().back();
-		}
+		const team = await this.createTeam.execute({ name, owner: auth.getUserOrFail() });
 
 		/** Creating a team switches into it: it is what the user just asked for. */
-		ActiveWorkspace.put(session, result.value.id);
+		ActiveWorkspace.put(session, team.id);
 
 		return response.redirect().toRoute('teams.settings.render');
 	}

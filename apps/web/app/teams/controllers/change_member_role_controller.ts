@@ -29,6 +29,10 @@ export default class ChangeMemberRoleController {
 					return response.forbidden();
 				case 'not_a_member':
 					return response.notFound();
+				case 'use_transfer_ownership':
+					session.flash('error', 'Transfer ownership instead of promoting to owner.');
+
+					return response.redirect().back();
 				case 'would_leave_team_ownerless':
 					session.flash('error', 'Transfer ownership instead of demoting the owner.');
 

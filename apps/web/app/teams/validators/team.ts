@@ -28,10 +28,11 @@ export const memberValidator = vine.compile(
 	}),
 );
 
+/** Owner is excluded: promotion is a transfer, not a role change. */
 export const changeMemberRoleValidator = vine.compile(
 	vine.object({
 		userId: vine.string().uuid(),
-		role: vine.enum(TEAM_ROLES),
+		role: vine.enum(TEAM_ROLES.filter((role) => role !== 'owner')),
 	}),
 );
 

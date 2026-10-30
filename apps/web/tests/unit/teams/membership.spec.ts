@@ -101,6 +101,24 @@ test.group('Membership', (group) => {
 		assert.isNotNull(stillThere);
 	});
 
+	/**
+	 * Promoting a second owner collides with the partial unique index, which
+	 * surfaced as an unhandled 500 rather than an outcome the controller maps.
+	 */
+	test('promoting someone to owner is refused in favour of transferring', async ({ assert }) => {
+		const { team } = await createTeam();
+		const member = await withMember(team);
+
+		const result = await new ChangeMemberRole(teams()).execute({
+			teamId: team.id,
+			actorRole: 'owner',
+			userId: member.id,
+			role: 'owner',
+		});
+
+		assert.equal(result.ok ? '' : result.error.type, 'use_transfer_ownership');
+	});
+
 	test('a member cannot change roles', async ({ assert }) => {
 		const { team } = await createTeam();
 		const member = await withMember(team);

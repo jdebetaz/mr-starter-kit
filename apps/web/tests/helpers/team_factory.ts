@@ -13,11 +13,7 @@ interface TeamAttributes {
 export async function createTeam({ owner, name }: TeamAttributes = {}): Promise<{ team: Team; owner: User }> {
 	const teamOwner = owner ?? (await createUser());
 	const action = new CreateTeam(new TeamRepository());
-	const result = await action.execute({ name: name ?? `Team ${crypto.randomUUID()}`, owner: teamOwner });
+	const team = await action.execute({ name: name ?? `Team ${crypto.randomUUID()}`, owner: teamOwner });
 
-	if (!result.ok) {
-		throw new Error(`createTeam: ${result.error.type}`);
-	}
-
-	return { team: result.value, owner: teamOwner };
+	return { team, owner: teamOwner };
 }

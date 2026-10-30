@@ -29,8 +29,13 @@ export default class TeamInvitationRepository extends BaseRepository<typeof Team
 		return { invitation, token: token.value!.release() };
 	}
 
+	/** Case-insensitive, for the reason given on `TeamRepository.hasMemberWithEmail`. */
 	findPendingFor(teamId: UUID, email: string): Promise<TeamInvitation | null> {
-		return TeamInvitation.query().where('team_id', teamId).where('email', email).whereNull('accepted_at').first();
+		return TeamInvitation.query()
+			.where('team_id', teamId)
+			.whereRaw('lower(email) = lower(?)', [email])
+			.whereNull('accepted_at')
+			.first();
 	}
 
 	/**

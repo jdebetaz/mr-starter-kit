@@ -7,7 +7,7 @@ import type { TeamSummary } from '#teams/types/team';
 export default class UserTeamsQuery {
 	async execute(user: User): Promise<TeamSummary[]> {
 		const memberships = await TeamMember.query()
-			.select('team_members.role', 'teams.id', 'teams.name')
+			.select('team_members.team_id', 'team_members.role', 'teams.name')
 			.join('teams', 'teams.id', 'team_members.team_id')
 			.where('team_members.user_id', user.id)
 			.orderBy('teams.name');

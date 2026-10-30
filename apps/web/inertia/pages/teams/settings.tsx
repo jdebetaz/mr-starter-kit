@@ -84,16 +84,49 @@ export default function TeamSettings({ teams, team, members, invitations, can }:
 								</div>
 
 								{can?.manageMembers && member.role !== 'owner' && (
-									<Form action="/settings/team/members" method="delete">
-										{({ processing }) => (
-											<>
-												<input type="hidden" name="userId" value={member.userId} />
-												<Button type="submit" intent="secondary" disabled={processing}>
-													Remove
-												</Button>
-											</>
+									<div className="flex items-center gap-2">
+										<Form action="/settings/team/members/role" method="patch">
+											{({ processing }) => (
+												<>
+													<input type="hidden" name="userId" value={member.userId} />
+													<select
+														name="role"
+														defaultValue={member.role}
+														className="text-sm"
+														onChange={(event) => event.currentTarget.form?.requestSubmit()}
+														disabled={processing}
+													>
+														<option value="member">Member</option>
+														<option value="admin">Admin</option>
+													</select>
+												</>
+											)}
+										</Form>
+
+										{can.transferOwnership && (
+											<Form action="/settings/team/ownership" method="post">
+												{({ processing }) => (
+													<>
+														<input type="hidden" name="userId" value={member.userId} />
+														<Button type="submit" intent="secondary" disabled={processing}>
+															Make owner
+														</Button>
+													</>
+												)}
+											</Form>
 										)}
-									</Form>
+
+										<Form action="/settings/team/members" method="delete">
+											{({ processing }) => (
+												<>
+													<input type="hidden" name="userId" value={member.userId} />
+													<Button type="submit" intent="secondary" disabled={processing}>
+														Remove
+													</Button>
+												</>
+											)}
+										</Form>
+									</div>
 								)}
 							</li>
 						))}

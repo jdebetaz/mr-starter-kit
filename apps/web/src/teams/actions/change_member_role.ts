@@ -15,6 +15,7 @@ export interface ChangeMemberRoleParams {
 export type ChangeMemberRoleError =
 	| { type: 'not_permitted' }
 	| { type: 'not_a_member' }
+	| { type: 'use_transfer_ownership' }
 	| { type: 'would_leave_team_ownerless' };
 
 @inject()
@@ -31,6 +32,14 @@ export default class ChangeMemberRole {
 			return err({ type: 'not_permitted' });
 		}
 
+		/**
+		 * A team has exactly one owner, so promotion is a transfer: doing it here
+		 * would collide with the partial unique index and surface as a 500.
+		 */
+		if (role === 'owner') {
+			return err({ type: 'use_transfer_ownership' });
+		}
+
 		const membership = await this.teamRepository.membershipFor(teamId, userId);
 
 		if (!membership) {
@@ -42,7 +51,7 @@ export default class ChangeMemberRole {
 		 * capability on, a subscription nobody can manage. Ownership moves through
 		 * TransferOwnership, which promotes a successor in the same transaction.
 		 */
-		if (membership.role === 'owner' && role !== 'owner') {
+		if (membership.role === 'owner') {
 			return err({ type: 'would_leave_team_ownerless' });
 		}
 

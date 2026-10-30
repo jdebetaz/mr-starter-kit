@@ -13,11 +13,8 @@ test.group('CreateTeam', (group) => {
 
 	test('a new team has exactly one member, its owner', async ({ assert }) => {
 		const owner = await createUser();
-		const result = await createTeamAction.execute({ name: 'Acme Rockets', owner });
-
-		assert.isTrue(result.ok);
-
-		const members = await db.from('team_members').where('team_id', result.ok ? result.value.id : '');
+		const team = await createTeamAction.execute({ name: 'Acme Rockets', owner });
+		const members = await db.from('team_members').where('team_id', team.id);
 
 		assert.lengthOf(members, 1);
 		assert.equal(members[0].user_id, owner.id);
@@ -31,8 +28,8 @@ test.group('CreateTeam', (group) => {
 	test('the database refuses a second owner for one team', async ({ assert }) => {
 		const owner = await createUser();
 		const other = await createUser();
-		const result = await createTeamAction.execute({ name: 'Acme Rockets', owner });
-		const teamId = result.ok ? result.value.id : '';
+		const team = await createTeamAction.execute({ name: 'Acme Rockets', owner });
+		const teamId = team.id;
 
 		await assert.rejects(() =>
 			db.table('team_members').insert({
@@ -48,8 +45,8 @@ test.group('CreateTeam', (group) => {
 
 	test('the database refuses the same user twice in one team', async ({ assert }) => {
 		const owner = await createUser();
-		const result = await createTeamAction.execute({ name: 'Acme Rockets', owner });
-		const teamId = result.ok ? result.value.id : '';
+		const team = await createTeamAction.execute({ name: 'Acme Rockets', owner });
+		const teamId = team.id;
 
 		await assert.rejects(() =>
 			db.table('team_members').insert({

@@ -24,6 +24,9 @@ test.group('Team settings', (group) => {
 		page.assertStatus(200);
 		page.assertInertiaComponent('teams/settings');
 		page.assertInertiaPropsContains({ team: { id: team.id, name: 'Acme Rockets' } });
+
+		/** The switcher posts this id; an undefined one silently drops to personal. */
+		page.assertInertiaPropsContains({ teams: [{ id: team.id, name: 'Acme Rockets', role: 'owner' }] });
 	});
 
 	test('a member may not invite', async ({ client }) => {

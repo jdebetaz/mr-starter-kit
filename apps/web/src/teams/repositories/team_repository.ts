@@ -26,10 +26,6 @@ export default class TeamRepository extends BaseRepository<typeof Team> {
 		});
 	}
 
-	findByName(name: string): Promise<Team | null> {
-		return this.findOneBy('name', name);
-	}
-
 	membershipFor(teamId: UUID, userId: UUID): Promise<TeamMember | null> {
 		return TeamMember.query().where('team_id', teamId).where('user_id', userId).first();
 	}
@@ -38,12 +34,17 @@ export default class TeamRepository extends BaseRepository<typeof Team> {
 		return TeamMember.create({ teamId, userId, role }, trx ? { client: trx } : undefined);
 	}
 
-	/** Joins through users, because an invitation is addressed to an email. */
+	/**
+	 * Joins through users, because an invitation is addressed to an email.
+	 * Compared case-insensitively: the invite validator normalizes the address
+	 * but registration does not, so `Foo@example.com` and `foo@example.com` are
+	 * the same human and must not become two memberships.
+	 */
 	async hasMemberWithEmail(teamId: UUID, email: string): Promise<boolean> {
 		const member = await TeamMember.query()
 			.where('team_members.team_id', teamId)
 			.join('users', 'users.id', 'team_members.user_id')
-			.where('users.email', email)
+			.whereRaw('lower(users.email) = lower(?)', [email])
 			.first();
 
 		return member !== null;
