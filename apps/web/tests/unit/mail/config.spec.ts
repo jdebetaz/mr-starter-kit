@@ -1,37 +1,41 @@
 import mail from '@adonisjs/mail/services/main';
 import { test } from '@japa/runner';
-import { defaultSender, smtpOptions } from '#config/mail';
-import { mailEnvSchema } from '#start/env';
+import edge from 'edge.js';
+import AppMail from '#core/mails/app_mail';
+import env from '#start/env';
+import { captureMail, sentMails } from '#tests/helpers/mail';
 
-/**
- * `.env.test` deliberately sets no `MAIL_*` at all, so every assertion below
- * runs against the unset path a fresh clone takes.
- */
-test.group('Mail configuration', () => {
-	test('the smtp transport resolves', ({ assert }) => {
-		assert.isDefined(mail.use('smtp'));
-	});
+class SenderProbeMail extends AppMail<Record<string, never>> {
+	subject = 'Sender probe';
+	view = 'sender_probe';
+	props: Record<string, never> = {};
 
-	test('the default sender is built from the configured name and address', ({ assert }) => {
-		assert.deepEqual(defaultSender, { address: 'noreply@example.com', name: 'web' });
+	textBody(): string {
+		return 'Sender probe';
+	}
+}
+
+test.group('Mail configuration', (group) => {
+	captureMail(group);
+
+	group.setup(() => {
+		edge.registerTemplate('mails/sender_probe', {
+			template: `<mjml><mj-body><mj-section><mj-column><mj-text>Probe</mj-text></mj-column></mj-section></mj-body></mjml>`,
+		});
 	});
 
 	/**
-	 * Boot-time validation runs before anything else, so a required mail variable
-	 * turns `pnpm dev` into an error on a machine that has never configured mail.
+	 * `AppMail` sets no sender of its own, so this is what proves the configured
+	 * one actually reaches a message rather than being dropped.
 	 */
-	test('every mail variable is optional, so an unset environment still boots', ({ assert }) => {
-		for (const [key, validate] of Object.entries(mailEnvSchema)) {
-			assert.doesNotThrow(() => validate(key, undefined), `${key} is required`);
-		}
-	});
+	test('a message with no sender of its own goes out as the configured sender', async ({ assert }) => {
+		await mail.send(new SenderProbeMail({ email: 'reader@example.com' }));
 
-	test('an unset environment points the transport at the local Mailpit', ({ assert }) => {
-		assert.equal(smtpOptions.host, 'localhost');
-		assert.equal(smtpOptions.port, 1025);
-	});
+		const [sent] = sentMails();
 
-	test('no credentials are sent when none are configured', ({ assert }) => {
-		assert.isUndefined(smtpOptions.auth);
+		assert.deepEqual(sent?.message.toJSON().message.from, {
+			address: env.get('MAIL_FROM_ADDRESS'),
+			name: env.get('MAIL_FROM_NAME'),
+		});
 	});
 });

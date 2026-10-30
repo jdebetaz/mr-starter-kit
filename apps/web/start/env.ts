@@ -11,20 +11,6 @@
 
 import { Env } from '@adonisjs/core/env';
 
-/**
- * Mail is entirely optional so a fresh clone boots with no mail account and no
- * `MAIL_*` in its environment. The defaults for an unset variable live in
- * `config/mail.ts` and point at the Mailpit service in `docker-compose.yml`.
- */
-export const mailEnvSchema = {
-	MAIL_HOST: Env.schema.string.optional({ format: 'host' }),
-	MAIL_PORT: Env.schema.number.optional(),
-	MAIL_USERNAME: Env.schema.string.optional(),
-	MAIL_PASSWORD: Env.schema.string.optional(),
-	MAIL_FROM_ADDRESS: Env.schema.string.optional({ format: 'email' }),
-	MAIL_FROM_NAME: Env.schema.string.optional(),
-};
-
 export default await Env.create(new URL('../', import.meta.url), {
 	// Node
 	NODE_ENV: Env.schema.enum(['development', 'production', 'test'] as const),
@@ -49,9 +35,17 @@ export default await Env.create(new URL('../', import.meta.url), {
 	DB_PASSWORD: Env.schema.string(),
 	DB_DATABASE: Env.schema.string(),
 
-	// Mail
-	...mailEnvSchema,
-
 	// Telemetry
 	OTEL_EXPORTER_OTLP_ENDPOINT: Env.schema.string.optional({ format: 'url', tld: false }),
+
+	/*
+  |----------------------------------------------------------
+  | Variables for configuring the mail package
+  |----------------------------------------------------------
+  */
+	MAIL_MAILER: Env.schema.enum(['smtp'] as const),
+	MAIL_FROM_NAME: Env.schema.string(),
+	MAIL_FROM_ADDRESS: Env.schema.string(),
+	SMTP_HOST: Env.schema.string(),
+	SMTP_PORT: Env.schema.number(),
 });

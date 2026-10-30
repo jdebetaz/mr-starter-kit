@@ -1,6 +1,5 @@
 import { test } from '@japa/runner';
 import edge from 'edge.js';
-import { defaultSender } from '#config/mail';
 import AppMail from '#core/mails/app_mail';
 
 interface WelcomeProps {
@@ -61,7 +60,6 @@ test.group('AppMail', (group) => {
 	/** `from` is left unset so the mailer applies the configured sender. */
 	test('a message declares no sender of its own', ({ assert }) => {
 		assert.isUndefined(new FixtureMail({ email: 'invitee@example.com' }).from);
-		assert.isDefined(defaultSender.address);
 	});
 
 	test('links are absolute even when APP_URL carries a trailing slash', async ({ assert }) => {
