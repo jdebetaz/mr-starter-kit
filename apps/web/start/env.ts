@@ -39,13 +39,24 @@ export default await Env.create(new URL('../', import.meta.url), {
 	OTEL_EXPORTER_OTLP_ENDPOINT: Env.schema.string.optional({ format: 'url', tld: false }),
 
 	/*
-  |----------------------------------------------------------
-  | Variables for configuring the mail package
-  |----------------------------------------------------------
-  */
+|----------------------------------------------------------
+| Variables for configuring the mail package
+|----------------------------------------------------------
+*/
 	MAIL_MAILER: Env.schema.enum(['smtp'] as const),
 	MAIL_FROM_NAME: Env.schema.string(),
 	MAIL_FROM_ADDRESS: Env.schema.string(),
 	SMTP_HOST: Env.schema.string(),
 	SMTP_PORT: Env.schema.number(),
+
+	REDIS_HOST: Env.schema.string({ format: 'host' }),
+	REDIS_PORT: Env.schema.number(),
+	REDIS_PASSWORD: Env.schema.secret.optional(),
+
+	/*
+  |----------------------------------------------------------
+  | Variables for configuring @adonisjs/queue
+  |----------------------------------------------------------
+  */
+	QUEUE_DRIVER: Env.schema.enum(['redis', 'database', 'sync'] as const),
 });
