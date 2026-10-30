@@ -19,6 +19,10 @@ Use Lucid ORM with Postgres for persistence. Keep database invariants in migrati
 
 Read [the design system guide](docs/agents/design-system.md) before changing `packages/design-system` or extracting UI from an Inertia page.
 
+## Email
+
+Read [the mail guide](docs/architecture/mail.md) before adding or changing a message, an MJML template, or the mail configuration. Install AdonisJS packages with `node ace configure <package>`: the codemod owns `config/<name>.ts`, the provider registration and the env block, and overwrites a hand-written setup.
+
 ## Verification
 
 Run `pnpm lint`, `pnpm format`, `pnpm typecheck`, and `pnpm test` before committing. Run `pnpm test:lint` as well when changing `tools/oxlint` or `oxlint.config.ts`. Custom lint rules live under the `tenkai/` namespace; see [the lint rules guide](tools/oxlint/README.md) before disabling one. Use Conventional Commits.
