@@ -3,16 +3,25 @@
 | Scheduler
 |--------------------------------------------------------------------------
 |
-| This file is used to define scheduled jobs. You can schedule jobs to run
-| at specific intervals using cron expressions or duration strings.
+| Recurring jobs are registered here. This file is preloaded in the `web`
+| environment, so registration happens when the HTTP server starts; the worker
+| process is what actually executes a due run.
 |
-| Example:
+| A schedule is awaited directly — there is no `.run()`:
 |
-|   import SendWeeklyReport from '#jobs/send_weekly_report'
+|   import ReconcileSubscriptions from '#billing/jobs/reconcile_subscriptions'
 |
-|   SendWeeklyReport.schedule({ userId: 1 })
-|     .cron('0 9 * * MON')
-|     .run()
+|   await ReconcileSubscriptions.schedule({})
+|     .cron('0 3 * * *')
+|     .timezone('Europe/Zurich')
+|
+| Or on an interval:
+|
+|   await SweepExpiringTrials.schedule({}).every('15m')
+|
+| A schedule's id defaults to the job class name, so re-registering updates it
+| in place and keeps its run count and next run. `node ace queue:scheduler:list`
+| shows what is registered.
 |
 */
 
