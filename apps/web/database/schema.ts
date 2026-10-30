@@ -11,6 +11,38 @@ import { secret, encrypted } from '#core/orm/columns'
 import type { Secret } from '@adonisjs/core/helpers'
 import type { Role } from '#identity/types/role'
 
+export class TeamMemberSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'role', 'teamId', 'updatedAt', 'userId'] as const
+  $columns = TeamMemberSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: UUID
+  @column()
+  declare role: string
+  @column()
+  declare teamId: UUID
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+  @column()
+  declare userId: UUID
+}
+
+export class TeamSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'name', 'ownerId', 'updatedAt'] as const
+  $columns = TeamSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: UUID
+  @column()
+  declare name: string
+  @column()
+  declare ownerId: UUID
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime | null
+}
+
 export class UserSchema extends BaseModel {
   static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'recoveryCodes', 'roles', 'totpEnabledAt', 'totpLastConsumedTimestep', 'totpPendingSecret', 'totpRequired', 'totpSecret', 'updatedAt'] as const
   $columns = UserSchema.$columns

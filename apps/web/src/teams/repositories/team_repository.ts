@@ -1,0 +1,51 @@
+import db from '@adonisjs/lucid/services/db';
+import BaseRepository from '#core/repositories/base_repository';
+import Team from '#teams/models/team';
+import TeamMember from '#teams/models/team_member';
+import type { UUID } from '#core/types';
+import type { TeamRole } from '#teams/domain/team_role';
+import type { AddMemberPayload } from '#teams/types/team';
+
+export default class TeamRepository extends BaseRepository<typeof Team> {
+	constructor() {
+		super(Team);
+	}
+
+	/**
+	 * Creates the team and its owner's membership atomically: a team with no
+	 * owner would violate the invariant the partial unique index protects.
+	 */
+	async createWithOwner(name: string, ownerId: UUID): Promise<Team> {
+		return db.transaction(async (trx) => {
+			const team = await Team.create({ name, ownerId }, { client: trx });
+
+			await TeamMember.create({ teamId: team.id, userId: ownerId, role: 'owner' }, { client: trx });
+
+			return team;
+		});
+	}
+
+	findByName(name: string): Promise<Team | null> {
+		return this.findOneBy('name', name);
+	}
+
+	membershipFor(teamId: UUID, userId: UUID): Promise<TeamMember | null> {
+		return TeamMember.query().where('team_id', teamId).where('user_id', userId).first();
+	}
+
+	addMember({ teamId, userId, role }: AddMemberPayload): Promise<TeamMember> {
+		return TeamMember.create({ teamId, userId, role });
+	}
+
+	membersOf(teamId: UUID): Promise<TeamMember[]> {
+		return TeamMember.query().where('team_id', teamId).exec();
+	}
+
+	async ownerCount(teamId: UUID): Promise<number> {
+		const owners = await TeamMember.query()
+			.where('team_id', teamId)
+			.where('role', 'owner' satisfies TeamRole);
+
+		return owners.length;
+	}
+}
