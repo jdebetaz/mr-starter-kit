@@ -1,7 +1,7 @@
 import { definePasswordPolicy } from '@boilerplate/validation/password-policy';
 import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
-import { enforcePasswordPolicy } from '#core/validation/rules/password_policy';
+import { enforcePasswordPolicy } from '#app/core/validation/rules/password_policy';
 import { validationErrors } from '#tests/helpers/validation';
 
 test.group('Password policy rule', () => {

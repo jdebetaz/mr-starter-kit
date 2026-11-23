@@ -29,6 +29,7 @@ async function resolveReleaseContent(tag, commits) {
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		log.warn(`AI release generation failed (${message}); GitHub will generate the title and notes.`);
+
 		return null;
 	}
 }
@@ -93,6 +94,7 @@ async function main() {
 	} else {
 		log.warn('No new commits found.');
 	}
+
 	log.info();
 
 	if (isCI) {
@@ -102,6 +104,7 @@ async function main() {
 
 		if (!confirmed) {
 			log.warn(`Release ${release.nextTag} cancelled.`);
+
 			return;
 		}
 	}
@@ -124,6 +127,7 @@ async function main() {
 		notesDirectory = await runStep('Prepare temporary release notes', async () => {
 			const directory = await mkdtemp(join(tmpdir(), 'mr-starter-kit-release-'));
 			await writeFile(join(directory, 'notes.md'), `${releaseContent.notes}\n`);
+
 			return directory;
 		});
 	}

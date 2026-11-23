@@ -1,4 +1,4 @@
-import { isTwoFactorRequiredFor } from '#identity/policies/two_factor_requirement';
+import { isTwoFactorRequiredFor } from '#identity/domain/two_factor_requirement';
 import type { HttpContext } from '@adonisjs/core/http';
 import type { NextFn } from '@adonisjs/core/types/http';
 

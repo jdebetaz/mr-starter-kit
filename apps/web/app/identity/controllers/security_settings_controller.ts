@@ -8,6 +8,7 @@ export default class SecuritySettingsController {
 
 	async render({ auth, inertia }: HttpContext) {
 		const status = await this.twoFactorStatus.execute(auth.getUserOrFail());
+
 		return inertia.render('settings/security', { status });
 	}
 }

@@ -8,21 +8,25 @@ import { truncateBetweenTests } from '#tests/helpers/database';
 import { enabledUser } from '#tests/helpers/two_factor';
 import { createUser } from '#tests/helpers/user_factory';
 
-function codeOfThrown(fn: () => unknown): string | undefined {
+function codeOfThrown(fn: () => void): string | undefined {
 	try {
 		fn();
 	} catch (error) {
+		// SAFETY: the errors these helpers catch are AdonisJS exceptions, which carry an optional string `code`.
 		return (error as { code?: string }).code;
 	}
+
 	return undefined;
 }
 
-async function codeOfRejected(fn: () => Promise<unknown>): Promise<string | undefined> {
+async function codeOfRejected<T>(fn: () => Promise<T>): Promise<string | undefined> {
 	try {
 		await fn();
 	} catch (error) {
+		// SAFETY: the errors these helpers catch are AdonisJS exceptions, which carry an optional string `code`.
 		return (error as { code?: string }).code;
 	}
+
 	return undefined;
 }
 
@@ -36,6 +40,7 @@ test.group('TOTP enrollment', (group) => {
 
 		// The column holds the plain secret; the ciphertext is what reaches the row.
 		const row = await db.from('users').select('totp_pending_secret').where('id', user.id).first();
+		// SAFETY: generateSecret has just written this column, so the selected value is a non-null string.
 		assert.notInclude((row as { totp_pending_secret: string }).totp_pending_secret, user.getEnrollmentSecret());
 
 		assert.isTrue(user.hasPendingTwoFactor);
@@ -46,9 +51,12 @@ test.group('TOTP enrollment', (group) => {
 		const user = await createUser();
 		await user.generateSecret();
 		const secret = user.getEnrollmentSecret();
-		assert.isTrue(await user.enableTwoFactor(user.createTotp(secret).generate()));
+		const enabled = await user.enableTwoFactor(user.createTotp(secret).generate());
+
+		assert.isTrue(enabled);
 
 		const row = await db.from('users').select('totp_secret').where('id', user.id).first();
+		// SAFETY: enableTwoFactor has just set this column, so the selected value is a non-null string.
 		const stored = (row as { totp_secret: string }).totp_secret;
 
 		assert.notEqual(stored, secret);
@@ -83,7 +91,9 @@ test.group('TOTP enrollment', (group) => {
 		const secret = user.getEnrollmentSecret();
 		const pending = user.totpPendingSecret?.release();
 
-		assert.isTrue(await user.enableTwoFactor(new TOTP({ secret }).generate()));
+		const enabled = await user.enableTwoFactor(new TOTP({ secret }).generate());
+
+		assert.isTrue(enabled);
 		assert.isNull(user.totpPendingSecret);
 		assert.equal(user.totpSecret?.release(), pending);
 		assert.isNotNull(user.totpEnabledAt);
@@ -95,7 +105,9 @@ test.group('TOTP enrollment', (group) => {
 		await user.generateSecret();
 		const pending = user.totpPendingSecret?.release();
 
-		assert.isFalse(await user.enableTwoFactor('000000'));
+		const rejected = await user.enableTwoFactor('000000');
+
+		assert.isFalse(rejected);
 		assert.equal(user.totpPendingSecret?.release(), pending);
 		assert.isNull(user.totpSecret);
 		assert.isNull(user.totpEnabledAt);
@@ -104,6 +116,7 @@ test.group('TOTP enrollment', (group) => {
 
 	test('getSecretUri and getEnrollmentSecret throw when enrollment has not started', async ({ assert }) => {
 		const user = await createUser();
+
 		for (const read of [() => user.getSecretUri(), () => user.getEnrollmentSecret()]) {
 			assert.equal(codeOfThrown(read), 'E_TOTP_ENROLLMENT_NOT_STARTED');
 		}
@@ -122,10 +135,13 @@ test.group('TOTP enrollment', (group) => {
 
 		// The column decrypts on read, so a tampered row cannot even be loaded:
 		// it can never reach the enrollment path reading as "not enrolled".
-		assert.equal(await codeOfRejected(() => User.findOrFail(user.id)), 'E_ENCRYPTED_COLUMN_UNREADABLE');
+		const rejectionCode = await codeOfRejected(() => User.findOrFail(user.id));
+
+		assert.equal(rejectionCode, 'E_ENCRYPTED_COLUMN_UNREADABLE');
 
 		// The state is still there, it is only unreadable: nothing turned it into "not set".
 		const row = await db.from('users').select('totp_pending_secret').where('id', user.id).first();
+		// SAFETY: the row was just selected with this column alone, and the typed shape allows null.
 		assert.isNotNull((row as { totp_pending_secret: string | null }).totp_pending_secret);
 	});
 
@@ -137,6 +153,7 @@ test.group('TOTP enrollment', (group) => {
 		const serialized = user.serialize();
 
 		assert.property(serialized, 'email');
+
 		for (const column of ['totpSecret', 'totpPendingSecret', 'recoveryCodes']) {
 			assert.notProperty(serialized, column);
 		}
@@ -161,6 +178,8 @@ test.group('TOTP enrollment', (group) => {
 	test('the QR code is a PNG data URL', async ({ assert }) => {
 		const user = await createUser();
 		await user.generateSecret();
-		assert.match(await user.generateQRCode(), /^data:image\/png;base64,/);
+		const qrCode = await user.generateQRCode();
+
+		assert.match(qrCode, /^data:image\/png;base64,/);
 	});
 });

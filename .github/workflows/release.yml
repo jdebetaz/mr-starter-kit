@@ -1,16 +1,26 @@
 name: Release
 
-# Disabled in the starter kit so cloning it cannot publish a release.
-# `pnpm scaffold` restores the automatic push trigger.
+# Releases are published manually, from `main` only.
 on:
   workflow_dispatch:
 
 jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refuse releases outside main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Releases run on main only, got ${{ github.ref }}"
+          exit 1
   test:
+    needs:
+      - guard
     uses: ./.github/workflows/test.yml
   release:
     runs-on: ubuntu-latest
     needs:
+      - guard
       - test
     permissions:
       contents: write

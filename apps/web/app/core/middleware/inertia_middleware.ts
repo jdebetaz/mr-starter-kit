@@ -1,5 +1,5 @@
 import BaseInertiaMiddleware from '@adonisjs/inertia/inertia_middleware';
-import UserTransformer from '#identity/transformers/user_transformer';
+import UserTransformer from '#app/identity/transformers/user_transformer';
 import type { HttpContext } from '@adonisjs/core/http';
 import type { NextFn } from '@adonisjs/core/types/http';
 
@@ -12,6 +12,9 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 		 *
 		 * In that case, we must always assume that HttpContext is not fully hydrated
 		 * with all the properties
+		 *
+		 * SAFETY: widening only. Every property read from the result is optional,
+		 * so a context missing `auth` is handled rather than assumed away.
 		 */
 		const { auth } = ctx as Partial<HttpContext>;
 
@@ -22,6 +25,37 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 		return {
 			errors: ctx.inertia.always(this.getValidationErrors(ctx)),
 			user: ctx.inertia.always(auth?.user ? UserTransformer.transform(auth.user) : undefined),
+
+			/**
+			 * Which workspace the request is acting in. Every page needs it, and
+			 * resolving it per page would invite reading it from the wrong place.
+			 */
+			workspace: ctx.inertia.always(this.#shareWorkspace(ctx)),
+		};
+	}
+
+	/**
+	 * Undefined before the auth and workspace middleware have run, e.g. on a 404.
+	 *
+	 * Flat rather than a discriminated union: Inertia's shared-props type rejects
+	 * a union whose members differ in which keys they carry.
+	 */
+	#shareWorkspace(ctx: HttpContext) {
+		/** SAFETY: widening only, as in `share` above; `workspace` is read optionally. */
+		const { workspace } = ctx as Partial<HttpContext>;
+
+		if (!workspace) {
+			return undefined;
+		}
+
+		if (workspace.kind === 'personal') {
+			return { kind: workspace.kind, team: null, role: null };
+		}
+
+		return {
+			kind: workspace.kind,
+			team: { id: workspace.team.id, name: workspace.team.name },
+			role: workspace.role,
 		};
 	}
 
@@ -33,10 +67,14 @@ export default class InertiaMiddleware extends BaseInertiaMiddleware {
 	 * middleware, so HttpContext must be treated as partially hydrated.
 	 */
 	flash(ctx: HttpContext) {
+		/** SAFETY: widening only, as in `share` above; `session` is read optionally. */
 		const { session } = ctx as Partial<HttpContext>;
 
 		/**
 		 * Fetching the first error from the flash messages
+		 *
+		 * SAFETY: these three keys are only ever flashed as strings, by the
+		 * controllers in this app; a missing key reads as `undefined`.
 		 */
 		return {
 			error: session?.flashMessages.get('error') as string | undefined,

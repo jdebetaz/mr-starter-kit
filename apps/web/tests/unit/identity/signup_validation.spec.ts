@@ -2,8 +2,8 @@ import app from '@adonisjs/core/services/app';
 import testUtils from '@adonisjs/core/services/test_utils';
 import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
-import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
-import { loginValidator, signupValidator } from '#identity/validators/user';
+import { PwnedPasswordsVerifier } from '#app/core/validation/pwned_passwords_verifier';
+import { loginValidator, signupValidator } from '#app/identity/validators/user';
 import { fakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
 import { validationErrors } from '#tests/helpers/validation';
 import type { FakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
@@ -11,7 +11,14 @@ import type { FakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
 /** A passphrase that is long, unleaked, and would fail the old 32-char cap. */
 const LONG_PASSPHRASE = 'correct horse battery staple and then some more words';
 
-const signup = (overrides: Record<string, unknown> = {}) => ({
+type SignupOverrides = Partial<{
+	fullName: string;
+	email: string;
+	password: string | undefined;
+	passwordConfirmation: string | undefined;
+}>;
+
+const signup = (overrides: SignupOverrides = {}) => ({
 	fullName: 'Ada Lovelace',
 	email: 'ada@example.com',
 	password: LONG_PASSPHRASE,

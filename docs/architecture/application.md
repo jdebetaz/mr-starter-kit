@@ -4,21 +4,45 @@ This boilerplate is a pragmatic modular monolith. It uses business capability sl
 
 ## Dependency direction
 
-- `app/**` owns HTTP and Inertia delivery: routes, controllers, request validators, middleware, policies, response mapping, models, repositories, and transformers.
+```text
+app/<capability>  ──┐
+                    ├──> src/<capability>
+inertia/          ──┘
+```
+
+- `app/**` owns HTTP and Inertia delivery: routes, controllers, request validators, middleware, policies, response mapping, and transformers.
 - `inertia/**` owns pages, layouts, browser state, and page-specific composition.
-- `app/core` contains the exception handler, shared middleware, model mixins, the `@secret` and `@encrypted` column decorators in `app/core/orm/columns.ts`, and the base repository used by every capability.
+- `src/**` owns Actions, Queries, domain objects, repositories, jobs, and application services.
+- `src/**` never imports from `app/**` or `inertia/**`.
+- `app/core` contains shared delivery concerns: the exception handler, framework middleware, and VineJS rules. `src/core` contains application foundations needed by multiple capabilities: `Result`, branded types, Lucid mixins, ORM column helpers, the base repository, and `DomainError`.
 - `providers`, `config`, `start`, `commands`, and `database` retain their AdonisJS roles.
+
+Subpath imports follow that split, so a specifier says which side it reaches:
+
+| Specifier     | Resolves to                                                                  |
+| ------------- | ---------------------------------------------------------------------------- |
+| `#core/*`     | `apps/web/src/core/*`                                                        |
+| `#identity/*` | `apps/web/src/identity/*`                                                    |
+| `#app/*`      | `apps/web/app/*` — including `#app/core/*` and `#app/identity/controllers/*` |
+
+A new capability adds one entry, `#<capability>/*` → `./src/<capability>/*.js`, and reaches its own delivery code through `#app/<capability>/...`.
+
+The `src/** → app/**` rule is enforced, not merely documented: `oxlint.config.ts` carries an `overrides` entry scoped to `apps/*/src/**/*.ts` that restricts the `#app/*` and `#inertia/*` import patterns. Breaking the boundary fails `pnpm lint`.
 
 Organize by business capability before technical layer:
 
 ```text
 app/
-  <capability>/
+  identity/
     controllers/
-    models/
     transformers/
-    repositories/
     routes.ts
+src/
+  identity/
+    actions/
+    domain/
+    queries/
+    repositories/
 ```
 
 Create only the folders a capability needs. Introduce a shared abstraction once two capabilities need the same concept for the same reason.
@@ -32,16 +56,16 @@ Controllers are delivery adapters with at most two public methods. Register the 
 
 Use the same controller when a page and its mutation belong to the same use case. For example, `LoginController.render` displays the login form and `LoginController.execute` submits it. A read-only page may expose only `render`; an endpoint without a page may expose only `execute`. Do not introduce other public controller methods. Use `@inject()` and constructor injection for Actions and Queries.
 
-Controller ownership follows the use case, not the URL or the React page. A composite page does not make all of its mutations one use case. For example, the Security Settings page may have:
+Controller ownership follows the use case, not the URL or the React page. A composite page does not make all of its mutations one use case. For example, a Settings page may have:
 
 ```text
-GET  /settings/security                    -> SecuritySettingsController.render
-POST /settings/security/two-factor         -> StartTotpEnrollmentController.execute
-POST /settings/security/two-factor/verify  -> ConfirmTotpEnrollmentController.execute
-POST /settings/security/two-factor/disable -> DisableTotpController.execute
+GET   /settings          -> SettingsController.render
+PATCH /settings/profile  -> UpdateProfileController.execute
+PUT   /settings/password -> ChangePasswordController.execute
+POST  /settings/members  -> InviteMemberController.execute
 ```
 
-`SecuritySettingsController.render` owns the complete page composition and may compose several Queries. Each independently submitted settings module has a focused controller with only `execute`, delegating its mutation to the owning Action. This keeps unrelated validators, authorization rules, expected outcomes, and redirects out of one broad controller.
+`SettingsController.render` owns the complete page composition and may compose several Queries. Each independently submitted settings module has a focused controller with only `execute`, delegating its mutation to the owning Action. This keeps unrelated validators, authorization rules, expected outcomes, and redirects out of one broad controller.
 
 Use these rules to choose the shape:
 
@@ -92,7 +116,7 @@ A Query is the public read side. Use a named Query when a read has business inte
 - Keep filtering, visibility, aggregation, and read-side calculations inside the Query.
 - Hydrate a domain entity only when the caller needs its behavior or will continue into a command.
 
-Move the read into a Query as soon as it carries application meaning.
+A controller may use the Lucid query builder directly for a genuinely trivial delivery lookup. Move the read into a Query as soon as it carries application meaning.
 
 ```text
 controller or adapter -> Query -> projection or read model
@@ -108,7 +132,7 @@ Use DDD patterns where they protect meaning and invariants:
 - Repositories load and persist complete aggregates; they do not expose lazy-loaded domain objects.
 - Read models remain independent from aggregates and may be optimized for their caller.
 
-This is pragmatic DDD, not ceremony. A simple write without domain behavior may remain in a repository. Add a module only when its interface hides meaningful complexity.
+This is pragmatic DDD, not ceremony. A simple write without domain behavior may remain in an Action and repository. A simple read may remain a direct Lucid query. Add a module only when its interface hides meaningful complexity.
 
 ## Results and exceptions
 
@@ -120,11 +144,15 @@ type RegisterUserError = { type: 'email_already_taken' };
 
 Expected errors contain stable application facts, not HTTP statuses, form field names, redirects, or translated messages. The controller maps every variant to its delivery behavior.
 
-Throw for unexpected infrastructure failures, invalid persisted data, broken configuration, and impossible states. Actions, Queries, repositories, and domain objects do not throw Adonis or HTTP-aware exceptions; only delivery adapters translate them.
+Throw for unexpected infrastructure failures, invalid persisted data, broken configuration, and impossible states. Code in `src/**` does not throw Adonis or HTTP-aware exceptions.
+
+Those throws extend `DomainError` from `#core/exceptions/domain_error`, which carries a stable `code` and no HTTP status. `app/core/exceptions/handler.ts` owns the mapping from code to status; a code with no entry becomes a 500. This keeps `createError` and its status argument out of `src/**`.
 
 ## Transactions and persistence
 
-Repositories map Postgres rows to command-side domain objects. Queries map rows directly to read models.
+Lucid repositories map Postgres rows to command-side domain objects. Queries map rows directly to read models.
+
+Lucid models live in `src/<capability>/models/` and are composed from the generated `database/schema.ts`, which `node ace migration:run` rewrites from the migrations. Column definitions are therefore written as migrations; neither `database/schema.ts` nor `apps/web/.adonisjs/` is edited by hand. The generator scans the live database, so regenerate it against a database this repository's migrations own.
 
 - A public Action starts a transaction when its use case needs atomic writes.
 - Nested application work reuses the active transaction through `TransactionManager`.
@@ -138,39 +166,26 @@ Identity demonstrates both sides:
 
 ```text
 POST /signup
-  -> RegisterController.execute
+  -> RegisterUserController.execute
   -> RegisterUser.execute
   -> UserRepository.createUser
   -> User
 
-GET /login
-  -> LoginController.render
-  -> (page composition)
+GET /account
+  -> AccountController.render
+  -> AccountDetailsQuery.execute
+  -> AccountDetails projection
 
-POST /login
-  -> LoginController.execute
-  -> SignIn.execute
-  -> UserRepository.findByEmail
+Settings demonstrates a composite page:
 
-GET /settings/security
-  -> SecuritySettingsController.render
-  -> TwoFactorStatusQuery.execute + PendingTotpEnrollmentQuery.execute
-  -> SecuritySettings page
+GET /settings
+  -> SettingsController.render
+  -> ProfileSettingsQuery.execute + TeamMembersQuery.execute
+  -> one Settings page
 
-POST /settings/security/two-factor
-  -> StartTotpEnrollmentController.execute
-  -> StartTotpEnrollment.execute
-  -> UserRepository.updateTotpSecret
-
-POST /settings/security/two-factor/verify
-  -> ConfirmTotpEnrollmentController.execute
-  -> ConfirmTotpEnrollment.execute
-  -> UserRepository.confirmTotpEnrollment
-
-POST /settings/security/two-factor/disable
-  -> DisableTotpController.execute
-  -> DisableTotp.execute
-  -> UserRepository.disableTotp
+PATCH /settings/profile
+  -> UpdateProfileController.execute
+  -> UpdateProfile.execute
 ```
 
 ## Completion checklist

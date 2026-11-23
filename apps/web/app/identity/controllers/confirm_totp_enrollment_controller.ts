@@ -1,9 +1,9 @@
 import { inject } from '@adonisjs/core';
+import { totpCodeValidator } from '#app/identity/validators/two_factor';
 import { assertNever } from '#core/assert_never';
 import ConfirmTotpEnrollment from '#identity/actions/confirm_totp_enrollment';
 import PendingTotpEnrollmentQuery from '#identity/queries/pending_totp_enrollment';
 import { RecoveryCodesGrant } from '#identity/services/recovery_codes_grant';
-import { totpCodeValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -22,6 +22,7 @@ export default class ConfirmTotpEnrollmentController {
 
 		/** The manual secret is in the props; keep it out of readable history state. */
 		inertia.encryptHistory();
+
 		return inertia.render('settings/two-factor/verify', enrollment);
 	}
 
@@ -44,6 +45,7 @@ export default class ConfirmTotpEnrollmentController {
 						.toRoute(user.isTwoFactorEnabled ? 'two_factor.recovery.render' : 'two_factor.start.render');
 				case 'invalid_code':
 					session.flash('error', 'That code is not valid. Check your authenticator app and try again.');
+
 					return response.redirect().toRoute('two_factor.verify.render');
 				default:
 					return assertNever(confirmed.error);
@@ -52,6 +54,7 @@ export default class ConfirmTotpEnrollmentController {
 
 		/** The first set of codes is minted by the recovery page, once, on this grant. */
 		RecoveryCodesGrant.put(session, user.id);
+
 		return response.redirect().toRoute('two_factor.recovery.render');
 	}
 }

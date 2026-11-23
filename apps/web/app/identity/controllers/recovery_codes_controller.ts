@@ -42,6 +42,7 @@ export default class RecoveryCodesController {
 
 		/** The plaintext lives in the page props; keep it out of readable history state. */
 		inertia.encryptHistory();
+
 		return inertia.render('settings/two-factor/recovery', {
 			codes: generated.value,
 			remaining: generated.value.length,
@@ -54,6 +55,7 @@ export default class RecoveryCodesController {
 	async execute({ inertia, response, session }: HttpContext) {
 		inertia.clearHistory();
 		session.flash('success', 'Two-factor authentication is on.');
+
 		return response.redirect().toRoute('settings.security.render');
 	}
 }

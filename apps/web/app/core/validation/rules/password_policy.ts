@@ -24,6 +24,7 @@ export const enforcePasswordPolicy = vine.createRule<PasswordPolicy>((value, pol
 		return;
 	}
 
+	/** SAFETY: the rule is only applied to `vine.string()`, which has already validated the type. */
 	const { requirements } = checkPassword(value as string, policy);
 
 	for (const requirement of requirements) {

@@ -64,7 +64,9 @@ test.group('Security settings page', (group) => {
 	test('an enabled user sees the remaining recovery code count', async ({ client, assert }) => {
 		const user = await enabledUser();
 		const codes = await user.generateRecoveryCodes();
-		assert.isTrue(await user.verifyRecoveryCode(codes[0]));
+		const verified = await user.verifyRecoveryCode(codes[0]);
+
+		assert.isTrue(verified);
 
 		const response = await client.get('/settings/security').withInertia().loginAs(user);
 

@@ -40,7 +40,10 @@ mr-starter-kit/
 │   └── validation/             # Shared validation logic (password policy, etc.)
 ├── docs/
 │   ├── architecture/           # Architecture decision records
-│   └── agents/                 # Agent guides for AI-assisted development
+│   ├── agents/                 # Agent guides for AI-assisted development
+│   └── adr/                    # Architectural decision records
+├── tools/
+│   └── oxlint/tenkai/          # Tenkai custom Oxlint rules and their tests
 ├── .husky/                     # Git hooks
 ├── docker/                     # Docker configuration
 ├── oxlint.config.ts            # OXLint configuration
@@ -92,7 +95,7 @@ cd apps/web && node ace migration:run
 pnpm dev
 ```
 
-`pnpm scaffold` prompts for project name, slug, description, author, repository URL, and license. It rewrites `package.json`, `README.md`, and `CONTEXT.md`, personalizes release commands, and enables the release workflow (disabled while the starter kit is in use). All answers are optional—press Enter to keep current values.
+`pnpm scaffold` prompts for project name, slug, description, author, repository URL, and license. It rewrites `package.json`, `README.md`, and `CONTEXT.md`, and personalizes release commands. All answers are optional—press Enter to keep current values.
 
 ### Environment Configuration
 
@@ -248,7 +251,7 @@ pnpm release
 pnpm release:rewrite
 ```
 
-Release workflow is disabled until `pnpm scaffold` personalizes the project.
+The release workflow runs on manual dispatch only, and refuses to run on any ref other than `main`.
 
 ## Documentation
 

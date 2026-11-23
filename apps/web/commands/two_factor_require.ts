@@ -23,6 +23,7 @@ export default class TwoFactorRequire extends BaseCommand {
 		if (!user) {
 			this.logger.error(`No user found with email ${this.email}`);
 			this.exitCode = 1;
+
 			return;
 		}
 

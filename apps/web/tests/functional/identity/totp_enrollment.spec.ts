@@ -7,6 +7,7 @@ import type User from '#identity/models/user';
 async function pendingUser(): Promise<User> {
 	const user = await createUser();
 	await user.generateSecret();
+
 	return user;
 }
 
@@ -192,7 +193,9 @@ test.group('TOTP enrollment', (group) => {
 		await userB.refresh();
 		assert.equal(userB.recoveryCodes?.release(), before);
 		assert.equal(userB.remainingRecoveryCodesCount, 10);
-		assert.isTrue(await userB.verifyRecoveryCode(saved[0]));
+		const stillValid = await userB.verifyRecoveryCode(saved[0]);
+
+		assert.isTrue(stillValid);
 	});
 
 	test('an expired grant does not mint', async ({ client, assert }) => {
@@ -231,7 +234,9 @@ test.group('TOTP enrollment', (group) => {
 		assert.isNull(response.inertiaProps.codes);
 		assert.equal(response.inertiaProps.remaining, 10);
 		await user.refresh();
-		assert.isTrue(await user.verifyRecoveryCode(saved[0]));
+		const stillValid = await user.verifyRecoveryCode(saved[0]);
+
+		assert.isTrue(stillValid);
 	});
 
 	test('a GET on the regenerate path redirects to the recovery page', async ({ client, assert }) => {
@@ -261,8 +266,11 @@ test.group('TOTP enrollment', (group) => {
 		assert.lengthOf(response.inertiaProps.codes, 10);
 		assert.notIncludeMembers(response.inertiaProps.codes, saved);
 		await user.refresh();
-		assert.isFalse(await user.verifyRecoveryCode(saved[0]));
-		assert.isTrue(await user.verifyRecoveryCode(response.inertiaProps.codes[0]));
+		const oldCodeValid = await user.verifyRecoveryCode(saved[0]);
+		const newCodeValid = await user.verifyRecoveryCode(response.inertiaProps.codes[0]);
+
+		assert.isFalse(oldCodeValid);
+		assert.isTrue(newCodeValid);
 	});
 
 	test('a wrong password does not regenerate and leaves existing codes valid', async ({ client, assert }) => {
@@ -281,7 +289,9 @@ test.group('TOTP enrollment', (group) => {
 		assert.isNull(response.inertiaProps.codes);
 		await user.refresh();
 		assert.equal(user.remainingRecoveryCodesCount, 10);
-		assert.isTrue(await user.verifyRecoveryCode(saved[0]));
+		const stillValid = await user.verifyRecoveryCode(saved[0]);
+
+		assert.isTrue(stillValid);
 	});
 
 	test('a repeated confirm after 2FA is on goes to the recovery step, not step one', async ({ client }) => {

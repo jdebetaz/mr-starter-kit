@@ -4,6 +4,7 @@ import app from '@adonisjs/core/services/app';
 import testUtils from '@adonisjs/core/services/test_utils';
 import { inertiaApiClient } from '@adonisjs/inertia/plugins/api_client';
 import { dbAssertions } from '@adonisjs/lucid/plugins/db';
+import mail from '@adonisjs/mail/services/main';
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client';
 import { sessionBrowserClient } from '@adonisjs/session/plugins/browser_client';
 import { shieldApiClient } from '@adonisjs/shield/plugins/api_client';
@@ -59,6 +60,17 @@ export const runnerHooks: Required<Pick<Config, 'setup' | 'teardown'>> = {
 export const configureSuite: Config['configureSuite'] = (suite) => {
 	if (['unit', 'functional', 'browser'].includes(suite.name)) {
 		suite.setup(() => testUtils.db().truncate());
+
+		/**
+		 * Faked for the whole suite, not per spec: a spec that forgets to fake the
+		 * mailer would otherwise open a real SMTP connection. Sending is something
+		 * a test has to opt out of, never something it forgets to prevent.
+		 */
+		suite.setup(() => {
+			mail.fake();
+
+			return () => mail.restore();
+		});
 	}
 
 	if (['browser', 'functional', 'e2e'].includes(suite.name)) {

@@ -7,10 +7,10 @@ export type ChallengeForm = 'totp' | 'recovery';
 export type ChallengeAttempt = { allowed: true } | { allowed: false; retryAfterSeconds: number };
 
 /** Tight budget per (user, IP) and per form: a mistyped TOTP never closes the recovery path. */
-const perIp: Record<ChallengeForm, ReturnType<typeof limiter.use>> = {
+const perIp = {
 	totp: limiter.use({ requests: 5, duration: '15 mins' }),
 	recovery: limiter.use({ requests: 5, duration: '15 mins' }),
-};
+} satisfies Record<ChallengeForm, ReturnType<typeof limiter.use>>;
 
 /** Looser cap per user across all IPs and both forms, bounding a distributed guesser. */
 const perUser = limiter.use({ requests: 20, duration: '1 hour' });
@@ -21,11 +21,13 @@ const userKey = (userId: UUID): string => `challenge_user_${userId}`;
 async function spend(budget: ReturnType<typeof limiter.use>, key: string): Promise<ChallengeAttempt> {
 	try {
 		await budget.consume(key);
+
 		return { allowed: true };
 	} catch (error) {
 		if (error instanceof errors.E_TOO_MANY_REQUESTS) {
 			return { allowed: false, retryAfterSeconds: error.response.availableIn };
 		}
+
 		throw error;
 	}
 }
@@ -60,5 +62,6 @@ export const challengeLimiter = {
 
 export function throttledMessage(retryAfterSeconds: number): string {
 	const minutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
+
 	return `Too many attempts. Try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
 }

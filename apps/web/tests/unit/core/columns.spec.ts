@@ -9,11 +9,18 @@ import type { LucidRow, ModelColumnOptions } from '@adonisjs/lucid/types/model';
 /**
  * A reversible stand-in for the encryption service, so assertions can read
  * what was written without the ciphertext being opaque.
+ *
+ * SAFETY: `encrypt` only has to round-trip with `decrypt` below, which is the
+ * only reader of what it produces. Both take the encryption service's own
+ * signature, where the payload is whatever the column holds.
  */
 const cipher: ColumnCipher = {
+	// oxlint-disable-next-line tenkai/no-unknown-parameters
 	encrypt: ((payload: unknown) => `enc(${JSON.stringify(payload)})`) as ColumnCipher['encrypt'],
 	decrypt: <T>(value: string) => {
 		const match = /^enc\((.*)\)$/.exec(value);
+
+		/** SAFETY: the text inside `enc(...)` is JSON this fake wrote in `encrypt` above. */
 		return match ? (JSON.parse(match[1]!) as T) : null;
 	},
 };
@@ -38,26 +45,47 @@ function columnOf(name: string): ModelColumnOptions {
 	if (!definition) {
 		throw new Error(`Vault has no "${name}" column`);
 	}
+
 	return definition;
 }
 
+/**
+ * `toDatabase` and `fromDatabase` call Lucid's own column hooks, so they take
+ * and return exactly what those hooks do: the attribute before anything has
+ * decided what it is.
+ *
+ * SAFETY: the hooks only ever read attributes off the row, and a `Vault` is the
+ * model the column was defined on. The two types are not structurally
+ * comparable, because `LucidRow` declares members the class gets at runtime.
+ */
+// oxlint-disable-next-line tenkai/no-unknown-parameters, tenkai/no-unknown-returns
 function toDatabase(name: string, value: unknown): unknown {
+	/** SAFETY: see above; the hook only reads attributes off the row it is given. */
+	// oxlint-disable-next-line tenkai/no-chained-type-assertions
 	return columnOf(name).prepare!(value, name, new Vault() as unknown as LucidRow);
 }
 
+// oxlint-disable-next-line tenkai/no-unknown-parameters, tenkai/no-unknown-returns
 function fromDatabase(name: string, value: unknown): unknown {
+	/** SAFETY: see above; the hook only reads attributes off the row it is given. */
+	// oxlint-disable-next-line tenkai/no-chained-type-assertions
 	return columnOf(name).consume!(value, name, new Vault() as unknown as LucidRow);
 }
 
 /**
  * A model that looks like it came back from a query, so `$dirty` compares
  * against originals instead of reporting every attribute.
+ *
+ * `attributes` is a raw adapter result, which is what `$consumeAdapterResult`
+ * takes: column values straight from the driver, before Lucid maps them.
  */
+// oxlint-disable-next-line tenkai/no-unsafe-dictionary-type
 function persistedVault(attributes: Record<string, unknown>): Vault {
 	const vault = new Vault();
 	vault.$consumeAdapterResult(attributes);
 	vault.$hydrateOriginals();
 	vault.$isPersisted = true;
+
 	return vault;
 }
 

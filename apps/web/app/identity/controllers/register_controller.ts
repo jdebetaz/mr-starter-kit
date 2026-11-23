@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core';
+import { passwordPolicy, signupValidator } from '#app/identity/validators/user';
 import RegisterUser from '#identity/actions/register_user';
-import { passwordPolicy, signupValidator } from '#identity/validators/user';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -24,10 +24,12 @@ export default class RegisterController {
 
 		if (!registered.ok) {
 			session.flash('error', 'That email address is already registered.');
+
 			return response.redirect().toRoute('register.render');
 		}
 
 		await auth.use('web').login(registered.value);
+
 		return response.redirect().toRoute('home');
 	}
 }

@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /// <reference path="../manifest.d.ts" />
 
-import type { ExtractBody, ExtractErrorResponse, ExtractQuery, ExtractQueryForGet, ExtractResponse } from '@tuyau/core/types'
+import type { ExtractBody, ExtractErrorResponse, ExtractQuery, ExtractQueryForGet, ExtractRawResponse, ExtractResponse } from '@tuyau/core/types'
 import type { InferInput, SimpleError } from '@vinejs/vine/types'
 
 export type ParamValue = string | number | bigint | boolean
@@ -17,18 +17,20 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/register_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/register_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/register_controller').default['render']>>>
     }
   }
   'register.execute': {
     methods: ["POST"]
     pattern: '/signup'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/user').signupValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/user').signupValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/user').signupValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/user').signupValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/register_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/register_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/register_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'login.render': {
@@ -41,18 +43,20 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['render']>>>
     }
   }
   'login.execute': {
     methods: ["POST"]
     pattern: '/login'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/user').loginValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/user').loginValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/user').loginValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/user').loginValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/login_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'login.challenge.render': {
@@ -65,18 +69,20 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['render']>>>
     }
   }
   'login.challenge.execute': {
     methods: ["POST"]
     pattern: '/login/challenge'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/two_factor').totpCodeValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/two_factor').totpCodeValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/totp_challenge_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'login.challenge.recovery.render': {
@@ -89,18 +95,20 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['render']>>>
     }
   }
   'login.challenge.recovery.execute': {
     methods: ["POST"]
     pattern: '/login/challenge/recovery'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').recoveryCodeValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/two_factor').recoveryCodeValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').recoveryCodeValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/two_factor').recoveryCodeValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_challenge_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'session.execute': {
@@ -113,6 +121,7 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/session_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/session_controller').default['execute']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/session_controller').default['execute']>>>
     }
   }
   'settings.security.render': {
@@ -125,6 +134,7 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/security_settings_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/security_settings_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/security_settings_controller').default['render']>>>
     }
   }
   'two_factor.start.render': {
@@ -137,6 +147,7 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['render']>>>
     }
   }
   'two_factor.start.execute': {
@@ -149,6 +160,7 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['execute']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/start_totp_enrollment_controller').default['execute']>>>
     }
   }
   'two_factor.verify.render': {
@@ -161,18 +173,20 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['render']>>>
     }
   }
   'two_factor.verify.execute': {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/verify'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/two_factor').totpCodeValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').totpCodeValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/two_factor').totpCodeValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/confirm_totp_enrollment_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'two_factor.recovery.render': {
@@ -185,6 +199,7 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['render']>>>
     }
   }
   'two_factor.recovery.execute': {
@@ -197,6 +212,7 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/recovery_codes_controller').default['execute']>>>
     }
   }
   'regenerate_recovery_codes.render': {
@@ -209,30 +225,163 @@ export interface Registry {
       query: {}
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['render']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['render']>>>
     }
   }
   'two_factor.recovery.regenerate.execute': {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/recovery/regenerate'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/two_factor').passwordConfirmationValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/two_factor').passwordConfirmationValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/regenerate_recovery_codes_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'two_factor.disable.execute': {
     methods: ["POST"]
     pattern: '/settings/security/two-factor/disable'
     types: {
-      body: ExtractBody<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
+      body: ExtractBody<InferInput<(typeof import('#app/identity/validators/two_factor').passwordConfirmationValidator)>>
       paramsTuple: []
       params: {}
-      query: ExtractQuery<InferInput<(typeof import('#identity/validators/two_factor').passwordConfirmationValidator)>>
+      query: ExtractQuery<InferInput<(typeof import('#app/identity/validators/two_factor').passwordConfirmationValidator)>>
       response: ExtractResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/identity/controllers/disable_totp_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'workspace.switch': {
+    methods: ["POST"]
+    pattern: '/workspace/switch'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').switchWorkspaceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').switchWorkspaceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/switch_workspace_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/switch_workspace_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/switch_workspace_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.settings.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/settings/team'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/teams_controller').default['render']>>>
+    }
+  }
+  'teams.invitations.render': {
+    methods: ["GET","HEAD"]
+    pattern: '/teams/invitations/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['render']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['render']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['render']>>>
+    }
+  }
+  'teams.invitations.accept': {
+    methods: ["POST"]
+    pattern: '/teams/invitations/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['execute']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/accept_invitation_controller').default['execute']>>>
+    }
+  }
+  'teams.create': {
+    methods: ["POST"]
+    pattern: '/teams'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').createTeamValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').createTeamValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/create_team_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/create_team_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/create_team_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.members.invite': {
+    methods: ["POST"]
+    pattern: '/settings/team/members/invite'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').inviteMemberValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').inviteMemberValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/invite_member_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/invite_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/invite_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.members.remove': {
+    methods: ["DELETE"]
+    pattern: '/settings/team/members'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/remove_member_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/remove_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/remove_member_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.members.role': {
+    methods: ["PATCH"]
+    pattern: '/settings/team/members/role'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').changeMemberRoleValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').changeMemberRoleValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/change_member_role_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/change_member_role_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/change_member_role_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.ownership.transfer': {
+    methods: ["POST"]
+    pattern: '/settings/team/ownership'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').memberValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/transfer_ownership_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/transfer_ownership_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/transfer_ownership_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'teams.invitations.revoke': {
+    methods: ["DELETE"]
+    pattern: '/settings/team/invitations'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#app/teams/validators/team').invitationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#app/teams/validators/team').invitationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#app/teams/controllers/revoke_invitation_controller').default['execute']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#app/teams/controllers/revoke_invitation_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#app/teams/controllers/revoke_invitation_controller').default['execute']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'home': {
@@ -245,6 +394,7 @@ export interface Registry {
       query: {}
       response: unknown
       errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
     }
   }
 }

@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
+import { loginValidator } from '#app/identity/validators/user';
 import SignIn from '#identity/actions/sign_in';
 import { PendingLogin } from '#identity/services/pending_login';
-import { loginValidator } from '#identity/validators/user';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -19,6 +19,7 @@ export default class LoginController {
 
 		if (!signedIn.ok) {
 			session.flash('error', 'Those credentials do not match our records.');
+
 			return response.redirect().toRoute('login.render');
 		}
 
@@ -28,10 +29,12 @@ export default class LoginController {
 		 */
 		if (signedIn.value.challengeRequired) {
 			PendingLogin.put(session, signedIn.value.user.id);
+
 			return response.redirect().toRoute('login.challenge.render');
 		}
 
 		await auth.use('web').login(signedIn.value.user);
+
 		return response.redirect().toRoute('home');
 	}
 }

@@ -25,11 +25,18 @@ async function atFixedTime<T>(at: number, fn: () => Promise<T> | T): Promise<T> 
 /** The three session methods PendingLogin uses, backed by a Map. */
 function fakeSession(): Session {
 	const store = new Map<string, unknown>();
+
+	/**
+	 * SAFETY: `PendingLogin` only calls `get`, `put` and `forget`, which the stub
+	 * provides; `put` takes the session's own signature, where the value is
+	 * whatever the caller parks.
+	 */
 	return {
 		get: (key: string) => store.get(key),
+		// oxlint-disable-next-line tenkai/no-unknown-parameters
 		put: (key: string, value: unknown) => void store.set(key, value),
 		forget: (key: string) => void store.delete(key),
-	} as unknown as Session;
+	} as Session;
 }
 
 test.group('SignIn', (group) => {
@@ -44,6 +51,7 @@ test.group('SignIn', (group) => {
 		if (!result.ok) {
 			return;
 		}
+
 		assert.isTrue(result.value.challengeRequired);
 	});
 
@@ -55,6 +63,7 @@ test.group('SignIn', (group) => {
 		if (!result.ok) {
 			return;
 		}
+
 		assert.isFalse(result.value.challengeRequired);
 	});
 });
@@ -70,6 +79,7 @@ test.group('SignIn credentials', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'invalid_credentials');
 	});
 
@@ -81,6 +91,7 @@ test.group('SignIn credentials', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'invalid_credentials');
 	});
 });
@@ -96,6 +107,7 @@ test.group('VerifyTotpChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'no_pending_login');
 	});
 
@@ -109,6 +121,7 @@ test.group('VerifyTotpChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'not_challengeable');
 	});
 
@@ -121,6 +134,7 @@ test.group('VerifyTotpChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'not_challengeable');
 	});
 
@@ -132,6 +146,7 @@ test.group('VerifyTotpChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'invalid_code');
 	});
 
@@ -143,6 +158,7 @@ test.group('VerifyTotpChallenge', (group) => {
 		if (!result.ok) {
 			return;
 		}
+
 		assert.equal(result.value.id, user.id);
 	});
 });
@@ -158,6 +174,7 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'no_pending_login');
 	});
 
@@ -171,6 +188,7 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'not_challengeable');
 	});
 
@@ -183,6 +201,7 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'not_challengeable');
 	});
 
@@ -194,6 +213,7 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		if (result.ok) {
 			return;
 		}
+
 		assert.equal(result.error.type, 'invalid_recovery_code');
 	});
 
@@ -206,11 +226,13 @@ test.group('VerifyRecoveryChallenge', (group) => {
 		if (!result.ok) {
 			return;
 		}
+
 		assert.equal(result.value.remainingCodes, twoFactorConfig.recoveryCodesCount - 1);
 	});
 });
 
 test.group('PendingLogin', () => {
+	/** SAFETY: a literal UUID, written here in the form the type describes. */
 	const id = '11111111-1111-4111-8111-111111111111' as UUID;
 
 	test('peek leaves the marker and take removes it', ({ assert }) => {

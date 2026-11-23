@@ -1,7 +1,7 @@
 import { inject } from '@adonisjs/core';
+import { passwordConfirmationValidator } from '#app/identity/validators/two_factor';
 import { assertNever } from '#core/assert_never';
 import RegenerateRecoveryCodes from '#identity/actions/regenerate_recovery_codes';
-import { passwordConfirmationValidator } from '#identity/validators/two_factor';
 import type { HttpContext } from '@adonisjs/core/http';
 
 @inject()
@@ -33,6 +33,7 @@ export default class RegenerateRecoveryCodesController {
 					return response.redirect().toRoute('two_factor.start.render');
 				case 'invalid_password':
 					session.flash('error', 'That password is not correct.');
+
 					return response.redirect().toRoute('two_factor.recovery.render');
 				default:
 					return assertNever(regenerated.error);
@@ -40,6 +41,7 @@ export default class RegenerateRecoveryCodesController {
 		}
 
 		inertia.encryptHistory();
+
 		return inertia.render('settings/two-factor/recovery', {
 			codes: regenerated.value,
 			remaining: regenerated.value.length,

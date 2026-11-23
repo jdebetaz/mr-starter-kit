@@ -1,8 +1,8 @@
 import app from '@adonisjs/core/services/app';
 import { test } from '@japa/runner';
 import vine from '@vinejs/vine';
-import { PwnedPasswordsVerifier } from '#core/validation/pwned_passwords_verifier';
-import { uncompromised } from '#core/validation/rules/uncompromised';
+import { PwnedPasswordsVerifier } from '#app/core/validation/pwned_passwords_verifier';
+import { uncompromised } from '#app/core/validation/rules/uncompromised';
 import { fakePwnedPasswords } from '#tests/helpers/fake_pwned_passwords';
 import { validationErrors } from '#tests/helpers/validation';
 
@@ -35,8 +35,13 @@ test.group('Fake pwned passwords', (group) => {
 	test('leakedAll marks every password, and explicit counts still win', async ({ assert }) => {
 		const pwned = fakePwnedPasswords(app.container).leakedAll(2).leaked('specific', 9);
 
-		assert.equal(await pwned.verify('anything at all', 5000), 2);
-		assert.equal(await pwned.verify('specific', 5000), 9);
+		const anyCount = await pwned.verify('anything at all', 5000);
+
+		assert.equal(anyCount, 2);
+
+		const specificCount = await pwned.verify('specific', 5000);
+
+		assert.equal(specificCount, 9);
 	});
 
 	test('simulateOutage reports everything uncompromised, including marked passwords', async ({ assert }) => {
@@ -69,7 +74,9 @@ test.group('Fake pwned passwords', (group) => {
 
 		pwned.restore();
 
-		assert.instanceOf(await app.container.make(PwnedPasswordsVerifier), PwnedPasswordsVerifier);
+		const verifier = await app.container.make(PwnedPasswordsVerifier);
+
+		assert.instanceOf(verifier, PwnedPasswordsVerifier);
 		pwned.assertNoneVerified();
 	});
 });

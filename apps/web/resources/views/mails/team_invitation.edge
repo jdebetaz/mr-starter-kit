@@ -1,0 +1,10 @@
+@component('mails/layout')
+  <mj-text font-size="18px" font-weight="700">You have been invited to {{ teamName }}</mj-text>
+  <mj-text>
+    {{ inviterName }} has invited you to join {{ teamName }} on {{ appName }}.
+  </mj-text>
+  <mj-button href="{{ mailUrl(acceptPath) }}">Accept the invitation</mj-button>
+  <mj-text font-size="13px" color="#59636e">
+    If you were not expecting this, you can ignore this email and nothing will happen.
+  </mj-text>
+@end
